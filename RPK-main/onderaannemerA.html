@@ -39,7 +39,7 @@
         .back-btn:hover { background: #cbd5e1; }
         .user-info { font-size: 0.8rem; color: #64748b; }
         .content { padding: 32px; }
-        
+       
         .filter-bar { background: white; padding: 8px 16px; border-radius: 48px; margin-bottom: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; border: 1px solid #e2e8f0; }
         .filter-group { display: flex; align-items: center; gap: 6px; background: #f8fafc; padding: 4px 12px; border-radius: 32px; border: 1px solid #e2e8f0; }
         .filter-group label { font-size: 0.7rem; font-weight: 600; color: #475569; }
@@ -48,17 +48,17 @@
         .filter-actions button { padding: 6px 14px; border-radius: 32px; border: none; cursor: pointer; font-weight: 500; font-size: 0.75rem; }
         .btn-filter { background: #0f172a; color: white; }
         .btn-reset { background: #e2e8f0; color: #1e293b; }
-        
+       
         .orders-table-wrapper { overflow-x: auto; background: white; border-radius: 16px; padding: 20px; }
         .orders-table { width: 100%; border-collapse: collapse; }
         .orders-table th { text-align: left; padding: 12px 8px; border-bottom: 1px solid #e2e8f0; font-size: 0.75rem; font-weight: 600; color: #64748b; }
         .orders-table td { padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; }
-        
+       
         .action-btn { background: #2dd4bf; color: #0f172a; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.75rem; }
         .delete-btn { background: #ef4444; color: white; margin-left: 8px; padding: 4px 10px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.7rem; }
         .add-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 0.8rem; margin-bottom: 16px; }
         .order-count { background: #2dd4bf20; padding: 4px 12px; border-radius: 40px; font-size: 0.75rem; font-weight: 600; color: #0f172a; }
-        
+       
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
         .modal-content { background: white; border-radius: 20px; max-width: 700px; width: 90%; max-height: 85vh; overflow-y: auto; }
         .fiche-header { background: #0f172a; color: white; padding: 20px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; align-items: center; }
@@ -77,13 +77,13 @@
         .fiche-btn.confirm { background: #10b981; color: white; }
         .fiche-btn.close { background: #64748b; color: white; }
         .fiche-btn.assign { background: #f59e0b; color: white; }
-        
+       
         .people-card { background: white; border-radius: 16px; padding: 20px; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .stat-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .stat-card h4 { font-size: 0.75rem; text-transform: uppercase; color: #64748b; margin-bottom: 8px; }
         .stat-card .value { font-size: 1.8rem; font-weight: 700; }
-        
+       
         .calendar-container { background: white; border-radius: 16px; padding: 20px; margin-bottom: 24px; }
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
         .calendar-header h2 { font-size: 1.3rem; font-weight: 600; }
@@ -98,10 +98,10 @@
         .calendar-day.today { border: 2px solid #2dd4bf; }
         .calendar-day.has-rides { background: #dbeafe; }
         .ride-dot { width: 6px; height: 6px; background: #2dd4bf; border-radius: 50%; margin-top: 2px; }
-        
+       
         .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
         @media (max-width: 1000px) { .dashboard-grid { grid-template-columns: repeat(2, 1fr); } }
-        
+       
         .info-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor: pointer; }
         .mini-flip-container { perspective: 600px; height: 140px; }
         .mini-flip-card { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.4s; transform-style: preserve-3d; }
@@ -110,33 +110,33 @@
         .mini-flip-front { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; transform: rotateY(0deg); }
         .mini-flip-back { background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%); color: #0f172a; transform: rotateY(180deg); }
         .mini-flip-front .value, .mini-flip-back .value { font-size: 1.8rem; font-weight: 700; margin: 8px 0; }
-        
+       
         .planning-container { margin-top: 20px; background: white; border-radius: 16px; padding: 20px; }
         .planning-list { max-height: 400px; overflow-y: auto; }
         .planning-item { background: #f1f5f9; border-radius: 12px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #2dd4bf; }
         .planning-time { font-weight: 700; color: #0f172a; margin-bottom: 4px; }
         .planning-ride { font-size: 0.85rem; color: #475569; }
         .empty-planning { text-align: center; padding: 40px; color: #94a3b8; }
-        
+       
         .finance-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
         .period-buttons { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
         .period-btn { padding: 8px 20px; border-radius: 40px; border: none; cursor: pointer; font-weight: 500; background: #e2e8f0; transition: all 0.2s; }
         .period-btn.active { background: #2dd4bf; color: #0f172a; }
         .chart-container { background: white; border-radius: 16px; padding: 20px; margin-top: 24px; }
         canvas { max-height: 300px; width: 100% !important; }
-        
+       
         .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
         @media (max-width: 1000px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
         .kpi-card { background: white; border-radius: 16px; padding: 20px; text-align: center; }
         .kpi-card .value { font-size: 1.8rem; font-weight: 700; }
         .kpi-card .label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; margin-top: 8px; }
-        
+       
         .wiki-container { background: white; border-radius: 16px; padding: 24px; }
         .wiki-content { text-align: left; max-width: 1000px; margin: 0 auto; line-height: 1.6; }
         .wiki-content h2 { color: #0f172a; border-bottom: 2px solid #2dd4bf; padding-bottom: 10px; margin-bottom: 20px; }
         .wiki-content h3 { color: #2dd4bf; margin-top: 20px; margin-bottom: 10px; }
         .wiki-content ul, .wiki-content ol { margin-left: 20px; margin-bottom: 15px; }
-        
+       
         .partner-card { border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 16px; background: #f8fafc; }
         .partner-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
         .partner-name { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
@@ -145,7 +145,7 @@
         .add-driver-form { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
         .add-driver-form input { padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.8rem; flex: 1; min-width: 120px; }
         select { padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; font-family: 'Inter', sans-serif; }
-        
+       
         .alert-no-data { background: #fef3c7; color: #92400e; padding: 20px; border-radius: 16px; text-align: center; margin: 20px; }
         .toast { position: fixed; bottom: 20px; right: 20px; background: #10b981; color: white; padding: 12px 24px; border-radius: 40px; z-index: 2000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
         .toast.show { opacity: 1; }
@@ -207,7 +207,7 @@
             <div class="fiche-body" id="ficheBody"></div>
         </div>
     </div>
-    
+   
     <div id="toast" class="toast"></div>
 
     <script type="module">
@@ -232,7 +232,7 @@
             revenueChart: null,
             flipStates: { omzet: false, cash: false, orders: false },
             subcontractorId: 1001,
-            
+           
             showToast(msg, isError) {
                 const toast = document.getElementById('toast');
                 toast.textContent = msg;
@@ -240,7 +240,7 @@
                 toast.classList.add('show');
                 setTimeout(() => toast.classList.remove('show'), 3000);
             },
-            
+           
             async loadPartners() {
                 const { data, error } = await supabase
                     .from('partners')
@@ -252,7 +252,7 @@
                 }
                 this.partners = data;
             },
-            
+           
             async loadDrivers() {
                 const { data, error } = await supabase
                     .from('drivers')
@@ -263,26 +263,26 @@
                 }
                 this.drivers = data;
             },
-            
+           
             switchToWoningen() { window.location.href = 'commander.html'; },
             switchToAutoDealer() { window.location.href = 'autodealerpaneel.html'; },
-            
+           
             formatDate(date) {
                 let d = new Date(date);
                 return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()}`;
             },
-            
+           
             parseDate(dateStr, timeStr) {
                 let parts = dateStr.split('-');
                 let timeParts = timeStr ? timeStr.split(':') : ['00','00'];
                 return new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]), parseInt(timeParts[0]), parseInt(timeParts[1]));
             },
-            
+           
             isFuture(dateStr, timeStr) { return this.parseDate(dateStr, timeStr) > new Date(); },
-            
+           
             escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); },
             closeModal() { document.getElementById('bookingModal').style.display = 'none'; },
-            
+           
             filterAndSortData() {
                 const now = new Date();
                 this.newOrders = this.allBookings.filter(b => b.status === 'pending');
@@ -297,9 +297,9 @@
                 this.historyOrders.sort((a,b) => this.parseDate(b.datetime, b.time) - this.parseDate(a.datetime, a.time));
                 this.newOrders.sort((a,b) => this.parseDate(a.datetime, a.time) - this.parseDate(b.datetime, b.time));
             },
-            
+           
             getRidesByDate(dateStr) { return this.allBookings.filter(b => b.datetime === dateStr); },
-            
+           
             getTodayStats() {
                 let todayStr = this.formatDate(new Date());
                 let todayRides = this.getRidesByDate(todayStr);
@@ -311,9 +311,9 @@
                 let futureRidesToday = todayRides.filter(r => r.status !== 'completed' && r.status !== 'cancelled' && r.time > nowTime);
                 return { total: todayTotal, cash: todayCash, commission: commission, completed: todayCompleted.length, canceled: todayRides.filter(r => r.status === 'cancelled').length, futureRides: futureRidesToday.length };
             },
-            
+           
             toggleFlipCard(cardName) { this.flipStates[cardName] = !this.flipStates[cardName]; if(this.currentTab === 'agenda') this.renderAgenda(); },
-            
+           
             renderDashboardGrid() {
                 let stats = this.getTodayStats();
                 return `
@@ -339,7 +339,7 @@
                     </div>
                 `;
             },
-            
+           
             renderCalendar() {
                 let year = this.currentMonth.getFullYear();
                 let month = this.currentMonth.getMonth();
@@ -366,7 +366,7 @@
                 html += `</div></div>`;
                 return html;
             },
-            
+           
             renderPlanning() {
                 let dateStr = `${this.selectedDate.getDate().toString().padStart(2,'0')}-${(this.selectedDate.getMonth()+1).toString().padStart(2,'0')}-${this.selectedDate.getFullYear()}`;
                 let rides = this.getRidesByDate(dateStr).sort((a,b) => a.time.localeCompare(b.time));
@@ -384,20 +384,20 @@
                 `;}).join('');
                 return `<div class="planning-container"><h3><i class="fas fa-calendar-day"></i> ${formattedDate}</h3><div class="planning-list">${ridesHtml}</div></div>`;
             },
-            
+           
             selectDate(day, month, year) { this.selectedDate = new Date(year, month-1, day); this.currentMonth = new Date(year, month-1, 1); if(this.currentTab === 'agenda') this.renderAgenda(); },
             changeMonth(delta) { this.currentMonth.setMonth(this.currentMonth.getMonth() + delta); if(this.currentTab === 'agenda') this.renderAgenda(); },
             goToToday() { this.currentMonth = new Date(); this.selectedDate = new Date(); if(this.currentTab === 'agenda') this.renderAgenda(); },
-            
+           
             renderEmptyTable() { return `<div class="alert-no-data"><i class="fas fa-database"></i> Geen ritten gevonden</div>`; },
-            
+           
             renderNewOrders() {
                 let html = `<div class="filter-bar"><div class="filter-group"><label>Order ID</label><input type="text" id="filterOrderNew" placeholder="Zoek op ID"></div><div class="filter-group"><label>Naam</label><input type="text" id="filterNameNew" placeholder="Klant"></div><div class="filter-actions"><button class="btn-filter" onclick="app.applyFiltersNew()">Zoek</button><button class="btn-reset" onclick="app.resetFiltersNew()">Reset</button></div></div><div class="orders-table-wrapper"><table class="orders-table"><thead><tr><th>Order ID</th><th>Datum & Tijd</th><th>Klant</th><th>Route</th><th>Voertuig</th><th>Bedrag</th><th>Actie</th></tr></thead><tbody id="newOrdersTable"></tbody></table></div>`;
                 document.getElementById('contentArea').innerHTML = html;
                 this.renderNewOrdersTable(this.newOrders);
                 document.getElementById('pageTitle').innerHTML = `New Orders <span class="order-count">${this.newOrders.length}</span>`;
             },
-            
+           
             renderNewOrdersTable(orders) {
                 let tbody = document.getElementById('newOrdersTable');
                 if (!tbody) return;
@@ -417,14 +417,14 @@
                     `).join('');
                 }
             },
-            
+           
             renderOrders() {
                 let html = `<div class="filter-bar"><div class="filter-group"><label>Order ID</label><input type="text" id="filterOrderOrders" placeholder="Zoek op ID"></div><div class="filter-group"><label>Naam</label><input type="text" id="filterNameOrders" placeholder="Klant"></div><div class="filter-actions"><button class="btn-filter" onclick="app.applyFiltersOrders()">Zoek</button><button class="btn-reset" onclick="app.resetFiltersOrders()">Reset</button></div></div><div class="orders-table-wrapper"><table class="orders-table"><thead><tr><th>Order ID</th><th>Datum & Tijd</th><th>Klant</th><th>Route</th><th>Voertuig</th><th>Bedrag</th><th>Driver</th><th>Actie</th></tr></thead><tbody id="ordersTable"></tbody></table></div>`;
                 document.getElementById('contentArea').innerHTML = html;
                 this.renderOrdersTable(this.ordersList);
                 document.getElementById('pageTitle').innerHTML = `Orders <span class="order-count">${this.ordersList.length}</span>`;
             },
-            
+           
             renderOrdersTable(orders) {
                 let tbody = document.getElementById('ordersTable');
                 if (!tbody) return;
@@ -448,19 +448,19 @@
                     `;}).join('');
                 }
             },
-            
+           
             renderHistory() {
                 let html = `<div class="filter-bar"><div class="filter-group"><label>Order ID</label><input type="text" id="filterOrderHistory" placeholder="Zoek op ID"></div><div class="filter-group"><label>Naam</label><input type="text" id="filterNameHistory" placeholder="Klant"></div><div class="filter-actions"><button class="btn-filter" onclick="app.applyFiltersHistory()">Zoek</button><button class="btn-reset" onclick="app.resetFiltersHistory()">Reset</button></div></div><div class="orders-table-wrapper"><table class="orders-table"><thead><tr><th>Order ID</th><th>Datum & Tijd</th><th>Klant</th><th>Route</th><th>Voertuig</th><th>Bedrag</th><th>Driver</th><th>Status</th></tr></thead><tbody id="historyTable"></tbody></table></div>`;
                 document.getElementById('contentArea').innerHTML = html;
                 this.renderHistoryTable(this.historyOrders);
                 document.getElementById('pageTitle').innerHTML = `History <span class="order-count">${this.historyOrders.length}</span>`;
             },
-            
+           
             renderHistoryTable(orders) {
                 let tbody = document.getElementById('historyTable');
                 if (!tbody) return;
                 if (orders.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" class="empty-planning">${this.renderEmptyTable()}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="8" class="empty-planning">${this.renderEmptyTable()}<table></tr>`;
                 } else {
                     tbody.innerHTML = orders.map(o => {
                         let statusText = o.status === 'completed' ? '✅ Uitgevoerd' : (o.status === 'cancelled' ? '❌ Geannuleerd' : '📋 Gepasseerd');
@@ -479,12 +479,12 @@
                     }).join('');
                 }
             },
-            
+           
             renderAgenda() {
                 document.getElementById('contentArea').innerHTML = `${this.renderDashboardGrid()}${this.renderCalendar()}${this.renderPlanning()}`;
                 document.getElementById('pageTitle').innerHTML = `Agenda`;
             },
-            
+           
             renderDrivers() {
                 let myDrivers = this.drivers.filter(c => {
                     let partner = this.partners.find(p => p.id === c.partner_id);
@@ -502,7 +502,7 @@
                 document.getElementById('contentArea').innerHTML = html;
                 document.getElementById('pageTitle').innerHTML = `Drivers`;
             },
-            
+           
             renderPartners() {
                 let html = `<div class="people-card"><h3><i class="fas fa-handshake"></i> Mijn Partners</h3><button class="add-btn" onclick="app.showAddPartnerForm()">➕ Nieuwe Partner</button><div style="margin-top:20px;">`;
                 if (this.partners.length === 0) html += `<div class="empty-planning">Geen partners gevonden</div>`;
@@ -523,7 +523,7 @@
                 document.getElementById('contentArea').innerHTML = html;
                 document.getElementById('pageTitle').innerHTML = `Mijn Partners`;
             },
-            
+           
             async addDriverForPartner(partnerId) {
                 let name = document.getElementById(`driverName_${partnerId}`)?.value;
                 let vehicle = document.getElementById(`driverVoertuig_${partnerId}`)?.value;
@@ -567,7 +567,7 @@
                 document.getElementById(`driverVoertuig_${partnerId}`).value = '';
                 document.getElementById(`driverPlaat_${partnerId}`).value = '';
             },
-            
+           
             async showAddDriverForm() {
                 const hoofdPartner = this.partners.find(p => p.is_hoofd === true);
                 if (!hoofdPartner) {
@@ -611,7 +611,7 @@
                     if (this.currentTab === 'partners') this.renderPartners();
                 }
             },
-            
+           
             async showAddPartnerForm() {
                 let name = prompt('Bedrijfsnaam partner:');
                 if (!name) return;
@@ -647,7 +647,7 @@
                     this.renderPartners();
                 }
             },
-            
+           
             async deleteDriver(driverId) {
                 if (!confirm('Weet u zeker dat u deze driver wilt verwijderen?')) return;
                 const { error } = await supabase
@@ -662,7 +662,7 @@
                     if (this.currentTab === 'drivers' || this.currentTab === 'partners') this.refreshCurrentTab();
                 }
             },
-            
+           
             async deletePartner(partnerId) {
                 if (!confirm('Weet u zeker dat u deze partner wilt verwijderen? Alle drivers van deze partner worden ook verwijderd.')) return;
                 const { error } = await supabase
@@ -678,7 +678,7 @@
                     if (this.currentTab === 'partners') this.refreshCurrentTab();
                 }
             },
-            
+           
             filterBookingsByPeriod(period, bookings) {
                 let now = new Date();
                 let startDate, endDate;
@@ -690,7 +690,7 @@
                 }
                 return bookings.filter(b => { let rideDate = this.parseDate(b.datetime, '00:00'); return rideDate >= startDate && rideDate <= endDate; });
             },
-            
+           
             renderFinance() {
                 let filteredBookings = this.filterBookingsByPeriod(this.financePeriod, this.allBookings);
                 let totalRevenue = filteredBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
@@ -698,7 +698,7 @@
                 let factuurRevenue = filteredBookings.filter(b => b.payment === 'Factuur').reduce((sum, b) => sum + (b.amount || 0), 0);
                 let commission = totalRevenue * 0.10;
                 let periodLabel = { today: 'Vandaag', month: 'Deze Maand', year: 'Dit Jaar' }[this.financePeriod];
-                
+               
                 let monthlyData = {};
                 this.allBookings.forEach(b => {
                     let date = this.parseDate(b.datetime, '00:00');
@@ -708,7 +708,7 @@
                 let sortedMonths = Object.keys(monthlyData).sort();
                 let chartLabels = sortedMonths.map(m => { let [year, month] = m.split('-'); return `${year}-${month.padStart(2,'0')}`; });
                 let chartData = sortedMonths.map(m => monthlyData[m]);
-                
+               
                 let html = `
                     <div class="finance-toolbar"><div class="period-buttons">
                         <button class="period-btn ${this.financePeriod === 'today' ? 'active' : ''}" onclick="app.setFinancePeriod('today')">Vandaag</button>
@@ -731,7 +731,7 @@
                 `;
                 document.getElementById('contentArea').innerHTML = html;
                 document.getElementById('pageTitle').innerHTML = `Financieel Overzicht - ${periodLabel}`;
-                
+               
                 let ctx = document.getElementById('revenueChart')?.getContext('2d');
                 if (ctx) {
                     if (this.revenueChart) this.revenueChart.destroy();
@@ -742,10 +742,10 @@
                     });
                 }
             },
-            
+           
             formatPrice(price) { return '€ ' + (price || 0).toLocaleString(); },
             setFinancePeriod(period) { this.financePeriod = period; this.renderFinance(); },
-            
+           
             renderWiki() {
                 document.getElementById('contentArea').innerHTML = `
                     <div class="wiki-container">
@@ -766,7 +766,7 @@
                 `;
                 document.getElementById('pageTitle').innerHTML = `Wiki Agent`;
             },
-            
+           
             applyFiltersNew() {
                 let orderFilter = document.getElementById("filterOrderNew")?.value.toLowerCase() || "";
                 let nameFilter = document.getElementById("filterNameNew")?.value.toLowerCase() || "";
@@ -788,10 +788,11 @@
                 this.renderHistoryTable(filtered);
             },
             resetFiltersHistory() { let o = document.getElementById("filterOrderHistory"); let n = document.getElementById("filterNameHistory"); if(o) o.value = ""; if(n) n.value = ""; this.renderHistoryTable(this.historyOrders); },
-            
+           
             showBookingFiche(booking) {
                 let driverOptions = '<option value="">-- Selecteer Driver --</option>';
-                let availableDrivers = this.drivers.filter(c => c.subcontractor_id === booking.subcontractor_id);
+                // GEWIJZIGD: subcontractor_id -> partner_id
+                let availableDrivers = this.drivers.filter(c => c.partner_id === booking.partner_id);
                 availableDrivers.forEach(d => { driverOptions += `<option value="${d.id}">${this.escapeHtml(d.name)} (${d.vehicle})</option>`; });
                 let ficheBody = document.getElementById('ficheBody');
                 ficheBody.innerHTML = `
@@ -821,7 +822,7 @@
                 `;
                 document.getElementById('bookingModal').style.display = 'flex';
             },
-            
+           
             async fetchBookingsFromSupabase() {
                 const { data, error } = await supabase
                     .from('bookings')
@@ -850,7 +851,7 @@
                 }
                 this.closeModal();
             },
-            
+           
             assignDriverToBooking(bookingId) {
                 const select = document.getElementById('driverSelect');
                 const driverId = select?.value;
@@ -865,7 +866,7 @@
                 }
                 this.closeModal();
             },
-            
+           
             downloadCSV() {
                 let headers = ["ID","Datum","Tijd","Naam","Pickup","Destination","Bedrag","Betaling","Status"];
                 let rows = this.historyOrders.map(b => [b.id, b.datetime, b.time, b.name, b.pickup, b.destination, b.amount, b.payment, b.status]);
@@ -874,13 +875,13 @@
                 let link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `fleet_history_${new Date().toISOString().slice(0,10)}.csv`; link.click();
                 this.showToast("CSV geëxporteerd!");
             },
-            
+           
             downloadJSON() {
                 let blob = new Blob([JSON.stringify(this.historyOrders, null, 2)], { type: "application/json" });
                 let link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `fleet_history_${new Date().toISOString().slice(0,10)}.json`; link.click();
                 this.showToast("JSON geëxporteerd!");
             },
-            
+           
             refreshCurrentTab() {
                 switch(this.currentTab) {
                     case 'neworders': this.renderNewOrders(); break;
@@ -894,7 +895,7 @@
                     default: this.renderNewOrders();
                 }
             },
-            
+           
             switchTab(tabName) {
                 this.currentTab = tabName;
                 document.querySelectorAll('.nav-item').forEach(item => {
@@ -903,11 +904,11 @@
                 });
                 this.refreshCurrentTab();
             },
-            
+           
             refreshAllData() { this.refreshCurrentTab(); this.showToast('Data ververst'); },
-            
-            logout() { if(confirm('Weet u zeker dat u wilt uitloggen?')) window.location.href = 'admin-index.html'; },
-            
+           
+            async logout() { if(confirm('Weet u zeker dat u wilt uitloggen?')) { await supabase.auth.signOut(); window.location.href = 'admin-index.html'; } },
+           
             async init() {
                 try {
                     const bookings = await this.fetchBookingsFromSupabase();
@@ -925,9 +926,9 @@
                 }
             }
         };
-        
+       
         app.init().catch(console.error);
-        
+       
         window.app = app;
         window.switchTab = app.switchTab.bind(app);
         window.refreshAllData = app.refreshAllData.bind(app);
