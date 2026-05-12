@@ -73,31 +73,51 @@ Support all languages.
 
 const parsed =
   JSON.parse(raw);
-    if (
+   if (
   parsed.pickup &&
   parsed.destination &&
   parsed.date &&
   parsed.time
 ) {
 
+  const bookingId =
+    "AI-" + Date.now();
+
   const { data, error } =
     await supabase
       .from("bookings")
       .insert([
         {
+          id: bookingId,
+
+          datetime: parsed.date,
+          time: parsed.time,
+
           pickup: parsed.pickup,
           destination: parsed.destination,
-          date: parsed.date,
-          time: parsed.time,
-          status: "pending"
+
+          status: "pending",
+
+          name: "AI Customer",
+
+          payment: "pending",
+
+          vehicle: "Standard",
+
+          extras: "None",
+
+          form_data: {
+            source: "ai-chat"
+          }
         }
       ]);
 
   if (error) {
-    console.error(error);
+    console.error("SUPABASE INSERT ERROR:", error);
+  } else {
+    console.log("BOOKING CREATED:", data);
   }
 }
-
 return res.status(200).json(parsed);
 
   } catch (error) {
