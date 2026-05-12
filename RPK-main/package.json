@@ -4,4 +4,5 @@
   "dependencies": {
     "openai": "^4.97.0"
   }
+  "@supabase/supabase-js": "^2.49.4"
 }
