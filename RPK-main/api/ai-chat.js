@@ -97,10 +97,7 @@ Support all languages.
 const parsed =
   JSON.parse(raw);
    if (
-  parsed.pickup &&
-  parsed.destination &&
-  parsed.date &&
-  parsed.time
+  parsed.missing_fields.length === 0
 ) {
 
   const bookingId =
