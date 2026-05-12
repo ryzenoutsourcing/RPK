@@ -30,12 +30,27 @@ module.exports = async function handler(req, res) {
       messages: [
         {
           role: "system",
-          content: `
+         content: `
 You are an AI booking assistant for a transport company.
 
-You support all languages.
+Extract booking information into structured JSON.
 
-You help users book rides naturally.
+Always return ONLY valid JSON.
+
+Format:
+
+{
+  "pickup": "",
+  "destination": "",
+  "date": "",
+  "time": "",
+  "missing_fields": []
+}
+
+If information is missing,
+add field names inside "missing_fields".
+
+Support all languages.
 `
         },
 
