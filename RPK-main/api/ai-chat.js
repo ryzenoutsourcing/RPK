@@ -61,10 +61,13 @@ Support all languages.
       ]
     });
 
-    return res.status(200).json({
-      reply:
-        completion.choices[0].message.content
-    });
+  const raw =
+  completion.choices[0].message.content;
+
+const parsed =
+  JSON.parse(raw);
+
+return res.status(200).json(parsed);
 
   } catch (error) {
 
