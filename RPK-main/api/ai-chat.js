@@ -1,5 +1,4 @@
 const OpenAI = require("openai").default;
-
 const { createClient } =
   require("@supabase/supabase-js");
 
@@ -30,7 +29,7 @@ module.exports = async function handler(req, res) {
 
     if (!message) {
       return res.status(400).json({
-        error: "Message is required"
+        error: "Message required"
       });
     }
 
@@ -38,44 +37,23 @@ module.exports = async function handler(req, res) {
 
       {
         role: "system",
-
         content: `
-You are an AI booking assistant for a taxi company.
-
-Your job is to help customers book rides
-and answer transport-related questions.
+You are an AI taxi booking assistant.
 
 You must:
+- answer taxi questions
+- create bookings
+- track rides
+- help customers
 
-- extract booking information
-- detect missing fields
-- ask conversational follow-up questions
-- support all languages
-- answer operational questions
-like:
-  - where is my driver
-  - ETA
-  - booking status
-  - driver details
-
-Required booking fields:
-
-- name
-- email
-- phone
-- pickup
-- destination
-- date
-- time
-- vehicle
-
-Optional:
-- flight_number
-- extras
+IMPORTANT:
 
 Always return ONLY valid JSON.
 
-FORMAT:
+NEVER use markdown.
+NEVER use \`\`\`json
+
+JSON FORMAT:
 
 {
   "intent": "booking",
@@ -93,7 +71,6 @@ FORMAT:
   "vehicle": "",
 
   "flight_number": "",
-
   "extras": "",
 
   "missing_fields": [],
@@ -103,26 +80,23 @@ FORMAT:
   "reply": ""
 }
 
-RULES:
+Rules:
 
-- If user asks normal support questions,
-set intent accordingly.
+- missing_fields must contain all missing required fields
+- if all required fields exist:
+  missing_fields = []
 
-Possible intents:
-- booking
-- booking_status
-- support
-- cancellation
-- modification
+Required fields:
+- name
+- email
+- phone
+- pickup
+- destination
+- date
+- time
+- vehicle
 
-- If fields are missing:
-  - add them to missing_fields
-  - generate ONE conversational follow_up_question
-
-- If enough information exists:
-  - follow_up_question should be empty
-
-- reply should contain a natural conversational response
+Support ALL languages.
 `
       },
 
@@ -137,34 +111,28 @@ Possible intents:
     const completion =
       await client.chat.completions.create({
 
-        model: "gpt-4.1-mini",
+      model: "gpt-4.1-mini",
 
-        messages
-      });
+      messages
+    });
 
-    const raw =
-      completion.choices[0]
-      .message.content;
+    let raw =
+      completion
+        .choices[0]
+        .message
+        .content;
 
-    let parsed;
+    console.log("RAW AI:", raw);
 
-    try {
+    raw = raw
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
 
-      parsed = JSON.parse(raw);
+    const parsed =
+      JSON.parse(raw);
 
-    } catch (parseError) {
-
-      console.error(
-        "JSON PARSE ERROR:",
-        raw
-      );
-
-      return res.status(500).json({
-        error:
-          "Invalid AI JSON response",
-        raw
-      });
-    }
+    console.log("PARSED:", parsed);
 
     if (
       parsed.intent === "booking" &&
@@ -175,51 +143,57 @@ Possible intents:
       const bookingId =
         "AI-" + Date.now();
 
+      const insertPayload = {
+
+        id: bookingId,
+
+        datetime: parsed.date,
+        time: parsed.time,
+
+        name: parsed.name,
+        email: parsed.email,
+        phone: parsed.phone,
+
+        pickup: parsed.pickup,
+        destination: parsed.destination,
+
+        flight_number:
+          parsed.flight_number || "",
+
+        vehicle:
+          parsed.vehicle || "",
+
+        extras:
+          parsed.extras || "",
+
+        amount: 0,
+
+        payment: "pending",
+
+        status: "pending",
+
+        customer_id:
+          "CUST-" +
+          parsed.email
+            .replace(/[^a-zA-Z0-9]/g, ""),
+
+        form_data: {
+          source: "ai-chat",
+          ai: true
+        },
+
+        partner_id: 1
+      };
+
+      console.log(
+        "INSERT PAYLOAD:",
+        insertPayload
+      );
+
       const { data, error } =
         await supabase
           .from("bookings")
-          .insert([
-            {
-
-              id: bookingId,
-
-              datetime: parsed.date,
-
-              time: parsed.time,
-
-              name: parsed.name,
-
-              email: parsed.email,
-
-              phone: parsed.phone,
-
-              pickup: parsed.pickup,
-
-              destination:
-                parsed.destination,
-
-              flight_number:
-                parsed.flight_number,
-
-              vehicle:
-                parsed.vehicle,
-
-              extras:
-                parsed.extras,
-
-              payment: "pending",
-
-              status: "pending",
-
-              customer_id:
-                "AI-" + parsed.phone,
-
-              form_data: {
-                source: "ai-chat",
-                ai_generated: true
-              }
-            }
-          ]);
+          .insert([insertPayload]);
 
       if (error) {
 
@@ -228,28 +202,28 @@ Possible intents:
           error
         );
 
-      } else {
-
-        console.log(
-          "BOOKING CREATED:",
-          data
-        );
-
-        parsed.booking_created = true;
-
-        parsed.booking_id =
-          bookingId;
+        return res.status(500).json({
+          error: error.message,
+          details: error
+        });
       }
+
+      console.log(
+        "BOOKING CREATED:",
+        data
+      );
+
+      parsed.reply =
+        parsed.reply +
+        "\\n\\nBooking successfully created.";
     }
 
-    return res
-      .status(200)
-      .json(parsed);
+    return res.status(200).json(parsed);
 
   } catch (error) {
 
     console.error(
-      "AI ERROR:",
+      "SERVER ERROR:",
       error
     );
 
