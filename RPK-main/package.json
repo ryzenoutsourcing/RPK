@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "dependencies": {
     "openai": "^4.97.0"
-  }
+  
   "@supabase/supabase-js": "^2.49.4"
+    }
 }
