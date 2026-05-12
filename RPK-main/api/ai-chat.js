@@ -73,6 +73,30 @@ Support all languages.
 
 const parsed =
   JSON.parse(raw);
+    if (
+  parsed.pickup &&
+  parsed.destination &&
+  parsed.date &&
+  parsed.time
+) {
+
+  const { data, error } =
+    await supabase
+      .from("bookings")
+      .insert([
+        {
+          pickup: parsed.pickup,
+          destination: parsed.destination,
+          date: parsed.date,
+          time: parsed.time,
+          status: "pending"
+        }
+      ]);
+
+  if (error) {
+    console.error(error);
+  }
+}
 
 return res.status(200).json(parsed);
 
