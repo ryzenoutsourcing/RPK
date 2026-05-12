@@ -85,6 +85,10 @@ Rules:
 - missing_fields must contain all missing required fields
 - if all required fields exist:
   missing_fields = []
+- "tomorrow" means the real next calendar day
+- "today" means the current real date
+- NEVER invent old years like 2024
+- Always use current year
 
 Required fields:
 - name
@@ -140,8 +144,26 @@ Support ALL languages.
       parsed.missing_fields.length === 0
     ) {
 
-      const bookingId =
-        "AI-" + Date.now();
+    const today = new Date();
+
+const year =
+  today.getFullYear();
+
+const month =
+  String(today.getMonth() + 1)
+    .padStart(2, "0");
+
+const day =
+  String(today.getDate())
+    .padStart(2, "0");
+
+const sequence =
+  String(
+    Math.floor(Math.random() * 999)
+  ).padStart(3, "0");
+
+const bookingId =
+  `T-PV-${year}${month}${day}-${sequence}`;
 
       const insertPayload = {
 
@@ -190,10 +212,28 @@ Support ALL languages.
         insertPayload
       );
 
-      const { data, error } =
-        await supabase
-          .from("bookings")
-          .insert([insertPayload]);
+      const existingBooking =
+  await supabase
+    .from("bookings")
+    .select("id")
+    .eq("email", parsed.email)
+    .eq("datetime", parsed.date)
+    .eq("time", parsed.time)
+    .maybeSingle();
+
+if (existingBooking.data) {
+
+  return res.status(200).json({
+    ...parsed,
+    reply:
+      "A booking already exists for this date and time."
+  });
+}
+     const { data, error } =
+  await supabase
+    .from("bookings")
+    .insert([insertPayload])
+    .select();
 
       if (error) {
 
@@ -213,9 +253,13 @@ Support ALL languages.
         data
       );
 
-      parsed.reply =
-        parsed.reply +
-        "\\n\\nBooking successfully created.";
+     parsed.reply =
+  parsed.reply +
+  `
+
+Booking ID: ${bookingId}
+
+Your taxi booking has been confirmed successfully.`;
     }
 
     return res.status(200).json(parsed);
