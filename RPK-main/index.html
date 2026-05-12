@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Fleetconnect Taxi | Inloggen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c7da0;
+            --primary-dark: #1a5c8c;
+            --text-dark: #1a2a3a;
+            --text-light: #4a627a;
+            --bg-body: #f4f7fc;
+            --white: #ffffff;
+            --border-light: #e2edf7;
+            --shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-body);
+            color: var(--text-dark);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-card {
+            background: var(--white);
+            max-width: 400px;
+            width: 100%;
+            padding: 40px;
+            border-radius: 32px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-light);
+            text-align: center;
+        }
+        .login-card h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+        .login-card p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 32px;
+        }
+        .field {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            color: var(--text-light);
+            letter-spacing: 0.5px;
+        }
+        input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            outline: none;
+        }
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.1);
+        }
+        .btn-login {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 10px;
+        }
+        .btn-login:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        .forgot-password {
+            display: inline-block;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+        .error-msg {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            display: none;
+        }
+        /* Forgot Password Modal */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .modal-content {
+            background: white;
+            padding: 32px;
+            border-radius: 24px;
+            max-width: 360px;
+            width: 90%;
+            text-align: center;
+        }
+        .modal-content h2 {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .btn-secondary {
+            flex: 1;
+            background: #f1f5f9;
+            color: var(--text-dark);
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <i class="fas fa-taxi" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 16px;"></i>
+        <h1>Inloggen</h1>
+        <p>Toegang tot het klantenportaal</p>
+
+        <div id="errorBox" class="error-msg"></div>
+
+        <div class="field">
+            <label>E-mailadres</label>
+            <input type="email" id="emailInput" placeholder="uw@email.be">
+        </div>
+        <div class="field">
+            <label>Wachtwoord</label>
+            <input type="password" id="passInput" placeholder="••••••••">
+        </div>
+
+        <button class="btn-login" id="loginBtn">Inloggen</button>
+
+        <a href="#" class="forgot-password" id="forgotBtn">Wachtwoord vergeten?</a>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal" id="forgotModal">
+        <div class="modal-content">
+            <h2>Wachtwoord vergeten</h2>
+            <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 20px;">Voer uw e-mailadres in om een magische link te ontvangen.</p>
+            <div class="field">
+                <label>E-mailadres</label>
+                <input type="email" id="forgotEmail" placeholder="uw@email.be">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-secondary" id="closeModal">Annuleren</button>
+                <button class="btn-login" id="sendMagicBtn" style="margin-top:0;">Stuur magische link</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        const SUPABASE_URL = 'https://rreqjjrmvytnwnsidmqi.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyZXFqanJtdnl0bnduc2lkbXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjAxMzcsImV4cCI6MjA5Mzk5NjEzN30.q4M3A6Dix3F_9Im2pw8DUIeE4C-INtUlvImRDM58MTA';
+
+        const loginBtn = document.getElementById('loginBtn');
+        const emailInput = document.getElementById('emailInput');
+        const errorBox = document.getElementById('errorBox');
+        const forgotBtn = document.getElementById('forgotBtn');
+        const forgotModal = document.getElementById('forgotModal');
+        const closeModal = document.getElementById('closeModal');
+        const sendMagicBtn = document.getElementById('sendMagicBtn');
+
+        async function handleLogin() {
+            const email = emailInput.value.trim();
+            if (!email) {
+                showError('Voer uw e-mailadres in.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/customers?email=eq.${encodeURIComponent(email)}`, {
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                });
+                const customers = await response.json();
+
+                if (customers.length > 0) {
+                    sessionStorage.setItem('loggedInEmail', email);
+                    window.location.href = 'klantenportaalpv.html';
+                } else {
+                    showError('E-mailadres niet gevonden. Maak eerst een boeking.');
+                }
+            } catch (err) {
+                showError('Er is een fout opgetreden. Probeer het later opnieuw.');
+            }
+        }
+
+        function showError(msg) {
+            errorBox.innerText = msg;
+            errorBox.style.display = 'block';
+        }
+
+        loginBtn.addEventListener('click', handleLogin);
+        emailInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleLogin(); });
+
+        forgotBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            forgotModal.style.display = 'flex';
+        });
+
+        closeModal.addEventListener('click', () => {
+            forgotModal.style.display = 'none';
+        });
+
+        sendMagicBtn.addEventListener('click', () => {
+            const email = document.getElementById('forgotEmail').value.trim();
+            if (email) {
+                alert(`Magische link gestuurd naar ${email}`);
+                forgotModal.style.display = 'none';
+            } else {
+                alert('Voer een geldig e-mailadres in.');
+            }
+        });
+    </script>
+</body>
+</html>

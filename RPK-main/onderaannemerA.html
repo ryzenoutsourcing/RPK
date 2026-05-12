@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Fleet Connect - Onderaannemer Paneel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; height: 100vh; display: flex; }
+        .sidebar { width: 260px; background: #0f172a; color: #e2e8f0; overflow-y: auto; display: flex; flex-direction: column; flex-shrink: 0; }
+        .logo { padding: 24px 20px; font-size: 1.3rem; font-weight: 700; border-bottom: 1px solid #1e293b; cursor: pointer; transition: background-color 0.2s ease; }
+        .logo:hover { background-color: #1e293b; }
+        .logo i { color: #2dd4bf; margin-right: 10px; }
+        .logo small { font-size: 0.7rem; display: block; color: #64748b; margin-top: 4px; }
+        .nav-menu { padding: 20px 16px; flex: 1; }
+        .nav-section { margin-bottom: 20px; }
+        .nav-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; padding: 8px 12px; margin-top: 8px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; font-weight: 500; font-size: 0.9rem; color: #cbd5e1; cursor: pointer; transition: all 0.2s; }
+        .nav-item:hover { background: #1e293b; }
+        .nav-item.active { background: #2dd4bf20; color: #2dd4bf; }
+        .nav-item i { width: 22px; }
+        .nav-item.logout-item { margin-top: 16px; border-top: 1px solid #1e293b; border-radius: 0; padding-top: 16px; color: #f87171; }
+        .nav-item.switch-item { border-top: 1px solid #1e293b; margin-top: 8px; padding-top: 16px; color: #f59e0b; }
+        .nav-item.switch-item:hover { background: #f59e0b20; color: #f59e0b; }
+        .main { flex: 1; display: flex; flex-direction: column; overflow: auto; }
+        .header { background: white; padding: 20px 32px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+        .header h1 { font-size: 1.5rem; font-weight: 600; }
+        .header-right { display: flex; gap: 12px; align-items: center; }
+        .switch-btn { background: #f59e0b; color: #0f172a; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .switch-btn:hover { background: #d97706; }
+        .switch-woningen-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .switch-woningen-btn:hover { background: #059669; }
+        .refresh-btn { background: #2dd4bf; color: #0f172a; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .refresh-btn:hover { background: #14b8a6; }
+        .back-btn { background: #e2e8f0; color: #0f172a; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .back-btn:hover { background: #cbd5e1; }
+        .user-info { font-size: 0.8rem; color: #64748b; }
+        .content { padding: 32px; }
+        
+        .filter-bar { background: white; padding: 8px 16px; border-radius: 48px; margin-bottom: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; border: 1px solid #e2e8f0; }
+        .filter-group { display: flex; align-items: center; gap: 6px; background: #f8fafc; padding: 4px 12px; border-radius: 32px; border: 1px solid #e2e8f0; }
+        .filter-group label { font-size: 0.7rem; font-weight: 600; color: #475569; }
+        .filter-group input { border: none; background: transparent; padding: 6px 0; font-family: 'Inter', sans-serif; font-size: 0.8rem; width: 120px; outline: none; }
+        .filter-actions { display: flex; gap: 6px; margin-left: auto; }
+        .filter-actions button { padding: 6px 14px; border-radius: 32px; border: none; cursor: pointer; font-weight: 500; font-size: 0.75rem; }
+        .btn-filter { background: #0f172a; color: white; }
+        .btn-reset { background: #e2e8f0; color: #1e293b; }
+        
+        .orders-table-wrapper { overflow-x: auto; background: white; border-radius: 16px; padding: 20px; }
+        .orders-table { width: 100%; border-collapse: collapse; }
+        .orders-table th { text-align: left; padding: 12px 8px; border-bottom: 1px solid #e2e8f0; font-size: 0.75rem; font-weight: 600; color: #64748b; }
+        .orders-table td { padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; }
+        
+        .action-btn { background: #2dd4bf; color: #0f172a; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.75rem; }
+        .delete-btn { background: #ef4444; color: white; margin-left: 8px; padding: 4px 10px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.7rem; }
+        .add-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 0.8rem; margin-bottom: 16px; }
+        .order-count { background: #2dd4bf20; padding: 4px 12px; border-radius: 40px; font-size: 0.75rem; font-weight: 600; color: #0f172a; }
+        
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background: white; border-radius: 20px; max-width: 700px; width: 90%; max-height: 85vh; overflow-y: auto; }
+        .fiche-header { background: #0f172a; color: white; padding: 20px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; align-items: center; }
+        .fiche-header h3 { font-size: 1.2rem; }
+        .close-modal { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .fiche-body { padding: 24px; }
+        .fiche-section { margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px; }
+        .fiche-section h4 { color: #2dd4bf; margin-bottom: 12px; font-size: 0.9rem; }
+        .fiche-row { display: flex; padding: 6px 0; font-size: 0.85rem; }
+        .fiche-label { width: 130px; font-weight: 600; color: #475569; }
+        .fiche-value { flex: 1; color: #1e293b; }
+        .fiche-total { background: #f0fdf4; padding: 12px; border-radius: 12px; margin-top: 16px; text-align: center; }
+        .fiche-total .amount { font-size: 1.5rem; font-weight: 700; color: #2dd4bf; }
+        .fiche-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0; }
+        .fiche-btn { padding: 8px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; }
+        .fiche-btn.confirm { background: #10b981; color: white; }
+        .fiche-btn.close { background: #64748b; color: white; }
+        .fiche-btn.assign { background: #f59e0b; color: white; }
+        
+        .people-card { background: white; border-radius: 16px; padding: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .stat-card h4 { font-size: 0.75rem; text-transform: uppercase; color: #64748b; margin-bottom: 8px; }
+        .stat-card .value { font-size: 1.8rem; font-weight: 700; }
+        
+        .calendar-container { background: white; border-radius: 16px; padding: 20px; margin-bottom: 24px; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+        .calendar-header h2 { font-size: 1.3rem; font-weight: 600; }
+        .calendar-nav { display: flex; gap: 12px; }
+        .calendar-nav button { background: #f1f5f9; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; }
+        .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; padding: 12px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 8px; }
+        .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .calendar-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; position: relative; }
+        .calendar-day:hover { background: #e2e8f0; }
+        .calendar-day.selected { background: #2dd4bf; color: #0f172a; font-weight: 600; }
+        .calendar-day.other-month { color: #94a3b8; }
+        .calendar-day.today { border: 2px solid #2dd4bf; }
+        .calendar-day.has-rides { background: #dbeafe; }
+        .ride-dot { width: 6px; height: 6px; background: #2dd4bf; border-radius: 50%; margin-top: 2px; }
+        
+        .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        @media (max-width: 1000px) { .dashboard-grid { grid-template-columns: repeat(2, 1fr); } }
+        
+        .info-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor: pointer; }
+        .mini-flip-container { perspective: 600px; height: 140px; }
+        .mini-flip-card { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.4s; transform-style: preserve-3d; }
+        .mini-flip-card.flipped { transform: rotateY(180deg); }
+        .mini-flip-front, .mini-flip-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 16px; }
+        .mini-flip-front { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; transform: rotateY(0deg); }
+        .mini-flip-back { background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%); color: #0f172a; transform: rotateY(180deg); }
+        .mini-flip-front .value, .mini-flip-back .value { font-size: 1.8rem; font-weight: 700; margin: 8px 0; }
+        
+        .planning-container { margin-top: 20px; background: white; border-radius: 16px; padding: 20px; }
+        .planning-list { max-height: 400px; overflow-y: auto; }
+        .planning-item { background: #f1f5f9; border-radius: 12px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #2dd4bf; }
+        .planning-time { font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+        .planning-ride { font-size: 0.85rem; color: #475569; }
+        .empty-planning { text-align: center; padding: 40px; color: #94a3b8; }
+        
+        .finance-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
+        .period-buttons { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .period-btn { padding: 8px 20px; border-radius: 40px; border: none; cursor: pointer; font-weight: 500; background: #e2e8f0; transition: all 0.2s; }
+        .period-btn.active { background: #2dd4bf; color: #0f172a; }
+        .chart-container { background: white; border-radius: 16px; padding: 20px; margin-top: 24px; }
+        canvas { max-height: 300px; width: 100% !important; }
+        
+        .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
+        @media (max-width: 1000px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+        .kpi-card { background: white; border-radius: 16px; padding: 20px; text-align: center; }
+        .kpi-card .value { font-size: 1.8rem; font-weight: 700; }
+        .kpi-card .label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; margin-top: 8px; }
+        
+        .wiki-container { background: white; border-radius: 16px; padding: 24px; }
+        .wiki-content { text-align: left; max-width: 1000px; margin: 0 auto; line-height: 1.6; }
+        .wiki-content h2 { color: #0f172a; border-bottom: 2px solid #2dd4bf; padding-bottom: 10px; margin-bottom: 20px; }
+        .wiki-content h3 { color: #2dd4bf; margin-top: 20px; margin-bottom: 10px; }
+        .wiki-content ul, .wiki-content ol { margin-left: 20px; margin-bottom: 15px; }
+        
+        .partner-card { border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 16px; background: #f8fafc; }
+        .partner-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
+        .partner-name { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+        .driver-list { margin-top: 12px; padding-left: 16px; border-left: 2px solid #2dd4bf; }
+        .driver-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+        .add-driver-form { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .add-driver-form input { padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.8rem; flex: 1; min-width: 120px; }
+        select { padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; font-family: 'Inter', sans-serif; }
+        
+        .alert-no-data { background: #fef3c7; color: #92400e; padding: 20px; border-radius: 16px; text-align: center; margin: 20px; }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #10b981; color: white; padding: 12px 24px; border-radius: 40px; z-index: 2000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        .toast.show { opacity: 1; }
+        .hidden { display: none; }
+        .template-tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .template-T1 { background: #dbeafe; color: #1e40af; }
+        .template-T2 { background: #fef3c7; color: #92400e; }
+        .template-T3 { background: #e0e7ff; color: #3730a3; }
+        .template-T4 { background: #d1fae5; color: #065f46; }
+        .template-T5 { background: #e0f2fe; color: #0369a1; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo" onclick="window.location.href='admin-index.html'" style="cursor: pointer;">
+            <i class="fas fa-taxi"></i> Fleet Connect
+            <br><small>Onderaannemer Paneel</small>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-section"><div class="nav-section-title">📋 BOEKINGEN</div>
+                <div class="nav-item active" data-tab="neworders" onclick="app.switchTab('neworders')"><i class="fas fa-clipboard-list"></i> New Orders</div>
+                <div class="nav-item" data-tab="orders" onclick="app.switchTab('orders')"><i class="fas fa-box"></i> Orders</div>
+                <div class="nav-item" data-tab="history" onclick="app.switchTab('history')"><i class="fas fa-history"></i> History</div>
+                <div class="nav-item" data-tab="agenda" onclick="app.switchTab('agenda')"><i class="fas fa-calendar-alt"></i> Agenda</div>
+            </div>
+            <div class="nav-section"><div class="nav-section-title">👥 BEHEER</div>
+                <div class="nav-item" data-tab="drivers" onclick="app.switchTab('drivers')"><i class="fas fa-id-card"></i> Drivers</div>
+                <div class="nav-item" data-tab="partners" onclick="app.switchTab('partners')"><i class="fas fa-handshake"></i> Mijn Partners</div>
+            </div>
+            <div class="nav-section"><div class="nav-section-title">💰 FINANCIËN</div>
+                <div class="nav-item" data-tab="financieel" onclick="app.switchTab('financieel')"><i class="fas fa-chart-line"></i> Financieel</div>
+            </div>
+            <div class="nav-section"><div class="nav-section-title">ℹ️ INFORMATIE</div>
+                <div class="nav-item" data-tab="wiki" onclick="app.switchTab('wiki')"><i class="fas fa-robot"></i> Wiki Agent</div>
+            </div>
+            <div class="nav-item switch-item" onclick="app.switchToWoningen()"><i class="fas fa-home"></i> Switch naar Woningen</div>
+            <div class="nav-item switch-item" onclick="app.switchToAutoDealer()"><i class="fas fa-exchange-alt"></i> Switch naar Auto Dealer</div>
+            <div class="nav-item logout-item" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Uitloggen</div>
+        </div>
+    </div>
+    <div class="main">
+        <div id="errorMsg" class="hidden" style="background:#fee2e2; color:#b91c1c; padding:12px; text-align:center; font-weight:600;"></div>
+        <div class="header">
+            <h1 id="pageTitle">New Orders</h1>
+            <div class="header-right">
+                <button class="back-btn" onclick="window.location.href='admin-index.html'"><i class="fas fa-home"></i> Terug naar overzicht</button>
+                <button class="switch-woningen-btn" onclick="app.switchToWoningen()"><i class="fas fa-home"></i> Woningen Paneel</button>
+                <button class="switch-btn" onclick="app.switchToAutoDealer()"><i class="fas fa-exchange-alt"></i> Switch naar Auto Dealer</button>
+                <button class="refresh-btn" onclick="app.refreshAllData()"><i class="fas fa-sync-alt"></i> Vernieuwen</button>
+                <span class="user-info" id="userEmail"><i class="fas fa-user-circle"></i> Klaar voor Supabase</span>
+            </div>
+        </div>
+        <div class="content" id="contentArea"></div>
+    </div>
+
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <div class="fiche-header"><h3><i class="fas fa-file-invoice"></i> Rit Fiche</h3><button class="close-modal" onclick="app.closeModal()">&times;</button></div>
+            <div class="fiche-body" id="ficheBody"></div>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast"></div>
+
+    <script type="module">
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+        const SUPABASE_URL = 'https://rreqjjrmvytnwnsidmqi.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyZXFqanJtdnl0bnduc2lkbXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjAxMzcsImV4cCI6MjA5Mzk5NjEzN30.q4M3A6Dix3F_9Im2pw8DUIeE4C-INtUlvImRDM58MTA';
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const app = {
+            allBookings: [],
+            newOrders: [],
+            ordersList: [],
+            historyOrders: [],
+            partners: [],
+            drivers: [],
+            currentTab: 'neworders',
+            selectedDate: new Date(),
+            currentMonth: new Date(),
+            financePeriod: 'month',
+            revenueChart: null,
+            flipStates: { omzet: false, cash: false, orders: false },
+            subcontractorId: 1001,
+            
+            showToast(msg, isError) {
+                const toast = document.getElementById('toast');
+                toast.textContent = msg;
+                toast.style.backgroundColor = isError ? '#ef4444' : '#10b981';
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            },
+            
+            async loadPartners() {
+                const { data, error } = await supabase
+                    .from('partners')
+                    .select('*')
+                    .order('is_hoofd', { ascending: false });
+                if (error) {
+                    this.showToast('Fout bij laden partners: ' + error.message, true);
+                    return;
+                }
+                this.partners = data;
+            },
+            
+            async loadDrivers() {
+                const { data, error } = await supabase
+                    .from('drivers')
+                    .select('*');
+                if (error) {
+                    this.showToast('Fout bij laden drivers: ' + error.message, true);
+                    return;
+                }
+                this.drivers = data;
+            },
+            
+            switchToWoningen() { window.location.href = 'commander.html'; },
+            switchToAutoDealer() { window.location.href = 'autodealerpaneel.html'; },
+            
+            formatDate(date) {
+                let d = new Date(date);
+                return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()}`;
+            },
+            
+            parseDate(dateStr, timeStr) {
+                let parts = dateStr.split('-');
+                let timeParts = timeStr ? timeStr.split(':') : ['00','00'];
+                return new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]), parseInt(timeParts[0]), parseInt(timeParts[1]));
+            },
+            
+            isFuture(dateStr, timeStr) { return this.parseDate(dateStr, timeStr) > new Date(); },
+            
+            escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); },
+            closeModal() { document.getElementById('bookingModal').style.display = 'none'; },
+            
+            filterAndSortData() {
+                const now = new Date();
+                this.newOrders = this.allBookings.filter(b => b.status === 'pending');
+                this.ordersList = this.allBookings.filter(b =>
+                    b.status === 'pending' && this.isFuture(b.datetime, b.time)
+                );
+                this.historyOrders = this.allBookings.filter(b =>
+                    b.status === 'completed' || b.status === 'cancelled' ||
+                    (b.status === 'pending' && !this.isFuture(b.datetime, b.time))
+                );
+                this.ordersList.sort((a,b) => this.parseDate(a.datetime, a.time) - this.parseDate(b.datetime, b.time));
+                this.historyOrders.sort((a,b) => this.parseDate(b.datetime, b.time) - this.parseDate(a.datetime, a.time));
+                this.newOrders.sort((a,b) => this.parseDate(a.datetime, a.time) - this.parseDate(b.datetime, b.time));
+            },
+            
+            getRidesByDate(dateStr) { return this.allBookings.filter(b => b.datetime === dateStr); },
+            
+            getTodayStats() {
+                let todayStr = this.formatDate(new Date());
+                let todayRides = this.getRidesByDate(todayStr);
+                let todayCompleted = todayRides.filter(r => r.status === 'completed');
+                let todayTotal = todayRides.reduce((sum, r) => sum + (r.amount || 0), 0);
+                let todayCash = todayRides.filter(r => r.payment === 'Cash').reduce((sum, r) => sum + (r.amount || 0), 0);
+                let commission = todayTotal * 0.10;
+                let nowTime = `${new Date().getHours().toString().padStart(2,'0')}:${new Date().getMinutes().toString().padStart(2,'0')}`;
+                let futureRidesToday = todayRides.filter(r => r.status !== 'completed' && r.status !== 'cancelled' && r.time > nowTime);
+                return { total: todayTotal, cash: todayCash, commission: commission, completed: todayCompleted.length, canceled: todayRides.filter(r => r.status === 'cancelled').length, futureRides: futureRidesToday.length };
+            },
+            
+            toggleFlipCard(cardName) { this.flipStates[cardName] = !this.flipStates[cardName]; if(this.currentTab === 'agenda') this.renderAgenda(); },
+            
+            renderDashboardGrid() {
+                let stats = this.getTodayStats();
+                return `
+                    <div class="dashboard-grid">
+                        <div class="info-card" onclick="app.toggleFlipCard('omzet')">
+                            <div class="mini-flip-container"><div class="mini-flip-card ${this.flipStates.omzet ? 'flipped' : ''}">
+                                <div class="mini-flip-front"><i class="fas fa-euro-sign" style="font-size:1.5rem;"></i><div class="value">€ ${stats.total.toFixed(2)}</div><div class="label">Dagelijkse Omzet</div></div>
+                                <div class="mini-flip-back"><i class="fas fa-percent" style="font-size:1.5rem;"></i><div class="value">€ ${stats.commission.toFixed(2)}</div><div class="label">10% Commissie</div></div>
+                            </div></div>
+                        </div>
+                        <div class="info-card">
+                            <div class="mini-flip-container"><div class="mini-flip-card">
+                                <div class="mini-flip-front"><i class="fas fa-money-bill-wave" style="font-size:1.5rem;"></i><div class="value">€ ${stats.cash.toFixed(2)}</div><div class="label">Cash Betalingen</div></div>
+                            </div></div>
+                        </div>
+                        <div class="info-card" onclick="app.toggleFlipCard('orders')">
+                            <div class="mini-flip-container"><div class="mini-flip-card ${this.flipStates.orders ? 'flipped' : ''}">
+                                <div class="mini-flip-front"><i class="fas fa-check-circle" style="font-size:1.5rem;"></i><div class="value">${stats.completed}</div><div class="label">Uitgevoerde Orders</div></div>
+                                <div class="mini-flip-back"><i class="fas fa-ban" style="font-size:1.5rem;"></i><div class="value">${stats.canceled}</div><div class="label">Geannuleerde Ritten</div></div>
+                            </div></div>
+                        </div>
+                        <div class="info-card"><div class="mini-flip-container"><div class="mini-flip-card"><div class="mini-flip-front"><i class="fas fa-clock" style="font-size:1.5rem;"></i><div class="value">${stats.futureRides}</div><div class="label">Toekomstige ritten</div></div></div></div></div>
+                    </div>
+                `;
+            },
+            
+            renderCalendar() {
+                let year = this.currentMonth.getFullYear();
+                let month = this.currentMonth.getMonth();
+                let firstDay = new Date(year, month, 1);
+                let startDay = firstDay.getDay();
+                let daysInMonth = new Date(year, month + 1, 0).getDate();
+                let prevMonthDays = new Date(year, month, 0).getDate();
+                let adjustedStart = startDay === 0 ? 6 : startDay - 1;
+                let html = `<div class="calendar-container"><div class="calendar-header"><h2>${firstDay.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })}</h2><div class="calendar-nav"><button onclick="app.changeMonth(-1)"><i class="fas fa-chevron-left"></i></button><button onclick="app.goToToday()">Vandaag</button><button onclick="app.changeMonth(1)"><i class="fas fa-chevron-right"></i></button></div></div><div class="calendar-weekdays"><div>Ma</div><div>Di</div><div>Wo</div><div>Do</div><div>Vr</div><div>Za</div><div>Zo</div></div><div class="calendar-days">`;
+                for (let i = adjustedStart - 1; i >= 0; i--) html += `<div class="calendar-day other-month" onclick="app.selectDate(${prevMonthDays - i}, ${month-1}, ${year})">${prevMonthDays - i}</div>`;
+                for (let day = 1; day <= daysInMonth; day++) {
+                    let dateStr = `${day.toString().padStart(2,'0')}-${(month+1).toString().padStart(2,'0')}-${year}`;
+                    let hasRides = this.getRidesByDate(dateStr).length > 0;
+                    let isToday = (day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear());
+                    let isSelected = (this.selectedDate && day === this.selectedDate.getDate() && month === this.selectedDate.getMonth() && year === this.selectedDate.getFullYear());
+                    let classes = 'calendar-day';
+                    if (isToday) classes += ' today';
+                    if (isSelected) classes += ' selected';
+                    if (hasRides) classes += ' has-rides';
+                    html += `<div class="${classes}" onclick="app.selectDate(${day}, ${month+1}, ${year})">${day}${hasRides ? '<div class="ride-dot"></div>' : ''}</div>`;
+                }
+                let remaining = 42 - (adjustedStart + daysInMonth);
+                for (let day = 1; day <= remaining; day++) html += `<div class="calendar-day other-month" onclick="app.selectDate(${day}, ${month+2}, ${year})">${day}</div>`;
+                html += `</div></div>`;
+                return html;
+            },
+            
+            renderPlanning() {
+                let dateStr = `${this.selectedDate.getDate().toString().padStart(2,'0')}-${(this.selectedDate.getMonth()+1).toString().padStart(2,'0')}-${this.selectedDate.getFullYear()}`;
+                let rides = this.getRidesByDate(dateStr).sort((a,b) => a.time.localeCompare(b.time));
+                let formattedDate = this.selectedDate.toLocaleDateString('nl-NL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                let ridesHtml = rides.length === 0 ? '<div class="empty-planning">Geen ritten op deze dag</div>' : rides.map(r => {
+                    const driver = this.drivers.find(d => d.id === r.assigned_driver_id);
+                    const driverText = driver ? `${driver.name} (${driver.vehicle})` : (r.assigned_driver ? `${r.assigned_driver.name} (${r.assigned_driver.voertuig})` : null);
+                    return `
+                    <div class="planning-item">
+                        <div class="planning-time"><i class="fas fa-clock"></i> ${r.time} uur ${r.status === 'completed' ? '✓ Uitgevoerd' : (r.status === 'cancelled' ? '✗ Geannuleerd' : '')}</div>
+                        <div class="planning-ride"><strong>${this.escapeHtml(r.name)}</strong> - ${this.escapeHtml(r.pickup)} → ${this.escapeHtml(r.destination)}</div>
+                        <div class="planning-ride"><i class="fas fa-car"></i> ${r.vehicle}</div>
+                        ${driverText ? `<div class="planning-ride"><i class="fas fa-user-check"></i> Driver: ${driverText}</div>` : '<div class="planning-ride"><i class="fas fa-user-clock"></i> Nog geen driver</div>'}
+                    </div>
+                `;}).join('');
+                return `<div class="planning-container"><h3><i class="fas fa-calendar-day"></i> ${formattedDate}</h3><div class="planning-list">${ridesHtml}</div></div>`;
+            },
+            
+            selectDate(day, month, year) { this.selectedDate = new Date(year, month-1, day); this.currentMonth = new Date(year, month-1, 1); if(this.currentTab === 'agenda') this.renderAgenda(); },
+            changeMonth(delta) { this.currentMonth.setMonth(this.currentMonth.getMonth() + delta); if(this.currentTab === 'agenda') this.renderAgenda(); },
+            goToToday() { this.currentMonth = new Date(); this.selectedDate = new Date(); if(this.currentTab === 'agenda') this.renderAgenda(); },
+            
+            renderEmptyTable() { return `<div class="alert-no-data"><i class="fas fa-database"></i> Geen ritten gevonden</div>`; },
+            
+            renderNewOrders() {
+                let html = `<div class="filter-bar"><div class="filter-group"><label>Order ID</label><input type="text" id="filterOrderNew" placeholder="Zoek op ID"></div><div class="filter-group"><label>Naam</label><input type="text" id="filterNameNew" placeholder="Klant"></div><div class="filter-actions"><button class="btn-filter" onclick="app.applyFiltersNew()">Zoek</button><button class="btn-reset" onclick="app.resetFiltersNew()">Reset</button></div></div><div class="orders-table-wrapper"><table class="orders-table"><thead><tr><th>Order ID</th><th>Datum & Tijd</th><th>Klant</th><th>Route</th><th>Voertuig</th><th>Bedrag</th><th>Actie</th></tr></thead><tbody id="newOrdersTable"></tbody></table></div>`;
+                document.getElementById('contentArea').innerHTML = html;
+                this.renderNewOrdersTable(this.newOrders);
+                document.getElementById('pageTitle').innerHTML = `New Orders <span class="order-count">${this.newOrders.length}</span>`;
+            },
+            
+            renderNewOrdersTable(orders) {
+                let tbody = document.getElementById('newOrdersTable');
+                if (!tbody) return;
+                if (orders.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="empty-planning">${this.renderEmptyTable()}</td></tr>`;
+                } else {
+                    tbody.innerHTML = orders.map(o => `
+                        <tr>
+                            <td><strong>${o.id}</strong></td>
+                            <td>${o.datetime} ${o.time}</td>
+                            <td>${this.escapeHtml(o.name)}</td>
+                            <td>${this.escapeHtml(o.pickup)} → ${this.escapeHtml(o.destination)}</td>
+                            <td>${o.vehicle}</td>
+                            <td>€${(o.amount || 0).toFixed(2)}</td>
+                            <td><button class="action-btn" onclick='app.showBookingFiche(${JSON.stringify(o).replace(/'/g, "&#39;")})'>Bekijk Fiche</button></td>
+                        </tr>
+                    `).join('');
+                }
+            },
+            
+            renderOrders() {
+                let html = `<div class="filter-bar"><div class="filter-group"><label>Order ID</label><input type="text" id="filterOrderOrders" placeholder="Zoek op ID"></div><div class="filter-group"><label>Naam</label><input type="text" id="filterNameOrders" placeholder="Klant"></div><div class="filter-actions"><button class="btn-filter" onclick="app.applyFiltersOrders()">Zoek</button><button class="btn-reset" onclick="app.resetFiltersOrders()">Reset</button></div></div><div class="orders-table-wrapper"><table class="orders-table"><thead><tr><th>Order ID</th><th>Datum & Tijd</th><th>Klant</th><th>Route</th><th>Voertuig</th><th>Bedrag</th><th>Driver</th><th>Actie</th></tr></thead><tbody id="ordersTable"></tbody></table></div>`;
+                document.getElementById('contentArea').innerHTML = html;
+                this.renderOrdersTable(this.ordersList);
+                document.getElementById('pageTitle').innerHTML = `Orders <span class="order-count">${this.ordersList.length}</span>`;
+            },
+            
+            renderOrdersTable(orders) {
+                let tbody = document.getElementById('ordersTable');
+                if (!tbody) return;
+                if (orders.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="empty-planning">${this.renderEmptyTable()}</td></tr>`;
+                } else {
+                    tbody.innerHTML = orders.map(o => {
+                        const driver = this.drivers.find(d => d.id === o.assigned_driver_id);
+                        const driverText = driver ? driver.name : (o.assigned_driver ? o.assigned_driver.name : '<span style="color:#f59e0b;">Niet toegewezen</span>');
+                        return `
+                        <tr>
+                            <td><strong>${o.id}</strong></td>
+                            <td>${o.datetime} ${o.time}</td>
+                            <td>${this.escapeHtml(o.name)}</td>
+                            <td>${this.escapeHtml(o.pickup)} → ${this.escapeHtml(o.destination)}</td>
+                            <td>${o.vehicle}</td>
+                            <td>€${(o.amount || 0).toFixed(2)}</td>
+                            <td>${driverText}</td>
+                            <td><button class="action-btn" onclick='app.showBookingFiche(${JSON.stringify(o).replace(/'/g, "&#39;")})'>Bekijk Fiche</button></td>
+                        </tr>
+                    `;}).join('');
+                }
+            },
+            
+            renderHistory() {
+                let html = `<div class="filter-bar"><div class="filter-group"><label>Order ID</label><input type="text" id="filterOrderHistory" placeholder="Zoek op ID"></div><div class="filter-group"><label>Naam</label><input type="text" id="filterNameHistory" placeholder="Klant"></div><div class="filter-actions"><button class="btn-filter" onclick="app.applyFiltersHistory()">Zoek</button><button class="btn-reset" onclick="app.resetFiltersHistory()">Reset</button></div></div><div class="orders-table-wrapper"><table class="orders-table"><thead><tr><th>Order ID</th><th>Datum & Tijd</th><th>Klant</th><th>Route</th><th>Voertuig</th><th>Bedrag</th><th>Driver</th><th>Status</th></tr></thead><tbody id="historyTable"></tbody></table></div>`;
+                document.getElementById('contentArea').innerHTML = html;
+                this.renderHistoryTable(this.historyOrders);
+                document.getElementById('pageTitle').innerHTML = `History <span class="order-count">${this.historyOrders.length}</span>`;
+            },
+            
+            renderHistoryTable(orders) {
+                let tbody = document.getElementById('historyTable');
+                if (!tbody) return;
+                if (orders.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="empty-planning">${this.renderEmptyTable()}</td></tr>`;
+                } else {
+                    tbody.innerHTML = orders.map(o => {
+                        let statusText = o.status === 'completed' ? '✅ Uitgevoerd' : (o.status === 'cancelled' ? '❌ Geannuleerd' : '📋 Gepasseerd');
+                        const driver = this.drivers.find(d => d.id === o.assigned_driver_id);
+                        const driverText = driver ? driver.name : (o.assigned_driver ? o.assigned_driver.name : 'Niet toegewezen');
+                        return `<tr>
+                            <td><strong>${o.id}</strong></td>
+                            <td>${o.datetime} ${o.time}</td>
+                            <td>${this.escapeHtml(o.name)}</td>
+                            <td>${this.escapeHtml(o.pickup)} → ${this.escapeHtml(o.destination)}</td>
+                            <td>${o.vehicle}</td>
+                            <td>€${(o.amount || 0).toFixed(2)}</td>
+                            <td>${driverText}</td>
+                            <td>${statusText}</td>
+                        </tr>`;
+                    }).join('');
+                }
+            },
+            
+            renderAgenda() {
+                document.getElementById('contentArea').innerHTML = `${this.renderDashboardGrid()}${this.renderCalendar()}${this.renderPlanning()}`;
+                document.getElementById('pageTitle').innerHTML = `Agenda`;
+            },
+            
+            renderDrivers() {
+                let myDrivers = this.drivers.filter(c => {
+                    let partner = this.partners.find(p => p.id === c.partner_id);
+                    return partner && partner.is_hoofd === true;
+                });
+                let html = `<div class="people-card"><h3><i class="fas fa-id-card"></i> Drivers</h3><button class="add-btn" onclick="app.showAddDriverForm()">➕ Nieuwe Driver</button><div style="margin-top:20px;">`;
+                if (myDrivers.length === 0) html += `<div class="empty-planning">Geen drivers gevonden</div>`;
+                else myDrivers.forEach(c => {
+                    html += `<div style="border:1px solid #e2e8f0; border-radius:12px; padding:12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                        <div><strong>${c.driver_code}</strong> – ${this.escapeHtml(c.name)}<br><small>🚗 ${c.vehicle} | ${c.license_plate}</small></div>
+                        <button class="delete-btn" onclick="app.deleteDriver(${c.id})">Verwijder</button>
+                    </div>`;
+                });
+                html += `</div></div>`;
+                document.getElementById('contentArea').innerHTML = html;
+                document.getElementById('pageTitle').innerHTML = `Drivers`;
+            },
+            
+            renderPartners() {
+                let html = `<div class="people-card"><h3><i class="fas fa-handshake"></i> Mijn Partners</h3><button class="add-btn" onclick="app.showAddPartnerForm()">➕ Nieuwe Partner</button><div style="margin-top:20px;">`;
+                if (this.partners.length === 0) html += `<div class="empty-planning">Geen partners gevonden</div>`;
+                else this.partners.forEach(p => {
+                    let partnerDrivers = this.drivers.filter(c => c.partner_id === p.id);
+                    html += `<div class="partner-card">
+                        <div class="partner-header"><div class="partner-name">${this.escapeHtml(p.name)}</div><button class="delete-btn" onclick="app.deletePartner(${p.id})">Verwijder Partner</button></div>
+                        <div><small>Contact: ${this.escapeHtml(p.contact)} | ${p.email} | ${p.phone}</small></div>
+                        <div class="driver-list"><strong>Drivers:</strong>
+                            ${partnerDrivers.length === 0 ? '<div><small>Geen drivers</small></div>' : partnerDrivers.map(c => `
+                                <div class="driver-item"><span>${c.driver_code} – ${this.escapeHtml(c.name)} (${c.vehicle})</span><button class="delete-btn" style="padding:2px 8px;" onclick="app.deleteDriver(${c.id})">✖</button></div>
+                            `).join('')}
+                            <div class="add-driver-form"><input type="text" id="driverName_${p.id}" placeholder="Naam"><input type="text" id="driverVoertuig_${p.id}" placeholder="Voertuig"><input type="text" id="driverPlaat_${p.id}" placeholder="Nummerplaat"><button class="action-btn" onclick="app.addDriverForPartner(${p.id})">+ Driver</button></div>
+                        </div>
+                    </div>`;
+                });
+                html += `</div></div>`;
+                document.getElementById('contentArea').innerHTML = html;
+                document.getElementById('pageTitle').innerHTML = `Mijn Partners`;
+            },
+            
+            async addDriverForPartner(partnerId) {
+                let name = document.getElementById(`driverName_${partnerId}`)?.value;
+                let vehicle = document.getElementById(`driverVoertuig_${partnerId}`)?.value;
+                let plate = document.getElementById(`driverPlaat_${partnerId}`)?.value;
+                if (!name) { this.showToast('Vul een naam in', true); return; }
+
+                const partner = this.partners.find(p => p.id == partnerId);
+                if (!partner) { this.showToast('Partner niet gevonden', true); return; }
+
+                const { count, error: countError } = await supabase
+                    .from('drivers')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('partner_id', partnerId);
+                if (countError) {
+                    this.showToast('Fout bij tellen drivers', true);
+                    return;
+                }
+                const nextNumber = (count || 0) + 1;
+                const driverCode = `${partner.prefix}-${String(nextNumber).padStart(2, '0')}`;
+
+                const { error } = await supabase
+                    .from('drivers')
+                    .insert({
+                        partner_id: partnerId,
+                        driver_code: driverCode,
+                        name: name,
+                        vehicle: vehicle || 'Standaard',
+                        license_plate: plate || 'Onbekend'
+                    });
+
+                if (error) {
+                    this.showToast('Fout bij toevoegen driver: ' + error.message, true);
+                    return;
+                }
+
+                this.showToast(`Driver ${name} toegevoegd (code: ${driverCode})`);
+                await this.loadDrivers();
+                this.renderPartners();
+
+                document.getElementById(`driverName_${partnerId}`).value = '';
+                document.getElementById(`driverVoertuig_${partnerId}`).value = '';
+                document.getElementById(`driverPlaat_${partnerId}`).value = '';
+            },
+            
+            async showAddDriverForm() {
+                const hoofdPartner = this.partners.find(p => p.is_hoofd === true);
+                if (!hoofdPartner) {
+                    this.showToast('Geen hoofdpartner gevonden', true);
+                    return;
+                }
+                const partnerId = hoofdPartner.id;
+
+                let name = prompt('Naam driver:');
+                if (!name) return;
+                let vehicle = prompt('Type voertuig:') || 'Standaard';
+                let plate = prompt('Nummerplaat:') || 'Onbekend';
+
+                const { count, error: countError } = await supabase
+                    .from('drivers')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('partner_id', partnerId);
+                if (countError) {
+                    this.showToast('Fout bij tellen drivers', true);
+                    return;
+                }
+                const nextNumber = (count || 0) + 1;
+                const driverCode = `${hoofdPartner.prefix}-${String(nextNumber).padStart(2, '0')}`;
+
+                const { error } = await supabase
+                    .from('drivers')
+                    .insert({
+                        partner_id: partnerId,
+                        driver_code: driverCode,
+                        name: name,
+                        vehicle: vehicle,
+                        license_plate: plate
+                    });
+
+                if (error) {
+                    this.showToast('Fout bij toevoegen driver: ' + error.message, true);
+                } else {
+                    this.showToast(`Driver ${name} toegevoegd (code: ${driverCode})`);
+                    await this.loadDrivers();
+                    if (this.currentTab === 'drivers') this.renderDrivers();
+                    if (this.currentTab === 'partners') this.renderPartners();
+                }
+            },
+            
+            async showAddPartnerForm() {
+                let name = prompt('Bedrijfsnaam partner:');
+                if (!name) return;
+                let contact = prompt('Contactpersoon:') || '';
+                let email = prompt('Email:') || '';
+                let phone = prompt('Telefoon:') || '';
+                let prefix = prompt('Prefix voor driver ID (2 letters):') || name.slice(0,2).toUpperCase();
+                prefix = prefix.slice(0,2).toUpperCase();
+
+                const hoofdPartner = this.partners.find(p => p.is_hoofd === true);
+                if (!hoofdPartner) {
+                    this.showToast('Geen hoofdpartner gevonden. Voeg eerst een hoofdpartner toe via SQL.', true);
+                    return;
+                }
+
+                const { error } = await supabase
+                    .from('partners')
+                    .insert({
+                        name: name,
+                        is_hoofd: false,
+                        parent_partner_id: hoofdPartner.id,
+                        prefix: prefix,
+                        contact: contact,
+                        email: email,
+                        phone: phone
+                    });
+
+                if (error) {
+                    this.showToast('Fout bij toevoegen partner: ' + error.message, true);
+                } else {
+                    this.showToast(`Partner ${name} toegevoegd`);
+                    await this.loadPartners();
+                    this.renderPartners();
+                }
+            },
+            
+            async deleteDriver(driverId) {
+                if (!confirm('Weet u zeker dat u deze driver wilt verwijderen?')) return;
+                const { error } = await supabase
+                    .from('drivers')
+                    .delete()
+                    .eq('id', driverId);
+                if (error) {
+                    this.showToast('Fout bij verwijderen driver: ' + error.message, true);
+                } else {
+                    this.showToast('Driver verwijderd');
+                    await this.loadDrivers();
+                    if (this.currentTab === 'drivers' || this.currentTab === 'partners') this.refreshCurrentTab();
+                }
+            },
+            
+            async deletePartner(partnerId) {
+                if (!confirm('Weet u zeker dat u deze partner wilt verwijderen? Alle drivers van deze partner worden ook verwijderd.')) return;
+                const { error } = await supabase
+                    .from('partners')
+                    .delete()
+                    .eq('id', partnerId);
+                if (error) {
+                    this.showToast('Fout bij verwijderen partner: ' + error.message, true);
+                } else {
+                    this.showToast('Partner verwijderd');
+                    await this.loadPartners();
+                    await this.loadDrivers();
+                    if (this.currentTab === 'partners') this.refreshCurrentTab();
+                }
+            },
+            
+            filterBookingsByPeriod(period, bookings) {
+                let now = new Date();
+                let startDate, endDate;
+                switch(period) {
+                    case 'today': startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()); endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1); break;
+                    case 'month': startDate = new Date(now.getFullYear(), now.getMonth(), 1); endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0); break;
+                    case 'year': startDate = new Date(now.getFullYear(), 0, 1); endDate = new Date(now.getFullYear(), 11, 31); break;
+                    default: return bookings;
+                }
+                return bookings.filter(b => { let rideDate = this.parseDate(b.datetime, '00:00'); return rideDate >= startDate && rideDate <= endDate; });
+            },
+            
+            renderFinance() {
+                let filteredBookings = this.filterBookingsByPeriod(this.financePeriod, this.allBookings);
+                let totalRevenue = filteredBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
+                let cashRevenue = filteredBookings.filter(b => b.payment === 'Cash').reduce((sum, b) => sum + (b.amount || 0), 0);
+                let factuurRevenue = filteredBookings.filter(b => b.payment === 'Factuur').reduce((sum, b) => sum + (b.amount || 0), 0);
+                let commission = totalRevenue * 0.10;
+                let periodLabel = { today: 'Vandaag', month: 'Deze Maand', year: 'Dit Jaar' }[this.financePeriod];
+                
+                let monthlyData = {};
+                this.allBookings.forEach(b => {
+                    let date = this.parseDate(b.datetime, '00:00');
+                    let monthKey = `${date.getFullYear()}-${date.getMonth()+1}`;
+                    monthlyData[monthKey] = (monthlyData[monthKey] || 0) + (b.amount || 0);
+                });
+                let sortedMonths = Object.keys(monthlyData).sort();
+                let chartLabels = sortedMonths.map(m => { let [year, month] = m.split('-'); return `${year}-${month.padStart(2,'0')}`; });
+                let chartData = sortedMonths.map(m => monthlyData[m]);
+                
+                let html = `
+                    <div class="finance-toolbar"><div class="period-buttons">
+                        <button class="period-btn ${this.financePeriod === 'today' ? 'active' : ''}" onclick="app.setFinancePeriod('today')">Vandaag</button>
+                        <button class="period-btn ${this.financePeriod === 'month' ? 'active' : ''}" onclick="app.setFinancePeriod('month')">Deze Maand</button>
+                        <button class="period-btn ${this.financePeriod === 'year' ? 'active' : ''}" onclick="app.setFinancePeriod('year')">Dit Jaar</button>
+                    </div></div>
+                    <div class="kpi-grid">
+                        <div class="kpi-card"><div class="value">${this.formatPrice(totalRevenue)}</div><div class="label">${periodLabel} - Omzet</div></div>
+                        <div class="kpi-card"><div class="value">${this.formatPrice(cashRevenue)}</div><div class="label">${periodLabel} - Cash</div></div>
+                        <div class="kpi-card"><div class="value">${this.formatPrice(factuurRevenue)}</div><div class="label">${periodLabel} - Factuur</div></div>
+                        <div class="kpi-card"><div class="value">${filteredBookings.length}</div><div class="label">${periodLabel} - Ritten</div></div>
+                        <div class="kpi-card"><div class="value">${this.formatPrice(commission)}</div><div class="label">${periodLabel} - Commissie</div></div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card"><h4>📋 New Orders</h4><div class="value">${this.newOrders.length}</div></div>
+                        <div class="stat-card"><h4>✅ Actieve Orders</h4><div class="value">${this.ordersList.length}</div></div>
+                        <div class="stat-card"><h4>📜 History</h4><div class="value">${this.historyOrders.length}</div></div>
+                    </div>
+                    <div class="chart-container"><canvas id="revenueChart" width="400" height="200"></canvas></div>
+                `;
+                document.getElementById('contentArea').innerHTML = html;
+                document.getElementById('pageTitle').innerHTML = `Financieel Overzicht - ${periodLabel}`;
+                
+                let ctx = document.getElementById('revenueChart')?.getContext('2d');
+                if (ctx) {
+                    if (this.revenueChart) this.revenueChart.destroy();
+                    this.revenueChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: { labels: chartLabels.length ? chartLabels : ['Geen data'], datasets: [{ label: 'Omzet (€)', data: chartData.length ? chartData : [0], backgroundColor: '#2dd4bf', borderRadius: 8 }] },
+                        options: { responsive: true, maintainAspectRatio: true }
+                    });
+                }
+            },
+            
+            formatPrice(price) { return '€ ' + (price || 0).toLocaleString(); },
+            setFinancePeriod(period) { this.financePeriod = period; this.renderFinance(); },
+            
+            renderWiki() {
+                document.getElementById('contentArea').innerHTML = `
+                    <div class="wiki-container">
+                        <div class="wiki-content">
+                            <h2><i class="fas fa-robot"></i> Wiki Agent - Gebruikershandleiding</h2>
+                            <p>Welkom bij het <strong>Fleet Connect Onderaannemer Paneel</strong>.</p>
+                            <h3>📋 1. Nieuwe Orders</h3><p>Hier verschijnen ritten met status 'pending' of 'new'. U kunt een rit accepteren.</p>
+                            <h3>📦 2. Orders</h3><p>Geaccepteerde ritten die nog in de toekomst liggen. U kunt hier een driver toewijzen.</p>
+                            <h3>📜 3. History</h3><p>Voltooide, geannuleerde of verlopen ritten. U kunt exporteren naar CSV of JSON.</p>
+                            <h3>📅 4. Agenda</h3><p>Kalender met flipcard dashboard. Klik op een dag voor de planning.</p>
+                            <h3>👥 5. Drivers</h3><p>Beheer uw eigen drivers: toevoegen en verwijderen.</p>
+                            <h3>🤝 6. Mijn Partners</h3><p>Beheer partners (onderaannemers onder u). U kunt partners toevoegen, verwijderen en voor hen drivers aanmaken.</p>
+                            <h3>💰 7. Financieel Overzicht</h3><p>Filters: Vandaag / Deze Maand / Dit Jaar. Toont omzet, cash/factuur, aantal ritten, commissie en grafiek.</p>
+                            <h3>🔄 Switch naar Auto Dealer</h3><p>Gebruik de switch knop om naar het andere paneel te gaan.</p>
+                            <hr><p style="text-align:center;"><i class="fas fa-code-branch"></i> Fleet Connect - Klaar voor Supabase aansluiting</p>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('pageTitle').innerHTML = `Wiki Agent`;
+            },
+            
+            applyFiltersNew() {
+                let orderFilter = document.getElementById("filterOrderNew")?.value.toLowerCase() || "";
+                let nameFilter = document.getElementById("filterNameNew")?.value.toLowerCase() || "";
+                let filtered = this.newOrders.filter(o => (orderFilter === "" || o.id?.toLowerCase().includes(orderFilter)) && (nameFilter === "" || o.name?.toLowerCase().includes(nameFilter)));
+                this.renderNewOrdersTable(filtered);
+            },
+            resetFiltersNew() { let o = document.getElementById("filterOrderNew"); let n = document.getElementById("filterNameNew"); if(o) o.value = ""; if(n) n.value = ""; this.renderNewOrdersTable(this.newOrders); },
+            applyFiltersOrders() {
+                let orderFilter = document.getElementById("filterOrderOrders")?.value.toLowerCase() || "";
+                let nameFilter = document.getElementById("filterNameOrders")?.value.toLowerCase() || "";
+                let filtered = this.ordersList.filter(o => (orderFilter === "" || o.id?.toLowerCase().includes(orderFilter)) && (nameFilter === "" || o.name?.toLowerCase().includes(nameFilter)));
+                this.renderOrdersTable(filtered);
+            },
+            resetFiltersOrders() { let o = document.getElementById("filterOrderOrders"); let n = document.getElementById("filterNameOrders"); if(o) o.value = ""; if(n) n.value = ""; this.renderOrdersTable(this.ordersList); },
+            applyFiltersHistory() {
+                let orderFilter = document.getElementById("filterOrderHistory")?.value.toLowerCase() || "";
+                let nameFilter = document.getElementById("filterNameHistory")?.value.toLowerCase() || "";
+                let filtered = this.historyOrders.filter(o => (orderFilter === "" || o.id?.toLowerCase().includes(orderFilter)) && (nameFilter === "" || o.name?.toLowerCase().includes(nameFilter)));
+                this.renderHistoryTable(filtered);
+            },
+            resetFiltersHistory() { let o = document.getElementById("filterOrderHistory"); let n = document.getElementById("filterNameHistory"); if(o) o.value = ""; if(n) n.value = ""; this.renderHistoryTable(this.historyOrders); },
+            
+            showBookingFiche(booking) {
+                let driverOptions = '<option value="">-- Selecteer Driver --</option>';
+                let availableDrivers = this.drivers.filter(c => c.subcontractor_id === booking.subcontractor_id);
+                availableDrivers.forEach(d => { driverOptions += `<option value="${d.id}">${this.escapeHtml(d.name)} (${d.vehicle})</option>`; });
+                let ficheBody = document.getElementById('ficheBody');
+                ficheBody.innerHTML = `
+                    <div class="fiche-section"><h4>Boekingsinformatie</h4>
+                        <div class="fiche-row"><span class="fiche-label">Boekingsnummer:</span><span class="fiche-value"><strong>${booking.id}</strong></span></div>
+                        <div class="fiche-row"><span class="fiche-label">Datum & Tijd:</span><span class="fiche-value">${booking.datetime} om ${booking.time} uur</span></div>
+                        ${booking.flight_number ? `<div class="fiche-row"><span class="fiche-label">✈️ Vluchtnummer:</span><span class="fiche-value">${booking.flight_number}</span></div>` : ''}
+                    </div>
+                    <div class="fiche-section"><h4>Klantgegevens</h4>
+                        <div class="fiche-row"><span class="fiche-label">Naam:</span><span class="fiche-value">${this.escapeHtml(booking.name)}</span></div>
+                        <div class="fiche-row"><span class="fiche-label">Email:</span><span class="fiche-value">${booking.email || '-'}</span></div>
+                        <div class="fiche-row"><span class="fiche-label">Telefoon:</span><span class="fiche-value">${booking.phone || '-'}</span></div>
+                    </div>
+                    <div class="fiche-section"><h4>Ritgegevens</h4>
+                        <div class="fiche-row"><span class="fiche-label">Pickup:</span><span class="fiche-value">${this.escapeHtml(booking.pickup)}</span></div>
+                        <div class="fiche-row"><span class="fiche-label">Destination:</span><span class="fiche-value">${this.escapeHtml(booking.destination)}</span></div>
+                        <div class="fiche-row"><span class="fiche-label">Voertuig:</span><span class="fiche-value">${booking.vehicle}</span></div>
+                        <div class="fiche-row"><span class="fiche-label">Extra's:</span><span class="fiche-value">${booking.extras || '-'}</span></div>
+                    </div>
+                    ${booking.status === 'accepted' ? `<div class="fiche-section"><h4>Driver Toewijzen</h4><select id="driverSelect">${driverOptions}</select></div>` : ''}
+                    <div class="fiche-total"><div class="amount">€ ${(booking.amount || 0).toFixed(2)}</div><div>Betaling: ${booking.payment || 'Onbekend'}</div></div>
+                    <div class="fiche-actions">
+                        ${booking.status === 'pending' ? `<button class="fiche-btn confirm" onclick="app.confirmBooking('${booking.id}')">Accepteren</button>` : ''}
+                        ${booking.status === 'accepted' ? `<button class="fiche-btn assign" onclick="app.assignDriverToBooking('${booking.id}')">Driver Toewijzen</button>` : ''}
+                        <button class="fiche-btn close" onclick="app.closeModal()">Sluiten</button>
+                    </div>
+                `;
+                document.getElementById('bookingModal').style.display = 'flex';
+            },
+            
+            async fetchBookingsFromSupabase() {
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .select('*')
+                    .order('datetime', { ascending: false });
+                if (error) {
+                    console.error('Supabase fout:', error);
+                    this.showToast('Fout bij laden van ritten: ' + error.message, true);
+                    return [];
+                }
+                return data;
+            },
+
+            async confirmBooking(bookingId) {
+                const { error } = await supabase
+                    .from('bookings')
+                    .update({ status: 'accepted' })
+                    .eq('id', bookingId);
+                if (error) {
+                    this.showToast('Fout bij accepteren: ' + error.message, true);
+                } else {
+                    this.showToast(`Rit ${bookingId} geaccepteerd`);
+                    this.allBookings = await this.fetchBookingsFromSupabase();
+                    this.filterAndSortData();
+                    this.refreshCurrentTab();
+                }
+                this.closeModal();
+            },
+            
+            assignDriverToBooking(bookingId) {
+                const select = document.getElementById('driverSelect');
+                const driverId = select?.value;
+                if (!driverId) { this.showToast('Selecteer een driver', true); return; }
+                const driver = this.drivers.find(c => c.id == driverId);
+                const booking = this.allBookings.find(b => b.id === bookingId);
+                if (booking && driver) {
+                    booking.assigned_driver = { id: driver.id, name: driver.name, vehicle: driver.vehicle };
+                    this.filterAndSortData();
+                    this.refreshCurrentTab();
+                    this.showToast(`Driver ${driver.name} toegewezen`);
+                }
+                this.closeModal();
+            },
+            
+            downloadCSV() {
+                let headers = ["ID","Datum","Tijd","Naam","Pickup","Destination","Bedrag","Betaling","Status"];
+                let rows = this.historyOrders.map(b => [b.id, b.datetime, b.time, b.name, b.pickup, b.destination, b.amount, b.payment, b.status]);
+                let csvContent = [headers, ...rows].map(row => row.map(cell => `"${cell || ''}"`).join(";")).join("\n");
+                let blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+                let link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `fleet_history_${new Date().toISOString().slice(0,10)}.csv`; link.click();
+                this.showToast("CSV geëxporteerd!");
+            },
+            
+            downloadJSON() {
+                let blob = new Blob([JSON.stringify(this.historyOrders, null, 2)], { type: "application/json" });
+                let link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `fleet_history_${new Date().toISOString().slice(0,10)}.json`; link.click();
+                this.showToast("JSON geëxporteerd!");
+            },
+            
+            refreshCurrentTab() {
+                switch(this.currentTab) {
+                    case 'neworders': this.renderNewOrders(); break;
+                    case 'orders': this.renderOrders(); break;
+                    case 'history': this.renderHistory(); break;
+                    case 'agenda': this.renderAgenda(); break;
+                    case 'drivers': this.renderDrivers(); break;
+                    case 'partners': this.renderPartners(); break;
+                    case 'financieel': this.renderFinance(); break;
+                    case 'wiki': this.renderWiki(); break;
+                    default: this.renderNewOrders();
+                }
+            },
+            
+            switchTab(tabName) {
+                this.currentTab = tabName;
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    if (item.getAttribute('data-tab') === tabName) item.classList.add('active');
+                    else item.classList.remove('active');
+                });
+                this.refreshCurrentTab();
+            },
+            
+            refreshAllData() { this.refreshCurrentTab(); this.showToast('Data ververst'); },
+            
+            logout() { if(confirm('Weet u zeker dat u wilt uitloggen?')) window.location.href = 'admin-index.html'; },
+            
+            async init() {
+                try {
+                    const bookings = await this.fetchBookingsFromSupabase();
+                    this.allBookings = bookings;
+                    this.filterAndSortData();
+
+                    await this.loadPartners();
+                    await this.loadDrivers();
+
+                    this.switchTab('neworders');
+                } catch (err) {
+                    console.error('Initialisatie fout:', err);
+                    document.getElementById('errorMsg').textContent = 'Fout bij het laden van de applicatie. Controleer de console.';
+                    document.getElementById('errorMsg').classList.remove('hidden');
+                }
+            }
+        };
+        
+        app.init().catch(console.error);
+        
+        window.app = app;
+        window.switchTab = app.switchTab.bind(app);
+        window.refreshAllData = app.refreshAllData.bind(app);
+        window.logout = app.logout.bind(app);
+        window.showBookingFiche = app.showBookingFiche.bind(app);
+        window.confirmBooking = app.confirmBooking.bind(app);
+        window.assignDriverToBooking = app.assignDriverToBooking.bind(app);
+        window.closeModal = app.closeModal.bind(app);
+        window.applyFiltersNew = app.applyFiltersNew.bind(app);
+        window.resetFiltersNew = app.resetFiltersNew.bind(app);
+        window.applyFiltersOrders = app.applyFiltersOrders.bind(app);
+        window.resetFiltersOrders = app.resetFiltersOrders.bind(app);
+        window.applyFiltersHistory = app.applyFiltersHistory.bind(app);
+        window.resetFiltersHistory = app.resetFiltersHistory.bind(app);
+        window.selectDate = app.selectDate.bind(app);
+        window.changeMonth = app.changeMonth.bind(app);
+        window.goToToday = app.goToToday.bind(app);
+        window.deleteDriver = app.deleteDriver.bind(app);
+        window.addDriverForPartner = app.addDriverForPartner.bind(app);
+        window.deletePartner = app.deletePartner.bind(app);
+        window.showAddDriverForm = app.showAddDriverForm.bind(app);
+        window.showAddPartnerForm = app.showAddPartnerForm.bind(app);
+        window.setFinancePeriod = app.setFinancePeriod.bind(app);
+        window.toggleFlipCard = app.toggleFlipCard.bind(app);
+        window.downloadCSV = app.downloadCSV.bind(app);
+        window.downloadJSON = app.downloadJSON.bind(app);
+    </script>
+</body>
+</html>
