@@ -38,30 +38,33 @@ module.exports = async function handler(req, res) {
       {
         role: "system",
         content: `
-You are a luxury concierge booking assistant for Fleetconnect Taxi.
+You are K2000 — Driving Assistant, a futuristic luxury chauffeur assistant for Fleetconnect.
 
 Your persona:
-- Calm, intelligent, premium, and reassuring.
-- You speak like an elite chauffeur service dispatcher (Uber Black / Premium Chauffeur tone).
-- Your tone is professional, helpful, and concise.
-- Avoid chatbot clichés (e.g., "How can I assist you today?"), emoji spam, and technical phrasing.
-- Naturally adapt to the user's language (Dutch, English, French, etc.).
+- Intelligent, calm, premium, and reassuring.
+- You speak like a high-end AI chauffeur (think futuristic luxury SaaS / Uber Black elite).
+- Your tone is professional, sophisticated, and concise.
+- Avoid chatbot clichés, emoji spam, and technical phrasing.
+- Language Continuity: You MUST strictly maintain the user's language (Dutch, French, or English) throughout the entire conversation and booking confirmation.
 
-Good examples of your tone:
-- "Good afternoon. Where would you like to be picked up?"
-- "Certainly. What destination do you need?"
-- "I can arrange that for you."
-- "One moment while I confirm your route."
-- "Your chauffeur has been scheduled."
+Vehicle Selection & Pricing:
+- Standard Pricing: €1.50 per km.
+- Vehicle Classes & Surcharges:
+  - "Business Class" (Standard premium sedan, +€0)
+  - "First Class Executive" (Top-tier luxury sedan, +€20)
+  - "Mercedes V-Class" (Premium MPV for up to 7 passengers, +€15)
+  - "Van / Shuttle" (Large group transport up to 8+ passengers, +€25)
+- Intelligent Suggestions: Propose "First Class Executive" for VIP trips, "Mercedes V-Class" or "Van / Shuttle" for groups, and "Business Class" for standard airport transfers.
 
-Your tasks:
-- Assist with taxi bookings, answer questions, and provide a seamless luxury experience.
-- Gather required information for bookings conversationally.
+Extras & Validation:
+- Available Extras: Water bottles, Child seat, Meet & Greet, WiFi.
+- Validation: Ensure all pickup, destination, and passenger requirements are met.
 
 IMPORTANT:
 - Always return ONLY valid JSON.
-- NEVER use markdown.
-- NEVER use \`\`\`json blocks.
+- NEVER use markdown or \`\`\`json blocks.
+- Dates: Use DD-MM-YYYY format.
+- Time: Use 24h European format (HH:MM).
 
 JSON FORMAT:
 {
@@ -74,6 +77,7 @@ JSON FORMAT:
   "date": "",
   "time": "",
   "vehicle": "",
+  "payment_method": "",
   "flight_number": "",
   "extras": "",
   "missing_fields": [],
@@ -82,13 +86,11 @@ JSON FORMAT:
 }
 
 Rules:
-- missing_fields must contain all missing required fields.
-- Required fields: name, email, phone, pickup, destination, date, time, vehicle.
-- if all required fields exist: missing_fields = []
-- "tomorrow" means the real next calendar day.
-- "today" means the current real date.
-- Always use current year.
-- Respond in the "reply" field using your premium concierge persona in the user's language.
+- missing_fields: name, email, phone, pickup, destination, date, time, vehicle, payment_method.
+- payment_method: Must be one of [Cash, Card, Invoice, Online].
+- vehicle: Use one of the specific classes mentioned above.
+- If all required fields exist: missing_fields = []
+- Respond in the "reply" field in the user's language using your premium assistant persona.
 `
       },
 
@@ -178,14 +180,14 @@ const bookingId =
 
         amount: 0,
 
-        payment: "pending",
+        payment: parsed.payment_method || "pending",
 
         status: "pending",
 
         customer_id:
           "CUST-" +
           parsed.email
-            .replace(/[^a-zA-Z0-9]/g, ""),
+            .replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
 
         form_data: {
           source: "ai-chat",
@@ -203,19 +205,38 @@ const bookingId =
       const existingBooking =
   await supabase
     .from("bookings")
-    .select("id")
+    .select("id, form_data")
     .eq("email", parsed.email)
     .eq("datetime", parsed.date)
     .eq("time", parsed.time)
     .maybeSingle();
 
 if (existingBooking.data) {
+  // If the booking was created in this same AI session, don't repeat the error
+  const isSameSession = conversationHistory.some(m =>
+    m.role === "assistant" && m.content.includes(existingBooking.data.id)
+  );
 
-  return res.status(200).json({
-    ...parsed,
-    reply:
-      "A booking already exists for this date and time."
-  });
+  if (!isSameSession) {
+    const duplicateMsg = {
+      en: "A booking already exists for this date and time.",
+      nl: "Er bestaat al een boeking voor deze datum en tijd.",
+      fr: "Une réservation existe déjà pour cette date et cette heure."
+    };
+
+    // Simple language detection based on current reply
+    let reply = duplicateMsg.en;
+    if (/[a-z]/.test(parsed.reply)) {
+       // Heuristic: check for common Dutch/French words
+       if (/\b(de|het|een|is|voor|op)\b/i.test(parsed.reply)) reply = duplicateMsg.nl;
+       else if (/\b(le|la|les|est|pour|sur)\b/i.test(parsed.reply)) reply = duplicateMsg.fr;
+    }
+
+    return res.status(200).json({
+      ...parsed,
+      reply: reply
+    });
+  }
 }
      const { data, error } =
   await supabase
@@ -241,13 +262,23 @@ if (existingBooking.data) {
         data
       );
 
+     const confirmMsg = {
+       en: "Your taxi booking has been confirmed successfully.",
+       nl: "Uw taxiboeking is succesvol bevestigd.",
+       fr: "Votre réservation de taxi a été confirmée avec succès."
+     };
+
+     let lang = "en";
+     if (/\b(de|het|een|is|voor|op)\b/i.test(parsed.reply)) lang = "nl";
+     else if (/\b(le|la|les|est|pour|sur)\b/i.test(parsed.reply)) lang = "fr";
+
      parsed.reply =
   parsed.reply +
   `
 
 Booking ID: ${bookingId}
 
-Your taxi booking has been confirmed successfully.`;
+${confirmMsg[lang]}`;
     }
 
     return res.status(200).json(parsed);

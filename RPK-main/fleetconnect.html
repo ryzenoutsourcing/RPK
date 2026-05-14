@@ -310,22 +310,45 @@
         }
         #ai-chat-launcher:hover { transform: scale(1.1); }
         #ai-chat-launcher i { font-size: 28px; }
+        #ai-chat-launcher::before {
+            content: "K2000 — Driving Assistant";
+            position: absolute;
+            right: 80px;
+            background: white;
+            color: var(--header-dark);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            opacity: 1; /* Partially expanded welcome state */
+            pointer-events: none;
+            transition: 0.3s;
+            transform: translateX(0);
+            border: 1px solid var(--prim-accent);
+        }
+        #ai-chat-launcher:hover::before {
+            background: var(--prim-accent);
+            color: white;
+        }
 
         #ai-chat-container {
             position: fixed; bottom: 110px; right: 30px;
-            width: 400px; max-width: calc(100vw - 60px); height: 600px; max-height: calc(100vh - 150px);
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            width: 450px; max-width: calc(100vw - 40px); height: 700px; max-height: calc(100vh - 160px);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(15px);
+            border-radius: 28px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.2);
             z-index: 10000;
             display: flex; flex-direction: column;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transform: translateY(20px); opacity: 0; visibility: hidden;
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transform: translateY(30px) scale(0.95); opacity: 0; visibility: hidden;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
         }
-        #ai-chat-container.active { transform: translateY(0); opacity: 1; visibility: visible; }
+        #ai-chat-container.active { transform: translateY(0) scale(1); opacity: 1; visibility: visible; pointer-events: auto; }
 
         .ai-chat-header {
             background: var(--header-dark); color: white;
@@ -395,8 +418,16 @@
         .booking-card-footer .price { font-weight: 700; color: var(--prim-accent); font-size: 1rem; }
 
         @media (max-width: 500px) {
-            #ai-chat-container { right: 15px; bottom: 90px; width: calc(100vw - 30px); height: calc(100vh - 120px); }
-            #ai-chat-launcher { right: 15px; bottom: 15px; width: 55px; height: 55px; }
+            #ai-chat-container {
+                right: 10px;
+                bottom: 85px;
+                width: calc(100vw - 20px);
+                height: calc(100vh - 100px);
+                max-height: calc(100vh - 100px);
+                border-radius: 20px;
+            }
+            #ai-chat-launcher { right: 20px; bottom: 20px; width: 60px; height: 60px; }
+            #ai-chat-launcher::before { display: none; }
         }
     </style>
 </head>
@@ -482,7 +513,28 @@
                 </div>
                 <div id="page3" class="carousel-page">
                     <h2>🚘 Kies uw voertuig</h2>
-                    <div class="vehicle-grid" id="vehicleGrid"><div class="vehicle-card" data-vehicle="Standaard" data-extraprice="0"><div class="vehicle-emoji">🚗</div><div class="vehicle-name">Standaard</div><div class="vehicle-price">geen meerprijs</div></div><div class="vehicle-card" data-vehicle="Break" data-extraprice="5"><div class="vehicle-emoji">🚙</div><div class="vehicle-name">Break</div><div class="vehicle-price">+ €5</div></div><div class="vehicle-card" data-vehicle="Exclusieve" data-extraprice="15"><div class="vehicle-emoji">🚘</div><div class="vehicle-name">Exclusieve</div><div class="vehicle-price">+ €15</div></div><div class="vehicle-card" data-vehicle="Mini Van" data-extraprice="10"><div class="vehicle-emoji">🚐</div><div class="vehicle-name">Mini Van</div><div class="vehicle-price">+ €10</div></div></div>
+                    <div class="vehicle-grid" id="vehicleGrid">
+                        <div class="vehicle-card" data-vehicle="Business Class" data-extraprice="0">
+                            <div class="vehicle-emoji">🚗</div>
+                            <div class="vehicle-name">Business Class</div>
+                            <div class="vehicle-price">Standard Premium</div>
+                        </div>
+                        <div class="vehicle-card" data-vehicle="First Class Executive" data-extraprice="20">
+                            <div class="vehicle-emoji">👑</div>
+                            <div class="vehicle-name">First Class Executive</div>
+                            <div class="vehicle-price">+ €20</div>
+                        </div>
+                        <div class="vehicle-card" data-vehicle="Mercedes V-Class" data-extraprice="15">
+                            <div class="vehicle-emoji">🚐</div>
+                            <div class="vehicle-name">Mercedes V-Class</div>
+                            <div class="vehicle-price">+ €15</div>
+                        </div>
+                        <div class="vehicle-card" data-vehicle="Van / Shuttle" data-extraprice="25">
+                            <div class="vehicle-emoji">🚌</div>
+                            <div class="vehicle-name">Van / Shuttle</div>
+                            <div class="vehicle-price">+ €25</div>
+                        </div>
+                    </div>
                     <div class="extra-fields"><h3>➕ Extra opties</h3><div class="extra-grid"><div><label>👥 Aantal passagiers</label><input type="number" id="passengers" min="1" value="1"></div><div><label>🧳 Bagagestuks</label><input type="number" id="luggage" min="0" value="0"></div></div><div class="checkbox-grid"><label><input type="checkbox" id="meetGreet"> 🤝 Meet & Greet</label><label><input type="checkbox" id="kissRide"> 💋 Kiss & Ride</label><label><input type="checkbox" id="waterBottle"> 💧 Waterfles</label><label><input type="checkbox" id="wifi"> 📶 WiFi</label></div><div><label>📝 Speciale wensen</label><textarea id="specialWishes" rows="2" placeholder="bv. kinderzitje"></textarea></div></div>
                     <div id="page3Error" class="error"></div>
                 </div>
@@ -512,7 +564,13 @@
                             <strong>💰 Totaalprijs:</strong> <span id="overviewTotal">€ 0,00</span>
                         </div>
                     </div>
-                    <div class="payment-method"><span>Betaalmethode:</span><label><input type="radio" name="payment" value="Cash" checked> 💵 Cash</label><label><input type="radio" name="payment" value="Kaart"> 💳 Kaart</label><label><input type="radio" name="payment" value="App"> 📱 App</label></div>
+                    <div class="payment-method">
+                        <span>Betaalmethode:</span>
+                        <label><input type="radio" name="payment" value="Cash" checked> 💵 Cash</label>
+                        <label><input type="radio" name="payment" value="Card"> 💳 Card</label>
+                        <label><input type="radio" name="payment" value="Invoice"> 📄 Invoice</label>
+                        <label><input type="radio" name="payment" value="Online"> 📱 Online</label>
+                    </div>
                     <div id="totalDisplay" style="background:#f8fafc;padding:20px;text-align:center;font-size:1.5rem;font-weight:700;margin:20px 0">Totaal: € 0,00</div>
                     <button id="finalConfirmBtn" style="background:#10b981;width:100%;padding:14px;border-radius:40px;border:none;font-weight:700;cursor:pointer;">✅ Bevestig boeking</button>
                     <div id="page5Error" class="error"></div>
@@ -551,8 +609,8 @@
     <div id="ai-chat-container">
         <div class="ai-chat-header">
             <div class="brand">
-                <i class="fas fa-taxi"></i>
-                <span>Concierge Assistant</span>
+                <i class="fas fa-robot"></i>
+                <span>K2000 — Driving Assistant</span>
             </div>
             <div class="close-chat" id="close-ai-chat">
                 <i class="fas fa-times"></i>
@@ -560,7 +618,7 @@
         </div>
         <div id="ai-chat-messages">
             <div class="chat-msg ai">
-                Good afternoon. I am your Fleetconnect concierge. How may I assist you with your travel arrangements today?
+                Good afternoon. I am K2000, your intelligent driving assistant. I am here to ensure your travel arrangements are handled with precision and luxury. Where can I take you today?
                 <span class="timestamp" id="ai-initial-time"></span>
             </div>
         </div>
@@ -1002,9 +1060,13 @@
         // Humanize vehicle name
         const vehicleNames = {
             'Standaard': 'Premium Sedan',
+            'Business Class': 'Business Class Sedan',
             'Break': 'Luxury Estate',
             'Exclusieve': 'First Class Executive',
-            'Mini Van': 'Premium Multi-Purpose Van'
+            'First Class Executive': 'First Class Executive Sedan',
+            'Mini Van': 'Premium Multi-Purpose Van',
+            'Mercedes V-Class': 'Mercedes V-Class (Premium MPV)',
+            'Van / Shuttle': 'Group Shuttle Van'
         };
         const vehicleDisplay = vehicleNames[data.vehicle] || data.vehicle || 'Premium Sedan';
 
@@ -1045,11 +1107,20 @@
                             </div>
                         </div>
                     </div>
-                    <div class="booking-info-row">
-                        <i class="fas fa-car-side"></i>
-                        <div class="booking-info-content">
-                            <span class="label">VEHICLE CLASS</span>
-                            <span class="value">${vehicleDisplay}</span>
+                    <div class="booking-info-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div style="display: flex; gap: 12px;">
+                            <i class="fas fa-car-side"></i>
+                            <div class="booking-info-content">
+                                <span class="label">VEHICLE CLASS</span>
+                                <span class="value">${vehicleDisplay}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <i class="fas fa-credit-card"></i>
+                            <div class="booking-info-content">
+                                <span class="label">PAYMENT</span>
+                                <span class="value">${data.payment || 'Confirmed'}</span>
+                            </div>
                         </div>
                     </div>
                     <div class="booking-info-row">
@@ -1059,9 +1130,18 @@
                             <span class="value">${data.name || '—'}</span>
                         </div>
                     </div>
+                    ${data.extras ? `
+                    <div class="booking-info-row">
+                        <i class="fas fa-plus-circle"></i>
+                        <div class="booking-info-content">
+                            <span class="label">EXTRAS</span>
+                            <span class="value">${data.extras}</span>
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
                 <div class="booking-card-footer">
-                    <div class="price">Fleetconnect Luxury Service</div>
+                    <div class="price">Fleetconnect K2000 Luxury Intelligence</div>
                 </div>
             </div>
         `;
@@ -1108,7 +1188,9 @@
                             date: data.date,
                             time: data.time,
                             vehicle: data.vehicle,
-                            name: data.name
+                            name: data.name,
+                            payment: data.payment_method,
+                            extras: data.extras
                         });
                         addChatBubble('ai', cardHtml, true);
                     }, 800);
