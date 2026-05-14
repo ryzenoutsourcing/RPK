@@ -29,11 +29,18 @@ module.exports = async function handler(req, res) {
       });
     }
 
+    // Get current time in Europe/Brussels for the prompt
+    const now = new Date();
+    const brusselsTimeStr = now.toLocaleString("en-GB", { timeZone: "Europe/Brussels" });
+    // Format: "DD/MM/YYYY, HH:MM:SS"
+
     const messages = [
       {
         role: "system",
         content: `
 You are K2000 — Driving Assistant, a futuristic luxury chauffeur assistant for Fleetconnect.
+
+CURRENT DATE/TIME (Europe/Brussels): ${brusselsTimeStr}
 
 Your persona:
 - Intelligent, calm, premium, and reassuring.
@@ -54,6 +61,8 @@ Vehicle Selection & Pricing:
 Extras & Validation:
 - Available Extras: Water bottles, Child seat, Meet & Greet, WiFi, Kiss & Ride.
 - Validation: Ensure all pickup, destination, and passenger requirements are met.
+- DATE/TIME VALIDATION: You MUST ensure the departure date and time are in the future. If the user provides a past date/time, do not confirm the booking and ask for a valid one.
+- Normalization: If the user says "today", "tomorrow", or "next Friday", normalize it using the CURRENT DATE provided above into DD-MM-YYYY format.
 
 IMPORTANT:
 - Always return ONLY valid JSON.
@@ -114,17 +123,65 @@ Rules:
 
     const lang = parsed.language || "en";
 
+    // --- Strict Date/Time Validation (Brussels Timezone) ---
+    if (parsed.date && parsed.time) {
+      try {
+        const [day, month, year] = parsed.date.split("-").map(Number);
+        const [hours, minutes] = parsed.time.split(":").map(Number);
+
+        // Construct date string for comparison in Brussels timezone
+        const bookingDateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+
+        // Use Intl.DateTimeFormat to get current Brussels time for comparison
+        const brusselsNowStr = new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'Europe/Brussels',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).format(now).replace(', ', 'T');
+
+        // Comparison works alphabetically for ISO-like strings
+        if (bookingDateStr <= brusselsNowStr) {
+           const pastDateMsg = {
+             en: "That departure time appears to be in the past. Could you provide a new departure time?",
+             nl: "Die vertrektijd lijkt in het verleden te liggen. Kunt u een nieuwe vertrektijd opgeven?",
+             fr: "Cette heure de départ semble être passée. Pourriez-vous indiquer une nouvelle heure de départ ?"
+           };
+
+           return res.status(200).json({
+             ...parsed,
+             missing_fields: ["date", "time"],
+             reply: pastDateMsg[lang] || pastDateMsg.en
+           });
+        }
+      } catch (e) {
+        console.error("Date validation error:", e);
+      }
+    }
+
     if (
       parsed.intent === "booking" &&
       parsed.missing_fields &&
       parsed.missing_fields.length === 0
     ) {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, "0");
-      const day = String(today.getDate()).padStart(2, "0");
+      // Use Brussels date for the booking ID prefix
+      const brusselsParts = new Intl.DateTimeFormat('en-GB', {
+          timeZone: 'Europe/Brussels',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+      }).formatToParts(now);
+
+      const bYear = brusselsParts.find(p => p.type === 'year').value;
+      const bMonth = brusselsParts.find(p => p.type === 'month').value;
+      const bDay = brusselsParts.find(p => p.type === 'day').value;
+
       const sequence = String(Math.floor(Math.random() * 999)).padStart(3, "0");
-      const bookingId = `PK-${year}${month}${day}-${sequence}`;
+      const bookingId = `PK-${bYear}${bMonth}${bDay}-${sequence}`;
 
       const insertPayload = {
         id: bookingId,
