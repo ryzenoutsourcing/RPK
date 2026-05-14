@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Algemene Voorwaarden | Fleetconnect Taxi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+            height: 100vh;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        #background-map {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        .floating-container {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 24px;
+            height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+        .floating-container::-webkit-scrollbar { width: 6px; }
+        .floating-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        .floating-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.3); border-radius: 10px; }
+        
+        .content-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 40px 48px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            margin-bottom: 24px;
+            position: relative;
+        }
+        .language-menu {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            display: flex;
+            gap: 12px;
+            background: rgba(255,255,255,0.7);
+            padding: 6px 12px;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .lang-btn {
+            background: none;
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 30px;
+            transition: all 0.2s;
+            color: #1a5c8c;
+        }
+        .lang-btn.active {
+            background: #2c7da0;
+            color: white;
+        }
+        .lang-btn:hover:not(.active) {
+            background: rgba(44,125,160,0.2);
+        }
+        h1 {
+            font-family: 'Inter', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a2a3a;
+            border-left: 4px solid #2c7da0;
+            padding-left: 20px;
+            margin-bottom: 24px;
+            margin-top: 0;
+        }
+        .last-updated {
+            color: #2c7da0;
+            font-size: 0.8rem;
+            margin-bottom: 24px;
+            font-weight: 500;
+        }
+        h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1a5c8c;
+            margin: 28px 0 12px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: 6px;
+        }
+        p, li {
+            color: #3a4a5a;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        ul, ol { margin-left: 24px; margin-bottom: 16px; }
+        a { color: #2c7da0; text-decoration: none; font-weight: 500; }
+        a:hover { text-decoration: underline; }
+        hr { margin: 24px 0; border-color: rgba(0,0,0,0.05); }
+        
+        .footer-links {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 20px 32px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .footer-links a {
+            margin: 0 12px;
+            font-size: 0.8rem;
+            color: #1a5c8c;
+        }
+        .footer-links a:hover { color: #2c7da0; }
+        .back-home-btn {
+            display: inline-block;
+            background: #2c7da0;
+            color: white;
+            padding: 10px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-top: 16px;
+            transition: background 0.2s;
+        }
+        .back-home-btn:hover {
+            background: #1a5c8c;
+            text-decoration: none;
+        }
+        @media (max-width: 700px) {
+            .content-card { padding: 24px 20px; }
+            h1 { font-size: 1.5rem; }
+            h2 { font-size: 1.1rem; }
+            .floating-container { margin: 20px auto; height: calc(100vh - 40px); padding: 0 16px; }
+            .footer-links a { display: inline-block; margin: 6px 8px; }
+            .language-menu { top: 10px; right: 15px; gap: 6px; }
+            .lang-btn { font-size: 0.7rem; padding: 2px 6px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="background-map"></div>
+    <div class="floating-container">
+        <div class="content-card">
+            <div class="language-menu">
+                <button class="lang-btn active" data-lang="nl">NL</button>
+                <button class="lang-btn" data-lang="fr">FR</button>
+                <button class="lang-btn" data-lang="en">EN</button>
+            </div>
+            <h1 id="terms-title">Algemene Voorwaarden Taxivervoer</h1>
+            <div class="last-updated" id="last-updated">Laatst bijgewerkt: 1 mei 2026</div>
+            
+            <h2 id="art1">Artikel 1 – Definities</h2>
+            <ul id="art1-list">
+                <li><strong>Vervoerder:</strong> Fleetconnect Taxi, gevestigd te België.</li>
+                <li><strong>Passagier:</strong> de natuurlijke of rechtspersoon die met de vervoerder een overeenkomst tot taxivervoer sluit.</li>
+                <li><strong>Taxivervoer:</strong> al het overeengekomen personenvervoer per auto.</li>
+                <li><strong>Boeking:</strong> de reservering van een taxirit via de website, telefoon of andere communicatiemiddelen.</li>
+            </ul>
+            
+            <h2 id="art2">Artikel 2 – Toepasselijkheid</h2>
+            <p id="art2-p">Deze Algemene Voorwaarden zijn van toepassing op alle aanbiedingen, boekingen en overeenkomsten met betrekking tot taxivervoer door de vervoerder. Afwijkingen zijn alleen geldig indien schriftelijk overeengekomen.</p>
+            
+            <h2 id="art3">Artikel 3 – Vergunningen</h2>
+            <p id="art3-p">De vervoerder beschikt over alle vereiste vergunningen voor individueel bezoldigd personenvervoer. Alle voertuigen voldoen aan de wettelijke eisen en milieuvoorschriften.</p>
+            
+            <h2 id="art4">Artikel 4 – Totstandkoming van de overeenkomst</h2>
+            <p id="art4-p">Een boeking is rechtsgeldig nadat de passagier een ritverzoek heeft ingediend en de vervoerder dit verzoek schriftelijk (per e-mail of SMS) heeft bevestigd. De passagier is verplicht om bij de boeking alle relevante informatie te verstrekken.</p>
+            
+            <h2 id="art5">Artikel 5 – Tarieven en betaling</h2>
+            <p id="art5-p">Alle tarieven zijn inclusief BTW. De prijs van een rit wordt voorafgaand aan de boeking kenbaar gemaakt en bedraagt €1,50 per kilometer. Betaling geschiedt voorafgaand aan de rit (online) of contant aan de chauffeur. Toeslagen kunnen van toepassing zijn op nachtritten (23:00-07:00) of extra wachttijd.</p>
+            
+            <h2 id="art6">Artikel 6 – Annulering en no-show</h2>
+            <p id="art6-p">De passagier kan kosteloos annuleren tot 60 minuten vóór de ophaaltijd. Binnen 60 minuten is 50% verschuldigd. Binnen 15 minuten of bij no-show is het volledige ritbedrag verschuldigd.</p>
+            
+            <h2 id="art7">Artikel 7 – Aansprakelijkheid</h2>
+            <p id="art7-p">De vervoerder is aansprakelijk voor schade die het gevolg is van een aan hem toe te rekenen tekortkoming, met inachtneming van wettelijke beperkingen. Maximale aansprakelijkheid per rit is beperkt tot het factuurbedrag.</p>
+            
+            <h2 id="art8">Artikel 8 – Klachten</h2>
+            <p id="art8-p">Klachten dienen binnen 7 werkdagen na de rit schriftelijk te worden ingediend via <a href="mailto:klachten@fleetconnect.be">klachten@fleetconnect.be</a>. Wij reageren binnen 14 werkdagen.</p>
+            
+            <h2 id="art9">Artikel 9 – Toepasselijk recht</h2>
+            <p id="art9-p">Op deze Algemene Voorwaarden is Belgisch recht van toepassing. Geschillen worden voorgelegd aan de bevoegde rechter te Brussel.</p>
+            
+            <hr>
+            <p id="copyright" style="text-align:center; font-size:0.8rem;">© 2026 Fleetconnect Taxi</p>
+        </div>
+        
+        <div class="footer-links" id="footer-links">
+            <a href="PV.html">🏠 Home</a> |
+            <a href="PVfaq.html">❓ FAQ</a> |
+            <a href="PVprivacy.html">🔒 Privacy</a> |
+            <a href="PVcookiebeleid.html">🍪 Cookiebeleid</a> |
+            <a href="PValgemene-voorwaarden.html">📜 Algemene voorwaarden</a>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('background-map').setView([50.85, 4.35], 13);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+        
+        const termsTranslations = {
+            nl: {
+                title: "Algemene Voorwaarden Taxivervoer",
+                lastUpdated: "Laatst bijgewerkt: 1 mei 2026",
+                art1: "Artikel 1 – Definities",
+                art1_list: [
+                    "<strong>Vervoerder:</strong> Fleetconnect Taxi, gevestigd te België.",
+                    "<strong>Passagier:</strong> de natuurlijke of rechtspersoon die met de vervoerder een overeenkomst tot taxivervoer sluit.",
+                    "<strong>Taxivervoer:</strong> al het overeengekomen personenvervoer per auto.",
+                    "<strong>Boeking:</strong> de reservering van een taxirit via de website, telefoon of andere communicatiemiddelen."
+                ],
+                art2: "Artikel 2 – Toepasselijkheid",
+                art2_p: "Deze Algemene Voorwaarden zijn van toepassing op alle aanbiedingen, boekingen en overeenkomsten met betrekking tot taxivervoer door de vervoerder. Afwijkingen zijn alleen geldig indien schriftelijk overeengekomen.",
+                art3: "Artikel 3 – Vergunningen",
+                art3_p: "De vervoerder beschikt over alle vereiste vergunningen voor individueel bezoldigd personenvervoer. Alle voertuigen voldoen aan de wettelijke eisen en milieuvoorschriften.",
+                art4: "Artikel 4 – Totstandkoming van de overeenkomst",
+                art4_p: "Een boeking is rechtsgeldig nadat de passagier een ritverzoek heeft ingediend en de vervoerder dit verzoek schriftelijk (per e-mail of SMS) heeft bevestigd. De passagier is verplicht om bij de boeking alle relevante informatie te verstrekken.",
+                art5: "Artikel 5 – Tarieven en betaling",
+                art5_p: "Alle tarieven zijn inclusief BTW. De prijs van een rit wordt voorafgaand aan de boeking kenbaar gemaakt en bedraagt €1,50 per kilometer. Betaling geschiedt voorafgaand aan de rit (online) of contant aan de chauffeur. Toeslagen kunnen van toepassing zijn op nachtritten (23:00-07:00) of extra wachttijd.",
+                art6: "Artikel 6 – Annulering en no-show",
+                art6_p: "De passagier kan kosteloos annuleren tot 60 minuten vóór de ophaaltijd. Binnen 60 minuten is 50% verschuldigd. Binnen 15 minuten of bij no-show is het volledige ritbedrag verschuldigd.",
+                art7: "Artikel 7 – Aansprakelijkheid",
+                art7_p: "De vervoerder is aansprakelijk voor schade die het gevolg is van een aan hem toe te rekenen tekortkoming, met inachtneming van wettelijke beperkingen. Maximale aansprakelijkheid per rit is beperkt tot het factuurbedrag.",
+                art8: "Artikel 8 – Klachten",
+                art8_p: "Klachten dienen binnen 7 werkdagen na de rit schriftelijk te worden ingediend via <a href='mailto:klachten@fleetconnect.be'>klachten@fleetconnect.be</a>. Wij reageren binnen 14 werkdagen.",
+                art9: "Artikel 9 – Toepasselijk recht",
+                art9_p: "Op deze Algemene Voorwaarden is Belgisch recht van toepassing. Geschillen worden voorgelegd aan de bevoegde rechter te Brussel.",
+                copyright: "© 2026 Fleetconnect Taxi"
+            },
+            fr: {
+                title: "Conditions Générales de Transport en Taxi",
+                lastUpdated: "Dernière mise à jour : 1 mai 2026",
+                art1: "Article 1 – Définitions",
+                art1_list: [
+                    "<strong>Transporteur :</strong> Fleetconnect Taxi, établi en Belgique.",
+                    "<strong>Passager :</strong> la personne physique ou morale qui conclut un contrat de transport en taxi avec le transporteur.",
+                    "<strong>Transport en taxi :</strong> tout transport de personnes convenu par voiture.",
+                    "<strong>Réservation :</strong> la réservation d'une course en taxi via le site web, par téléphone ou par d'autres moyens de communication."
+                ],
+                art2: "Article 2 – Applicabilité",
+                art2_p: "Les présentes conditions générales s'appliquent à toutes les offres, réservations et contrats relatifs au transport en taxi par le transporteur. Les dérogations ne sont valables que si elles sont convenues par écrit.",
+                art3: "Article 3 – Autorisations",
+                art3_p: "Le transporteur dispose de toutes les autorisations requises pour le transport rémunéré de personnes. Tous les véhicules répondent aux exigences légales et environnementales.",
+                art4: "Article 4 – Conclusion du contrat",
+                art4_p: "Une réservation est valable après que le passager a soumis une demande de course et que le transporteur a confirmé cette demande par écrit (par e-mail ou SMS). Le passager est tenu de fournir toutes les informations pertinentes lors de la réservation.",
+                art5: "Article 5 – Tarifs et paiement",
+                art5_p: "Tous les tarifs sont TTC. Le prix d'une course est communiqué avant la réservation et s'élève à 1,50 € par kilomètre. Le paiement s'effectue avant la course (en ligne) ou en espèces au chauffeur. Des suppléments peuvent s'appliquer pour les courses de nuit (23h00-07h00) ou les temps d'attente supplémentaires.",
+                art6: "Article 6 – Annulation et non-présentation",
+                art6_p: "Le passager peut annuler gratuitement jusqu'à 60 minutes avant l'heure de prise en charge. Dans les 60 minutes, 50 % est dû. Dans les 15 minutes ou en cas de non-présentation, la totalité du prix de la course est due.",
+                art7: "Article 7 – Responsabilité",
+                art7_p: "Le transporteur est responsable des dommages résultant d'un manquement qui lui est imputable, dans les limites légales. La responsabilité maximale par course est limitée au montant de la facture.",
+                art8: "Article 8 – Réclamations",
+                art8_p: "Les réclamations doivent être soumises par écrit dans les 7 jours ouvrables suivant la course à <a href='mailto:klachten@fleetconnect.be'>klachten@fleetconnect.be</a>. Nous répondons dans les 14 jours ouvrables.",
+                art9: "Article 9 – Droit applicable",
+                art9_p: "Le droit belge s'applique aux présentes conditions générales. Les litiges sont soumis au tribunal compétent de Bruxelles.",
+                copyright: "© 2026 Fleetconnect Taxi"
+            },
+            en: {
+                title: "General Terms and Conditions for Taxi Transport",
+                lastUpdated: "Last updated: 1 May 2026",
+                art1: "Article 1 – Definitions",
+                art1_list: [
+                    "<strong>Carrier:</strong> Fleetconnect Taxi, established in Belgium.",
+                    "<strong>Passenger:</strong> the natural or legal person who enters into a taxi transport agreement with the carrier.",
+                    "<strong>Taxi transport:</strong> all agreed passenger transport by car.",
+                    "<strong>Booking:</strong> the reservation of a taxi ride via the website, telephone or other means of communication."
+                ],
+                art2: "Article 2 – Applicability",
+                art2_p: "These General Terms and Conditions apply to all offers, bookings and agreements concerning taxi transport by the carrier. Deviations are only valid if agreed in writing.",
+                art3: "Article 3 – Licences",
+                art3_p: "The carrier holds all required licences for individual paid passenger transport. All vehicles comply with legal requirements and environmental regulations.",
+                art4: "Article 4 – Conclusion of the agreement",
+                art4_p: "A booking is valid after the passenger has submitted a ride request and the carrier has confirmed this request in writing (by email or SMS). The passenger is obliged to provide all relevant information when booking.",
+                art5: "Article 5 – Rates and payment",
+                art5_p: "All rates include VAT. The price of a ride is made known prior to booking and amounts to €1.50 per kilometre. Payment is made before the ride (online) or in cash to the driver. Surcharges may apply for night rides (11:00 PM – 7:00 AM) or extra waiting time.",
+                art6: "Article 6 – Cancellation and no-show",
+                art6_p: "The passenger may cancel free of charge up to 60 minutes before pick-up time. Within 60 minutes, 50% is due. Within 15 minutes or in case of no-show, the full ride amount is due.",
+                art7: "Article 7 – Liability",
+                art7_p: "The carrier is liable for damage resulting from a shortcoming attributable to him, subject to legal limitations. Maximum liability per ride is limited to the invoice amount.",
+                art8: "Article 8 – Complaints",
+                art8_p: "Complaints must be submitted in writing within 7 working days after the ride to <a href='mailto:klachten@fleetconnect.be'>klachten@fleetconnect.be</a>. We will respond within 14 working days.",
+                art9: "Article 9 – Applicable law",
+                art9_p: "These General Terms and Conditions are governed by Belgian law. Disputes shall be submitted to the competent court in Brussels.",
+                copyright: "© 2026 Fleetconnect Taxi"
+            }
+        };
+        
+        function setTermsLanguage(lang) {
+            const t = termsTranslations[lang];
+            document.getElementById('terms-title').innerText = t.title;
+            document.getElementById('last-updated').innerText = t.lastUpdated;
+            document.getElementById('art1').innerText = t.art1;
+            const list1 = document.getElementById('art1-list');
+            list1.innerHTML = t.art1_list.map(li => `<li>${li}</li>`).join('');
+            document.getElementById('art2').innerText = t.art2;
+            document.getElementById('art2-p').innerHTML = t.art2_p;
+            document.getElementById('art3').innerText = t.art3;
+            document.getElementById('art3-p').innerHTML = t.art3_p;
+            document.getElementById('art4').innerText = t.art4;
+            document.getElementById('art4-p').innerHTML = t.art4_p;
+            document.getElementById('art5').innerText = t.art5;
+            document.getElementById('art5-p').innerHTML = t.art5_p;
+            document.getElementById('art6').innerText = t.art6;
+            document.getElementById('art6-p').innerHTML = t.art6_p;
+            document.getElementById('art7').innerText = t.art7;
+            document.getElementById('art7-p').innerHTML = t.art7_p;
+            document.getElementById('art8').innerText = t.art8;
+            document.getElementById('art8-p').innerHTML = t.art8_p;
+            document.getElementById('art9').innerText = t.art9;
+            document.getElementById('art9-p').innerHTML = t.art9_p;
+            document.getElementById('copyright').innerText = t.copyright;
+            // Active class
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                if (btn.getAttribute('data-lang') === lang) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+        
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => setTermsLanguage(btn.getAttribute('data-lang')));
+        });
+        setTermsLanguage('nl');
+    </script>
+</body>
+</html>
