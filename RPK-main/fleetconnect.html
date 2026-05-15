@@ -218,7 +218,7 @@
 <div id="background-map"></div>
 
 <div class="content-overlay">
-    <!-- Restored Navigation & Sidebar -->
+    <!-- Navigation -->
     <div style="position: absolute; top: 20px; right: 80px; z-index: 100;">
         <a href="loginfleetconnect.html" class="btn-primary" style="background: #2c7da0; border: 2px solid white;"><i class="fas fa-user-circle"></i> Inloggen</a>
     </div>
@@ -247,7 +247,7 @@
         </div>
     </section>
 
-    <!-- Unified Booking Form -->
+    <!-- Booking Form -->
     <div class="container" id="booking-anchor">
         <div class="one-grid-block">
             <div class="steps">
@@ -305,7 +305,7 @@
         </div>
     </div>
 
-    <!-- Restored Services Section -->
+    <!-- Services -->
     <div class="container" id="services">
         <h2 style="text-align: center; margin-top: 40px;">Onze Diensten</h2>
         <div class="services-grid">
@@ -315,7 +315,7 @@
         </div>
     </div>
 
-    <!-- Restored Contact Section -->
+    <!-- Contact -->
     <div class="contact-wrapper" id="contact">
         <div class="contact-row">
             <h3 style="text-align: center; margin-bottom: 20px;">Contacteer ons</h3>
@@ -339,7 +339,7 @@
         <div class="ai-input-area"><div class="input-wrap"><input type="text" id="ai-input" placeholder="Stel een vraag..."><button id="ai-send">></button></div></div>
     </div>
 
-    <!-- Restored Footer -->
+    <!-- Footer -->
     <footer>
         <div class="container">
             <div class="footer-grid">
@@ -401,17 +401,13 @@
         const val = BookingLogic.validateBooking(payload); if(!val.isValid) { alert("Fields: " + val.missingFields.join(", ")); return; }
         const id = BookingLogic.generateBookingId();
         const { error } = await supabase.from('bookings').insert([{ id, ...payload, amount: parseFloat(document.getElementById('priceVal').innerText), partner_id: BookingLogic.CONFIG.PARTNER_ID, status: "pending" }]);
-        if(!error) {
-            // Show premium card replacement or success alert
-            alert("Boeking Bevestigd! Referentie: " + id);
-            location.reload();
-        } else alert(error.message);
+        if(!error) { alert("Boeking Bevestigd! Referentie: " + id); location.reload(); } else alert(error.message);
     }
 
     document.getElementById('nextBtn').onclick = () => state.currentPage === 4 ? submitBooking() : showPage(state.currentPage + 1);
     document.getElementById('prevBtn').onclick = () => showPage(state.currentPage - 1);
 
-    // AI Chat Logic
+    // AI Chat
     const l = document.getElementById('ai-chat-launcher'), c = document.getElementById('ai-chat-container'), i = document.getElementById('ai-input'), m = document.getElementById('ai-messages');
     let h = [];
     l.onclick = () => { c.classList.add('active'); l.style.display='none'; };

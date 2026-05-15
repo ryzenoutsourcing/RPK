@@ -44,7 +44,9 @@ CURRENT DATE/TIME (Europe/Brussels): ${brusselsTimeStr}
 
 Your persona:
 - Intelligent, calm, premium, and reassuring.
-- You speak like a high-end AI chauffeur.
+- You speak like a high-end AI chauffeur (think futuristic luxury SaaS / Uber Black elite).
+- Your tone is professional, sophisticated, and concise.
+- Avoid chatbot clichés, emoji spam, and technical phrasing.
 - Language Continuity: You MUST detect the user's language (Dutch, French, or English) and maintain it throughout the entire conversation. Return the detected language code in the "language" field.
 
 Vehicle Selection:
@@ -64,6 +66,7 @@ Rules:
 - Normalization: Normalize "today", "tomorrow" etc. into DD-MM-YYYY using the current date provided above.
 - Payment Methods: [Cash, Card, Invoice, Online].
 - Return ONLY valid JSON.
+- NEVER use markdown or \`\`\`json blocks.
 
 JSON FORMAT:
 {
@@ -148,7 +151,7 @@ JSON FORMAT:
           const duplicateMsg = {
             en: "An identical booking already exists in our system for this time.",
             nl: "Er bestaat al een identieke boeking in ons systeem voor dit tijdstip.",
-            fr: "Une réservation identique existe déjà dans notre système pour cette heure."
+            fr: "Une réservation identique existe alreadey in ons systeem voor dit tijdstip."
           };
           return res.status(200).json({
             ...parsed,
@@ -189,14 +192,18 @@ JSON FORMAT:
         .insert([insertPayload])
         .select();
 
-      if (!error) {
-        const confirmMsg = {
-          en: "Confirmed. Your luxury chauffeur is scheduled.",
-          nl: "Bevestigd. Uw luxe chauffeur is ingepland.",
-          fr: "Confirmé. Votre chauffeur de luxe est programmé."
-        };
-        parsed.reply = parsed.reply + `\n\nBooking ID: ${bookingId}\n\n${confirmMsg[lang] || confirmMsg.en}`;
+      if (error) {
+        console.error("SUPABASE INSERT ERROR:", error);
+        return res.status(500).json({ error: error.message });
       }
+
+      const confirmMsg = {
+        en: "Your taxi booking has been confirmed successfully.",
+        nl: "Uw taxiboeking is succesvol bevestigd.",
+        fr: "Votre réservation de taxi a été confirmée avec succès."
+      };
+
+      parsed.reply = parsed.reply + `\n\nBooking ID: ${bookingId}\n\n${confirmMsg[lang] || confirmMsg.en}`;
     }
 
     return res.status(200).json(parsed);

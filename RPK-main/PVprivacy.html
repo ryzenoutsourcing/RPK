@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Privacyverklaring | Fleetconnect Taxi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+            height: 100vh;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        #background-map {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        .floating-container {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 24px;
+            height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+        .floating-container::-webkit-scrollbar { width: 6px; }
+        .floating-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        .floating-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.3); border-radius: 10px; }
+
+        .content-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 40px 48px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            margin-bottom: 24px;
+            position: relative;
+        }
+        .language-menu {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            display: flex;
+            gap: 12px;
+            background: rgba(255,255,255,0.7);
+            padding: 6px 12px;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .lang-btn {
+            background: none;
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 30px;
+            transition: all 0.2s;
+            color: #1a5c8c;
+        }
+        .lang-btn.active {
+            background: #2c7da0;
+            color: white;
+        }
+        .lang-btn:hover:not(.active) {
+            background: rgba(44,125,160,0.2);
+        }
+        h1 {
+            font-family: 'Inter', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a2a3a;
+            border-left: 4px solid #2c7da0;
+            padding-left: 20px;
+            margin-bottom: 24px;
+            margin-top: 0;
+        }
+        .last-updated {
+            color: #2c7da0;
+            font-size: 0.8rem;
+            margin-bottom: 24px;
+            font-weight: 500;
+        }
+        .contact-block {
+            background: rgba(44, 125, 160, 0.08);
+            padding: 20px 24px;
+            border-radius: 20px;
+            border-left: 3px solid #2c7da0;
+            margin-bottom: 24px;
+        }
+        h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1a5c8c;
+            margin: 28px 0 12px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: 6px;
+        }
+        p, li {
+            color: #3a4a5a;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        ul { margin-left: 24px; margin-bottom: 16px; }
+        a {
+            color: #2c7da0;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        a:hover { text-decoration: underline; }
+        hr { margin: 24px 0; border-color: rgba(0,0,0,0.05); }
+
+        .footer-links {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 20px 32px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .footer-links a {
+            margin: 0 12px;
+            font-size: 0.8rem;
+            color: #1a5c8c;
+        }
+        .footer-links a:hover { color: #2c7da0; }
+        .back-home-btn {
+            display: inline-block;
+            background: #2c7da0;
+            color: white;
+            padding: 10px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-top: 16px;
+            transition: background 0.2s;
+        }
+        .back-home-btn:hover {
+            background: #1a5c8c;
+            text-decoration: none;
+        }
+        @media (max-width: 700px) {
+            .content-card { padding: 24px 20px; }
+            h1 { font-size: 1.5rem; }
+            h2 { font-size: 1.1rem; }
+            .floating-container { margin: 20px auto; height: calc(100vh - 40px); padding: 0 16px; }
+            .footer-links a { display: inline-block; margin: 6px 8px; }
+            .language-menu { top: 10px; right: 15px; gap: 6px; }
+            .lang-btn { font-size: 0.7rem; padding: 2px 6px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="background-map"></div>
+    <div class="floating-container">
+        <div class="content-card">
+            <div class="language-menu">
+                <button class="lang-btn active" data-lang="nl">NL</button>
+                <button class="lang-btn" data-lang="fr">FR</button>
+                <button class="lang-btn" data-lang="en">EN</button>
+            </div>
+            <h1 id="title">Privacyverklaring</h1>
+            <div class="last-updated" id="last-updated">Laatst bijgewerkt: 1 mei 2026</div>
+
+            <div class="contact-block" id="contact-block">
+                <p><strong>Fleetconnect Taxi</strong><br>
+                België<br>
+                E-mail: <a href="mailto:info@fleetconnect.be">info@fleetconnect.be</a></p>
+            </div>
+
+            <h2 id="h2-1">1. Verwerkingsverantwoordelijke</h2>
+            <p id="p-1">De verwerkingsverantwoordelijke voor de verwerking van uw persoonsgegevens is <strong>Fleetconnect Taxi</strong>, gevestigd te België.</p>
+
+            <h2 id="h2-2">2. Welke persoonsgegevens verwerken wij?</h2>
+            <p id="p-2">Wij verwerken persoonsgegevens in overeenstemming met de Algemene Verordening Gegevensbescherming (AVG):</p>
+            <ul id="list-2">
+                <li>Identificatiegegevens: naam, telefoonnummer, e-mailadres</li>
+                <li>Ritgegevens: ophaal- en bestemmingsadres, datum en tijdstip van de rit</li>
+                <li>Vluchtnummer (optioneel) – voor het monitoren van vertragingen</li>
+                <li>Betalingsgegevens</li>
+                <li>Technische gegevens: IP-adres, browsertype</li>
+                <li>Bijzondere verzoeken: kinderzitjes, huisdieren</li>
+            </ul>
+
+            <h2 id="h2-3">3. Doeleinden en rechtsgrond</h2>
+            <p id="p-3">Wij verwerken uw persoonsgegevens op basis van:</p>
+            <ul id="list-3">
+                <li><strong>Uitvoering van de overeenkomst</strong> – voor het uitvoeren van de taxirit.</li>
+                <li><strong>Wettelijke verplichting</strong> – voor ritregistratie.</li>
+                <li><strong>Gerechtvaardigd belang</strong> – voor direct marketing en website-optimalisatie.</li>
+                <li><strong>Toestemming</strong> – voor marketingcookies en nieuwsbrieven.</li>
+            </ul>
+
+            <h2 id="h2-4">4. Bewaartermijnen</h2>
+            <ul id="list-4">
+                <li><strong>Ritgegevens</strong> – maximaal 12 maanden, daarna geanonimiseerd.</li>
+                <li><strong>Factuurgegevens</strong> – 7 jaar (fiscale bewaarplicht).</li>
+                <li><strong>Contactgegevens voor marketing</strong> – tot intrekking toestemming.</li>
+            </ul>
+
+            <h2 id="h2-5">5. Verstrekking aan derden</h2>
+            <p id="p-5">Wij delen uw persoonsgegevens uitsluitend met: chauffeurs (voor uitvoering rit), softwareleveranciers (met verwerkersovereenkomst) en overheidsinstanties indien wettelijk verplicht.</p>
+
+            <h2 id="h2-6">6. Uw rechten onder de AVG</h2>
+            <p id="p-6">U heeft recht op inzage, rectificatie, gegevenswissing, beperking van verwerking, gegevensoverdraagbaarheid en bezwaar. Stuur een verzoek naar <a href="mailto:privacy@fleetconnect.be">privacy@fleetconnect.be</a>.</p>
+
+            <h2 id="h2-7">7. Klacht indienen</h2>
+            <p id="p-7">U heeft het recht om een klacht in te dienen bij de <strong>Gegevensbeschermingsautoriteit (GBA)</strong>, Drukpersstraat 35, 1000 Brussel – <a href="https://www.gegevensbeschermingsautoriteit.be" target="_blank">www.gegevensbeschermingsautoriteit.be</a>.</p>
+
+            <hr>
+            <p id="copyright" style="text-align:center; font-size:0.8rem;">© 2026 Fleetconnect Taxi</p>
+        </div>
+
+        <div class="footer-links" id="footer-links">
+            <a href="PV.html">🏠 Home</a> |
+            <a href="PVfaq.html">❓ FAQ</a> |
+            <a href="PVprivacy.html">🔒 Privacy</a> |
+            <a href="PVcookiebeleid.html">🍪 Cookiebeleid</a> |
+            <a href="PValgemene-voorwaarden.html">📜 Algemene voorwaarden</a>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('background-map').setView([50.85, 4.35], 13);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Vertalingen voor privacy pagina
+        const translations = {
+            nl: {
+                title: "Privacyverklaring",
+                lastUpdated: "Laatst bijgewerkt: 1 mei 2026",
+                contactBlock: "<strong>Fleetconnect Taxi</strong><br>België<br>E-mail: <a href='mailto:info@fleetconnect.be'>info@fleetconnect.be</a>",
+                h2_1: "1. Verwerkingsverantwoordelijke",
+                p_1: "De verwerkingsverantwoordelijke voor de verwerking van uw persoonsgegevens is <strong>Fleetconnect Taxi</strong>, gevestigd te België.",
+                h2_2: "2. Welke persoonsgegevens verwerken wij?",
+                p_2: "Wij verwerken persoonsgegevens in overeenstemming met de Algemene Verordening Gegevensbescherming (AVG):",
+                list_2: ["Identificatiegegevens: naam, telefoonnummer, e-mailadres","Ritgegevens: ophaal- en bestemmingsadres, datum en tijdstip van de rit","Vluchtnummer (optioneel) – voor het monitoren van vertragingen","Betalingsgegevens","Technische gegevens: IP-adres, browsertype","Bijzondere verzoeken: kinderzitjes, huisdieren"],
+                h2_3: "3. Doeleinden en rechtsgrond",
+                p_3: "Wij verwerken uw persoonsgegevens op basis van:",
+                list_3: ["<strong>Uitvoering van de overeenkomst</strong> – voor het uitvoeren van de taxirit.","<strong>Wettelijke verplichting</strong> – voor ritregistratie.","<strong>Gerechtvaardigd belang</strong> – voor direct marketing en website-optimalisatie.","<strong>Toestemming</strong> – voor marketingcookies en nieuwsbrieven."],
+                h2_4: "4. Bewaartermijnen",
+                list_4: ["<strong>Ritgegevens</strong> – maximaal 12 maanden, daarna geanonimiseerd.","<strong>Factuurgegevens</strong> – 7 jaar (fiscale bewaarplicht).","<strong>Contactgegevens voor marketing</strong> – tot intrekking toestemming."],
+                h2_5: "5. Verstrekking aan derden",
+                p_5: "Wij delen uw persoonsgegevens uitsluitend met: chauffeurs (voor uitvoering rit), softwareleveranciers (met verwerkersovereenkomst) en overheidsinstanties indien wettelijk verplicht.",
+                h2_6: "6. Uw rechten onder de AVG",
+                p_6: "U heeft recht op inzage, rectificatie, gegevenswissing, beperking van verwerking, gegevensoverdraagbaarheid en bezwaar. Stuur een verzoek naar <a href='mailto:privacy@fleetconnect.be'>privacy@fleetconnect.be</a>.",
+                h2_7: "7. Klacht indienen",
+                p_7: "U heeft het recht om een klacht in te dienen bij de <strong>Gegevensbeschermingsautoriteit (GBA)</strong>, Drukpersstraat 35, 1000 Brussel – <a href='https://www.gegevensbeschermingsautoriteit.be' target='_blank'>www.gegevensbeschermingsautoriteit.be</a>.",
+                copyright: "© 2026 Fleetconnect Taxi"
+            },
+            fr: {
+                title: "Déclaration de confidentialité",
+                lastUpdated: "Dernière mise à jour : 1 mai 2026",
+                contactBlock: "<strong>Fleetconnect Taxi</strong><br>Belgique<br>E-mail: <a href='mailto:info@fleetconnect.be'>info@fleetconnect.be</a>",
+                h2_1: "1. Responsable du traitement",
+                p_1: "Le responsable du traitement de vos données personnelles est <strong>Fleetconnect Taxi</strong>, établi en Belgique.",
+                h2_2: "2. Quelles données personnelles traitons-nous ?",
+                p_2: "Nous traitons les données personnelles conformément au Règlement Général sur la Protection des Données (RGPD) :",
+                list_2: ["Données d'identification : nom, numéro de téléphone, adresse e-mail","Données de course : adresse de prise en charge et de destination, date et heure","Numéro de vol (optionnel) – pour suivre les retards","Données de paiement","Données techniques : adresse IP, type de navigateur","Demandes spéciales : sièges enfants, animaux de compagnie"],
+                h2_3: "3. Finalités et base juridique",
+                p_3: "Nous traitons vos données personnelles sur la base de :",
+                list_3: ["<strong>Exécution du contrat</strong> – pour réaliser la course en taxi.","<strong>Obligation légale</strong> – pour l'enregistrement des courses.","<strong>Intérêt légitime</strong> – pour le marketing direct et l'optimisation du site.","<strong>Consentement</strong> – pour les cookies marketing et les newsletters."],
+                h2_4: "4. Durées de conservation",
+                list_4: ["<strong>Données de course</strong> – 12 mois maximum, puis anonymisées.","<strong>Données de facturation</strong> – 7 ans (obligation fiscale).","<strong>Coordonnées pour marketing</strong> – jusqu'au retrait du consentement."],
+                h2_5: "5. Communication à des tiers",
+                p_5: "Nous partageons vos données uniquement avec : les chauffeurs (pour l'exécution de la course), les fournisseurs de logiciels (avec accord de traitement) et les autorités publiques si requis par la loi.",
+                h2_6: "6. Vos droits au titre du RGPD",
+                p_6: "Vous avez droit à l'accès, la rectification, l'effacement, la limitation du traitement, la portabilité et l'opposition. Envoyez une demande à <a href='mailto:privacy@fleetconnect.be'>privacy@fleetconnect.be</a>.",
+                h2_7: "7. Introduire une plainte",
+                p_7: "Vous avez le droit d'introduire une plainte auprès de l'<strong>Autorité de protection des données (APD)</strong>, rue de la Presse 35, 1000 Bruxelles – <a href='https://www.gegevensbeschermingsautoriteit.be' target='_blank'>www.gegevensbeschermingsautoriteit.be</a>.",
+                copyright: "© 2026 Fleetconnect Taxi"
+            },
+            en: {
+                title: "Privacy Statement",
+                lastUpdated: "Last updated: 1 May 2026",
+                contactBlock: "<strong>Fleetconnect Taxi</strong><br>Belgium<br>Email: <a href='mailto:info@fleetconnect.be'>info@fleetconnect.be</a>",
+                h2_1: "1. Data Controller",
+                p_1: "The data controller for the processing of your personal data is <strong>Fleetconnect Taxi</strong>, established in Belgium.",
+                h2_2: "2. What personal data do we process?",
+                p_2: "We process personal data in accordance with the General Data Protection Regulation (GDPR):",
+                list_2: ["Identification data: name, phone number, email address","Trip data: pickup and destination address, date and time of the trip","Flight number (optional) – to monitor delays","Payment data","Technical data: IP address, browser type","Special requests: child seats, pets"],
+                h2_3: "3. Purposes and legal basis",
+                p_3: "We process your personal data based on:",
+                list_3: ["<strong>Performance of contract</strong> – to carry out the taxi ride.","<strong>Legal obligation</strong> – for trip registration.","<strong>Legitimate interest</strong> – for direct marketing and website optimization.","<strong>Consent</strong> – for marketing cookies and newsletters."],
+                h2_4: "4. Retention periods",
+                list_4: ["<strong>Trip data</strong> – maximum 12 months, then anonymized.","<strong>Invoice data</strong> – 7 years (tax retention obligation).","<strong>Marketing contact details</strong> – until consent is withdrawn."],
+                h2_5: "5. Disclosure to third parties",
+                p_5: "We share your personal data only with: drivers (to perform the ride), software providers (with data processing agreement), and government authorities if legally required.",
+                h2_6: "6. Your rights under the GDPR",
+                p_6: "You have the right to access, rectification, erasure, restriction of processing, data portability, and objection. Send a request to <a href='mailto:privacy@fleetconnect.be'>privacy@fleetconnect.be</a>.",
+                h2_7: "7. Lodging a complaint",
+                p_7: "You have the right to lodge a complaint with the <strong>Data Protection Authority (GBA)</strong>, Rue de la Presse 35, 1000 Brussels – <a href='https://www.gegevensbeschermingsautoriteit.be' target='_blank'>www.gegevensbeschermingsautoriteit.be</a>.",
+                copyright: "© 2026 Fleetconnect Taxi"
+            }
+        };
+
+        function setLanguage(lang) {
+            const t = translations[lang];
+            if (!t) return;
+            document.getElementById('title').innerText = t.title;
+            document.getElementById('last-updated').innerText = t.lastUpdated;
+            document.getElementById('contact-block').innerHTML = t.contactBlock;
+            document.getElementById('h2-1').innerText = t.h2_1;
+            document.getElementById('p-1').innerHTML = t.p_1;
+            document.getElementById('h2-2').innerText = t.h2_2;
+            document.getElementById('p-2').innerText = t.p_2;
+            const list2 = document.getElementById('list-2');
+            list2.innerHTML = t.list_2.map(li => `<li>${li}</li>`).join('');
+            document.getElementById('h2-3').innerText = t.h2_3;
+            document.getElementById('p-3').innerText = t.p_3;
+            const list3 = document.getElementById('list-3');
+            list3.innerHTML = t.list_3.map(li => `<li>${li}</li>`).join('');
+            document.getElementById('h2-4').innerText = t.h2_4;
+            const list4 = document.getElementById('list-4');
+            list4.innerHTML = t.list_4.map(li => `<li>${li}</li>`).join('');
+            document.getElementById('h2-5').innerText = t.h2_5;
+            document.getElementById('p-5').innerText = t.p_5;
+            document.getElementById('h2-6').innerText = t.h2_6;
+            document.getElementById('p-6').innerHTML = t.p_6;
+            document.getElementById('h2-7').innerText = t.h2_7;
+            document.getElementById('p-7').innerHTML = t.p_7;
+            document.getElementById('copyright').innerText = t.copyright;
+            // Update active class on buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                if (btn.getAttribute('data-lang') === lang) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                setLanguage(btn.getAttribute('data-lang'));
+            });
+        });
+
+        // Dutch by default
+        setLanguage('nl');
+    </script>
+</body>
+</html>
