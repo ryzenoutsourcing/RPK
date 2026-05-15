@@ -163,6 +163,7 @@
         /* AI CHAT WIDGET */
         #ai-chat-launcher {
             position: fixed; bottom: 30px; right: 30px;
+<<<<<<< phase-1-1-ai-booking-unification-10696512912830231354
             width: 70px; height: 70px; background: var(--prim-accent);
             color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;
             cursor: pointer; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -195,6 +196,110 @@
         .msg.user { align-self: flex-end; background: var(--prim-accent); color: white; border-bottom-right-radius: 4px; }
 
         /* Premium Card in Chat */
+=======
+            width: 65px; height: 65px;
+            background: var(--prim-accent);
+            color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 10000;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #ai-chat-launcher:hover { transform: scale(1.1); }
+        #ai-chat-launcher i { font-size: 28px; }
+        #ai-chat-launcher::before {
+            content: "K2000 — Driving Assistant";
+            position: absolute;
+            right: 80px;
+            background: white;
+            color: var(--header-dark);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            opacity: 1; /* Partially expanded welcome state */
+            pointer-events: none;
+            transition: 0.3s;
+            transform: translateX(0);
+            border: 1px solid var(--prim-accent);
+        }
+        #ai-chat-launcher:hover::before {
+            background: var(--prim-accent);
+            color: white;
+        }
+
+        #ai-chat-container {
+            position: fixed; bottom: 110px; right: 30px;
+            width: 450px; max-width: calc(100vw - 40px); height: 700px; max-height: calc(100vh - 160px);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(15px);
+            border-radius: 28px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+            z-index: 10000;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transform: translateY(30px) scale(0.95); opacity: 0; visibility: hidden;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+        #ai-chat-container.active { transform: translateY(0) scale(1); opacity: 1; visibility: visible; pointer-events: auto; }
+
+        .ai-chat-header {
+            background: var(--header-dark); color: white;
+            padding: 20px 24px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .ai-chat-header .brand { display: flex; align-items: center; gap: 12px; }
+        .ai-chat-header .brand i { color: var(--prim-accent); font-size: 20px; }
+        .ai-chat-header .brand span { font-weight: 600; letter-spacing: 0.5px; }
+        .ai-chat-header .close-chat { cursor: pointer; opacity: 0.7; transition: 0.2s; }
+        .ai-chat-header .close-chat:hover { opacity: 1; }
+
+        #ai-chat-messages {
+            flex: 1; overflow-y: auto; padding: 24px;
+            display: flex; flex-direction: column; gap: 16px;
+            scrollbar-width: thin; scrollbar-color: var(--prim-accent) transparent;
+            scroll-behavior: smooth;
+        }
+        #ai-chat-messages::-webkit-scrollbar { width: 6px; }
+        #ai-chat-messages::-webkit-scrollbar-thumb { background: var(--prim-accent); border-radius: 10px; }
+
+        .chat-msg { max-width: 85%; padding: 14px 18px; border-radius: 18px; font-size: 0.95rem; line-height: 1.5; position: relative; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-msg.user { align-self: flex-end; background: var(--prim-accent); color: white; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(44, 125, 160, 0.2); }
+        .chat-msg.ai { align-self: flex-start; background: #f0f4f8; color: var(--header-dark); border-bottom-left-radius: 4px; border: 1px solid #e1e8ef; }
+        .chat-msg .timestamp { font-size: 0.7rem; opacity: 0.6; margin-top: 6px; display: block; }
+        .chat-msg.user .timestamp { color: rgba(255,255,255,0.8); text-align: right; }
+
+        .typing-indicator {
+            align-self: flex-start; background: #f0f4f8; padding: 12px 16px; border-radius: 18px; border-bottom-left-radius: 4px;
+            display: none; align-items: center; gap: 4px;
+        }
+        .typing-indicator span { width: 6px; height: 6px; background: #8899a6; border-radius: 50%; animation: blink 1.4s infinite both; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink { 0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1.1); } }
+
+        .ai-chat-input-area { padding: 20px 24px; background: white; border-top: 1px solid #eee; }
+        .ai-input-wrapper {
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 30px;
+            display: flex; align-items: center; padding: 6px 6px 6px 20px; transition: 0.3s;
+        }
+        .ai-input-wrapper:focus-within { border-color: var(--prim-accent); box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.1); }
+        #ai-chat-input {
+            flex: 1; border: none; background: transparent; padding: 10px 0; font-size: 0.95rem; outline: none; color: var(--header-dark);
+        }
+        #send-ai-msg {
+            width: 42px; height: 42px; background: var(--prim-accent); color: white;
+            border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
+        }
+        #send-ai-msg:hover { background: var(--button-hover); transform: scale(1.05); }
+
+        /* Booking Confirmation Card Styles */
+>>>>>>> main
         .booking-card {
             background: white; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden;
             margin-top: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-left: 5px solid var(--prim-accent);
@@ -207,9 +312,23 @@
         .bc-row .val { font-weight: 600; color: var(--header-dark); }
         .bc-foot { padding: 15px 20px; background: #f8fafc; border-top: 1px solid #eee; text-align: center; font-weight: 700; color: var(--prim-accent); }
 
+<<<<<<< phase-1-1-ai-booking-unification-10696512912830231354
         @media (max-width: 600px) {
             #ai-chat-container { width: 100vw; height: 100vh; bottom: 0; right: 0; border-radius: 0; }
             #ai-chat-launcher::after { display: none; }
+=======
+        @media (max-width: 500px) {
+            #ai-chat-container {
+                right: 10px;
+                bottom: 85px;
+                width: calc(100vw - 20px);
+                height: calc(100vh - 100px);
+                max-height: calc(100vh - 100px);
+                border-radius: 20px;
+            }
+            #ai-chat-launcher { right: 20px; bottom: 20px; width: 60px; height: 60px; }
+            #ai-chat-launcher::before { display: none; }
+>>>>>>> main
         }
     </style>
 </head>
@@ -250,6 +369,7 @@
     <!-- Booking Form -->
     <div class="container" id="booking-anchor">
         <div class="one-grid-block">
+<<<<<<< phase-1-1-ai-booking-unification-10696512912830231354
             <div class="steps">
                 <button class="step-btn active" data-page="1">1. Route</button>
                 <button class="step-btn" data-page="2">2. Voertuig</button>
@@ -263,6 +383,65 @@
                 <div style="display: flex; gap: 20px;">
                     <div class="field" style="flex: 1;"><label>Datum & Tijd</label><input type="text" id="datetimeInput" placeholder="Kies datum"></div>
                     <div class="field" style="padding-top: 30px;"><label><input type="checkbox" id="roundtripCheck"> Heen en terug</label></div>
+=======
+            <div class="carousel">
+                <div class="steps">
+                    <button class="step-btn active" data-page="1">1. Ritgegevens</button>
+                    <button class="step-btn" data-page="2">2. Route & Prijs</button>
+                    <button class="step-btn" data-page="3">3. Voertuig & Opties</button>
+                    <button class="step-btn" data-page="4">4. Klantgegevens</button>
+                    <button class="step-btn" data-page="5">5. Afrekenen</button>
+                </div>
+                <div id="page1" class="carousel-page active-page">
+                    <h1>🚖 Ritgegevens</h1>
+                    <div class="sub">België – €1,50/km | geen verleden / &lt; 1u → WhatsApp</div>
+                    <div class="field"><label>📍 Ophaaladres <span class="required-star">*</span></label><div class="suggest-wrapper" id="pickupWrap"><input type="text" id="pickupInput" placeholder="bv. Gent" autocomplete="off"><div id="pickupSuggest" class="suggestions"></div></div></div>
+                    <div class="field"><label>🏁 Afzetadres <span class="required-star">*</span></label><div class="suggest-wrapper" id="dropoffWrap"><input type="text" id="dropoffInput" placeholder="bv. Brussel" autocomplete="off"><div id="dropoffSuggest" class="suggestions"></div></div></div>
+                    <div class="roundtrip-box"><input type="checkbox" id="roundtripCheckbox"><label for="roundtripCheckbox">🔄 Heen en terug rit (x2)</label></div>
+                    <div class="field"><label>✈️ Vluchtnummer (optioneel)</label><input type="text" id="flightNumber" placeholder="bv. BA398"></div>
+                    <div class="field"><label>📅 Heen datum & tijd</label><input type="text" id="datetime" placeholder="DD-MM-YYYY HH:MM" readonly style="background:#fff; cursor:pointer;"></div>
+                    <div class="field return-date-field" id="returnDateContainer">
+                        <label>📅 Terug datum & tijd</label>
+                        <input type="text" id="returnDatetime" placeholder="DD-MM-YYYY HH:MM" readonly style="background:#fff; cursor:pointer;">
+                    </div>
+                    <div id="urgentWhatsApp" class="urgent-whatsapp"><span>⚠️ Vertrekt binnen het uur – WhatsApp</span><a href="https://wa.me/32470123456" target="_blank" class="whatsapp-btn">📱 WhatsApp nu</a></div>
+                    <div id="page1Error" class="error"></div>
+                    <div class="footnote">* Verplicht</div>
+                </div>
+                <div id="page2" class="carousel-page">
+                    <h2>🗺️ Route van ophalen naar afzetten</h2>
+                    <div id="map"></div>
+                    <div class="route-legend"><div class="legend-item"><div class="legend-color green"></div><span>🟢 Ophalen (vertrekpunt)</span></div><div class="legend-item"><div class="legend-color red"></div><span>🔴 Afzetten (bestemming)</span></div><div class="legend-item"><div class="legend-color blue"></div><span>🔵 Route (berekende weg)</span></div></div>
+                    <div class="info-strip"><div class="info-card"><div class="label">📏 Afstand</div><div class="value" id="distVal">—</div><small>km</small></div><div class="info-card"><div class="label">⏱️ Reistijd</div><div class="value" id="timeVal">—</div><small>min</small></div><div class="info-card"><div class="label">💰 Prijs</div><div class="value" id="priceVal">—</div><small>€</small></div></div>
+                    <div id="page2Error" class="error"></div>
+                </div>
+                <div id="page3" class="carousel-page">
+                    <h2>🚘 Kies uw voertuig</h2>
+                    <div class="vehicle-grid" id="vehicleGrid">
+                        <div class="vehicle-card" data-vehicle="Business Class" data-extraprice="0">
+                            <div class="vehicle-emoji">🚗</div>
+                            <div class="vehicle-name">Business Class</div>
+                            <div class="vehicle-price">Standard Premium</div>
+                        </div>
+                        <div class="vehicle-card" data-vehicle="First Class Executive" data-extraprice="20">
+                            <div class="vehicle-emoji">👑</div>
+                            <div class="vehicle-name">First Class Executive</div>
+                            <div class="vehicle-price">+ €20</div>
+                        </div>
+                        <div class="vehicle-card" data-vehicle="Mercedes V-Class" data-extraprice="15">
+                            <div class="vehicle-emoji">🚐</div>
+                            <div class="vehicle-name">Mercedes V-Class</div>
+                            <div class="vehicle-price">+ €15</div>
+                        </div>
+                        <div class="vehicle-card" data-vehicle="Van / Shuttle" data-extraprice="25">
+                            <div class="vehicle-emoji">🚌</div>
+                            <div class="vehicle-name">Van / Shuttle</div>
+                            <div class="vehicle-price">+ €25</div>
+                        </div>
+                    </div>
+                    <div class="extra-fields"><h3>➕ Extra opties</h3><div class="extra-grid"><div><label>👥 Aantal passagiers</label><input type="number" id="passengers" min="1" value="1"></div><div><label>🧳 Bagagestuks</label><input type="number" id="luggage" min="0" value="0"></div></div><div class="checkbox-grid"><label><input type="checkbox" id="meetGreet"> 🤝 Meet & Greet</label><label><input type="checkbox" id="kissRide"> 💋 Kiss & Ride</label><label><input type="checkbox" id="waterBottle"> 💧 Waterfles</label><label><input type="checkbox" id="wifi"> 📶 WiFi</label></div><div><label>📝 Speciale wensen</label><textarea id="specialWishes" rows="2" placeholder="bv. kinderzitje"></textarea></div></div>
+                    <div id="page3Error" class="error"></div>
+>>>>>>> main
                 </div>
                 <div id="map"></div>
                 <div class="info-strip">
@@ -280,6 +459,19 @@
                         <label class="payment-item"><input type="checkbox" data-extra="WiFi"> WiFi</label>
                         <label class="payment-item"><input type="checkbox" data-extra="Child Seat"> Kinderzitje</label>
                     </div>
+<<<<<<< phase-1-1-ai-booking-unification-10696512912830231354
+=======
+                    <div class="payment-method">
+                        <span>Betaalmethode:</span>
+                        <label><input type="radio" name="payment" value="Cash" checked> 💵 Cash</label>
+                        <label><input type="radio" name="payment" value="Card"> 💳 Card</label>
+                        <label><input type="radio" name="payment" value="Invoice"> 📄 Invoice</label>
+                        <label><input type="radio" name="payment" value="Online"> 📱 Online</label>
+                    </div>
+                    <div id="totalDisplay" style="background:#f8fafc;padding:20px;text-align:center;font-size:1.5rem;font-weight:700;margin:20px 0">Totaal: € 0,00</div>
+                    <button id="finalConfirmBtn" style="background:#10b981;width:100%;padding:14px;border-radius:40px;border:none;font-weight:700;cursor:pointer;">✅ Bevestig boeking</button>
+                    <div id="page5Error" class="error"></div>
+>>>>>>> main
                 </div>
             </div>
             <div id="page3" class="carousel-page">
@@ -334,9 +526,38 @@
     <!-- AI Widget -->
     <div id="ai-chat-launcher"><i class="fas fa-robot"></i></div>
     <div id="ai-chat-container">
+<<<<<<< phase-1-1-ai-booking-unification-10696512912830231354
         <div class="ai-header"><div class="brand">K2000 — Driving Assistant</div><div class="close" id="close-ai" style="cursor:pointer;">&times;</div></div>
         <div id="ai-messages"><div class="msg ai">Welcome. I am K2000. How may I assist you today?</div></div>
         <div class="ai-input-area"><div class="input-wrap"><input type="text" id="ai-input" placeholder="Stel een vraag..."><button id="ai-send">></button></div></div>
+=======
+        <div class="ai-chat-header">
+            <div class="brand">
+                <i class="fas fa-robot"></i>
+                <span>K2000 — Driving Assistant</span>
+            </div>
+            <div class="close-chat" id="close-ai-chat">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+        <div id="ai-chat-messages">
+            <div class="chat-msg ai">
+                Good afternoon. I am K2000, your intelligent driving assistant. I am here to ensure your travel arrangements are handled with precision and luxury. Where can I take you today?
+                <span class="timestamp" id="ai-initial-time"></span>
+            </div>
+        </div>
+        <div class="typing-indicator" id="ai-typing">
+            <span></span><span></span><span></span>
+        </div>
+        <div class="ai-chat-input-area">
+            <div class="ai-input-wrapper">
+                <input type="text" id="ai-chat-input" placeholder="Type your message..." autocomplete="off">
+                <button id="send-ai-msg">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+>>>>>>> main
     </div>
 
     <!-- Footer -->
@@ -392,6 +613,7 @@
         state.currentPage = p; if(p===4) renderSummary();
     }
 
+<<<<<<< phase-1-1-ai-booking-unification-10696512912830231354
     function renderSummary() {
         document.getElementById('summaryBox').innerHTML = `<p><strong>📍 Route:</strong> ${document.getElementById('pickupInput').value} -> ${document.getElementById('dropoffInput').value}</p><p><strong>🚘 Wagen:</strong> ${state.selectedVehicle}</p><p><strong>📅 Datum:</strong> ${document.getElementById('datetimeInput').value}</p>`;
     }
@@ -402,6 +624,97 @@
         const id = BookingLogic.generateBookingId();
         const { error } = await supabase.from('bookings').insert([{ id, ...payload, amount: parseFloat(document.getElementById('priceVal').innerText), partner_id: BookingLogic.CONFIG.PARTNER_ID, status: "pending" }]);
         if(!error) { alert("Boeking Bevestigd! Referentie: " + id); location.reload(); } else alert(error.message);
+=======
+    function createBookingCard(data) {
+        // Humanize vehicle name
+        const vehicleNames = {
+            'Standaard': 'Premium Sedan',
+            'Business Class': 'Business Class Sedan',
+            'Break': 'Luxury Estate',
+            'Exclusieve': 'First Class Executive',
+            'First Class Executive': 'First Class Executive Sedan',
+            'Mini Van': 'Premium Multi-Purpose Van',
+            'Mercedes V-Class': 'Mercedes V-Class (Premium MPV)',
+            'Van / Shuttle': 'Group Shuttle Van'
+        };
+        const vehicleDisplay = vehicleNames[data.vehicle] || data.vehicle || 'Premium Sedan';
+
+        return `
+            <div class="booking-card">
+                <div class="booking-card-header">
+                    <span class="id">REFERENCE: ${data.id || 'CONFIRMED'}</span>
+                    <span class="status">Scheduled</span>
+                </div>
+                <div class="booking-card-body">
+                    <div class="booking-info-row">
+                        <i class="fas fa-location-dot"></i>
+                        <div class="booking-info-content">
+                            <span class="label">PICKUP LOCATION</span>
+                            <span class="value">${data.pickup || '—'}</span>
+                        </div>
+                    </div>
+                    <div class="booking-info-row">
+                        <i class="fas fa-location-arrow"></i>
+                        <div class="booking-info-content">
+                            <span class="label">DESTINATION</span>
+                            <span class="value">${data.destination || '—'}</span>
+                        </div>
+                    </div>
+                    <div class="booking-info-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div style="display: flex; gap: 12px;">
+                            <i class="fas fa-calendar-day"></i>
+                            <div class="booking-info-content">
+                                <span class="label">DATE</span>
+                                <span class="value">${data.date || '—'}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <i class="fas fa-clock"></i>
+                            <div class="booking-info-content">
+                                <span class="label">TIME</span>
+                                <span class="value">${data.time || '—'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="booking-info-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div style="display: flex; gap: 12px;">
+                            <i class="fas fa-car-side"></i>
+                            <div class="booking-info-content">
+                                <span class="label">VEHICLE CLASS</span>
+                                <span class="value">${vehicleDisplay}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <i class="fas fa-credit-card"></i>
+                            <div class="booking-info-content">
+                                <span class="label">PAYMENT</span>
+                                <span class="value">${data.payment || 'Confirmed'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="booking-info-row">
+                        <i class="fas fa-user-tie"></i>
+                        <div class="booking-info-content">
+                            <span class="label">PASSENGER</span>
+                            <span class="value">${data.name || '—'}</span>
+                        </div>
+                    </div>
+                    ${data.extras ? `
+                    <div class="booking-info-row">
+                        <i class="fas fa-plus-circle"></i>
+                        <div class="booking-info-content">
+                            <span class="label">EXTRAS</span>
+                            <span class="value">${data.extras}</span>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+                <div class="booking-card-footer">
+                    <div class="price">Fleetconnect K2000 Luxury Intelligence</div>
+                </div>
+            </div>
+        `;
+>>>>>>> main
     }
 
     document.getElementById('nextBtn').onclick = () => state.currentPage === 4 ? submitBooking() : showPage(state.currentPage + 1);
@@ -420,6 +733,7 @@
         m.scrollTop = m.scrollHeight;
 
         try {
+<<<<<<< phase-1-1-ai-booking-unification-10696512912830231354
             const res = await fetch('/api/ai-chat', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:text, conversationHistory:h})});
             const d = await res.json();
             const a = document.createElement('div'); a.className='msg ai'; a.innerText=d.reply; m.appendChild(a);
@@ -441,6 +755,52 @@
             }
         } catch(e) { console.error(e); }
         m.scrollTop = m.scrollHeight;
+=======
+            const response = await fetch('/api/ai-chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: msg, conversationHistory: aiConversationHistory })
+            });
+
+            if (!response.ok) throw new Error('Network response was not ok');
+
+            const data = await response.json();
+
+            // Artificial delay for realism
+            setTimeout(() => {
+                aiTyping.style.display = 'none';
+
+                if (data.reply) {
+                    addChatBubble('ai', data.reply);
+                    aiConversationHistory.push({ role: 'assistant', content: JSON.stringify(data) });
+                }
+
+                // If a booking was just created
+                if (data.intent === 'booking' && data.missing_fields && data.missing_fields.length === 0) {
+                    setTimeout(() => {
+                        const cardHtml = createBookingCard({
+                            id: data.reply.match(/PK-[\d-]+/) || data.reply.match(/T-PV-[\d-]+/) || 'CONFIRMED',
+                            pickup: data.pickup,
+                            destination: data.destination,
+                            date: data.date,
+                            time: data.time,
+                            vehicle: data.vehicle,
+                            name: data.name,
+                            payment: data.payment_method,
+                            extras: data.extras
+                        });
+                        addChatBubble('ai', cardHtml, true);
+                    }, 800);
+                }
+            }, 1000);
+
+
+        } catch (error) {
+            console.error('AI Error:', error);
+            aiTyping.style.display = 'none';
+            addChatBubble('ai', 'I apologize, but I am experiencing a brief connection issue. Please try again in a moment.');
+        }
+>>>>>>> main
     }
     document.getElementById('ai-send').onclick = send;
     i.onkeypress = (e) => { if(e.key==='Enter') send(); };

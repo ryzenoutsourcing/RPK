@@ -35,7 +35,7 @@
         .floating-container::-webkit-scrollbar { width: 6px; }
         .floating-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
         .floating-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.3); border-radius: 10px; }
-
+        
         .content-card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
@@ -114,14 +114,14 @@
             font-size: 0.9rem;
         }
         ul { margin-left: 24px; margin-bottom: 16px; }
-        a {
+        a { 
             color: #2c7da0;
-            text-decoration: none;
-            font-weight: 500;
+            text-decoration: none; 
+            font-weight: 500; 
         }
         a:hover { text-decoration: underline; }
         hr { margin: 24px 0; border-color: rgba(0,0,0,0.05); }
-
+        
         .footer-links {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
@@ -173,16 +173,16 @@
             </div>
             <h1 id="title">Privacyverklaring</h1>
             <div class="last-updated" id="last-updated">Laatst bijgewerkt: 1 mei 2026</div>
-
+            
             <div class="contact-block" id="contact-block">
                 <p><strong>Fleetconnect Taxi</strong><br>
                 België<br>
                 E-mail: <a href="mailto:info@fleetconnect.be">info@fleetconnect.be</a></p>
             </div>
-
+            
             <h2 id="h2-1">1. Verwerkingsverantwoordelijke</h2>
             <p id="p-1">De verwerkingsverantwoordelijke voor de verwerking van uw persoonsgegevens is <strong>Fleetconnect Taxi</strong>, gevestigd te België.</p>
-
+            
             <h2 id="h2-2">2. Welke persoonsgegevens verwerken wij?</h2>
             <p id="p-2">Wij verwerken persoonsgegevens in overeenstemming met de Algemene Verordening Gegevensbescherming (AVG):</p>
             <ul id="list-2">
@@ -193,7 +193,7 @@
                 <li>Technische gegevens: IP-adres, browsertype</li>
                 <li>Bijzondere verzoeken: kinderzitjes, huisdieren</li>
             </ul>
-
+            
             <h2 id="h2-3">3. Doeleinden en rechtsgrond</h2>
             <p id="p-3">Wij verwerken uw persoonsgegevens op basis van:</p>
             <ul id="list-3">
@@ -202,27 +202,27 @@
                 <li><strong>Gerechtvaardigd belang</strong> – voor direct marketing en website-optimalisatie.</li>
                 <li><strong>Toestemming</strong> – voor marketingcookies en nieuwsbrieven.</li>
             </ul>
-
+            
             <h2 id="h2-4">4. Bewaartermijnen</h2>
             <ul id="list-4">
                 <li><strong>Ritgegevens</strong> – maximaal 12 maanden, daarna geanonimiseerd.</li>
                 <li><strong>Factuurgegevens</strong> – 7 jaar (fiscale bewaarplicht).</li>
                 <li><strong>Contactgegevens voor marketing</strong> – tot intrekking toestemming.</li>
             </ul>
-
+            
             <h2 id="h2-5">5. Verstrekking aan derden</h2>
             <p id="p-5">Wij delen uw persoonsgegevens uitsluitend met: chauffeurs (voor uitvoering rit), softwareleveranciers (met verwerkersovereenkomst) en overheidsinstanties indien wettelijk verplicht.</p>
-
+            
             <h2 id="h2-6">6. Uw rechten onder de AVG</h2>
             <p id="p-6">U heeft recht op inzage, rectificatie, gegevenswissing, beperking van verwerking, gegevensoverdraagbaarheid en bezwaar. Stuur een verzoek naar <a href="mailto:privacy@fleetconnect.be">privacy@fleetconnect.be</a>.</p>
-
+            
             <h2 id="h2-7">7. Klacht indienen</h2>
             <p id="p-7">U heeft het recht om een klacht in te dienen bij de <strong>Gegevensbeschermingsautoriteit (GBA)</strong>, Drukpersstraat 35, 1000 Brussel – <a href="https://www.gegevensbeschermingsautoriteit.be" target="_blank">www.gegevensbeschermingsautoriteit.be</a>.</p>
-
+            
             <hr>
             <p id="copyright" style="text-align:center; font-size:0.8rem;">© 2026 Fleetconnect Taxi</p>
         </div>
-
+        
         <div class="footer-links" id="footer-links">
             <a href="PV.html">🏠 Home</a> |
             <a href="PVfaq.html">❓ FAQ</a> |
@@ -231,7 +231,7 @@
             <a href="PValgemene-voorwaarden.html">📜 Algemene voorwaarden</a>
         </div>
     </div>
-
+    
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         var map = L.map('background-map').setView([50.85, 4.35], 13);
@@ -240,7 +240,7 @@
             subdomains: 'abcd',
             maxZoom: 19
         }).addTo(map);
-
+        
         // Vertalingen voor privacy pagina
         const translations = {
             nl: {
@@ -310,7 +310,7 @@
                 copyright: "© 2026 Fleetconnect Taxi"
             }
         };
-
+        
         function setLanguage(lang) {
             const t = translations[lang];
             if (!t) return;
@@ -343,13 +343,13 @@
                 else btn.classList.remove('active');
             });
         }
-
+        
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 setLanguage(btn.getAttribute('data-lang'));
             });
         });
-
+        
         // Dutch by default
         setLanguage('nl');
     </script>

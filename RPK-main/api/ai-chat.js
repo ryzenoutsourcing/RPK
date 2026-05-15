@@ -40,33 +40,31 @@ module.exports = async function handler(req, res) {
         content: `
 You are K2000 — Driving Assistant, a futuristic luxury chauffeur assistant for Fleetconnect.
 
-CURRENT DATE/TIME (Europe/Brussels): ${brusselsTimeStr}
-
 Your persona:
 - Intelligent, calm, premium, and reassuring.
 - You speak like a high-end AI chauffeur (think futuristic luxury SaaS / Uber Black elite).
 - Your tone is professional, sophisticated, and concise.
 - Avoid chatbot clichés, emoji spam, and technical phrasing.
-- Language Continuity: You MUST detect the user's language (Dutch, French, or English) and maintain it throughout the entire conversation. Return the detected language code in the "language" field.
+- Language Continuity: You MUST strictly maintain the user's language (Dutch, French, or English) throughout the entire conversation and booking confirmation.
 
-Vehicle Selection:
-- "Business Class" (Standard premium sedan, surcharge: €0)
-- "First Class Executive" (Top-tier luxury sedan, surcharge: €20)
-- "Mercedes V-Class" (Premium MPV up to 7 pax, surcharge: €15)
-- "Van / Shuttle" (Large group transport 8+ pax, surcharge: €25)
-
-Intelligent Suggestions:
-- Airport transfer -> Business Class
-- VIP/Executive trip -> First Class Executive
-- Groups/Families -> Mercedes V-Class or Van / Shuttle
-
-Rules:
+Vehicle Selection & Pricing:
 - Standard Pricing: €1.50 per km.
-- European Format: Use DD-MM-YYYY and 24h (HH:MM) for dates and times.
-- Normalization: Normalize "today", "tomorrow" etc. into DD-MM-YYYY using the current date provided above.
-- Payment Methods: [Cash, Card, Invoice, Online].
-- Return ONLY valid JSON.
+- Vehicle Classes & Surcharges:
+  - "Business Class" (Standard premium sedan, +€0)
+  - "First Class Executive" (Top-tier luxury sedan, +€20)
+  - "Mercedes V-Class" (Premium MPV for up to 7 passengers, +€15)
+  - "Van / Shuttle" (Large group transport up to 8+ passengers, +€25)
+- Intelligent Suggestions: Propose "First Class Executive" for VIP trips, "Mercedes V-Class" or "Van / Shuttle" for groups, and "Business Class" for standard airport transfers.
+
+Extras & Validation:
+- Available Extras: Water bottles, Child seat, Meet & Greet, WiFi.
+- Validation: Ensure all pickup, destination, and passenger requirements are met.
+
+IMPORTANT:
+- Always return ONLY valid JSON.
 - NEVER use markdown or \`\`\`json blocks.
+- Dates: Use DD-MM-YYYY format.
+- Time: Use 24h European format (HH:MM).
 
 JSON FORMAT:
 {
@@ -80,8 +78,6 @@ JSON FORMAT:
   "date": "",
   "time": "",
   "vehicle": "",
-  "passengers": 1,
-  "luggage": 0,
   "payment_method": "",
   "flight_number": "",
   "extras": "",
@@ -89,6 +85,13 @@ JSON FORMAT:
   "follow_up_question": "",
   "reply": ""
 }
+
+Rules:
+- missing_fields: name, email, phone, pickup, destination, date, time, vehicle, payment_method.
+- payment_method: Must be one of [Cash, Card, Invoice, Online].
+- vehicle: Use one of the specific classes mentioned above.
+- If all required fields exist: missing_fields = []
+- Respond in the "reply" field in the user's language using your premium assistant persona.
 `
       },
       ...conversationHistory,
@@ -173,9 +176,16 @@ JSON FORMAT:
         vehicle: parsed.vehicle || "Business Class",
         extras: parsed.extras || "",
         amount: 0,
+
         payment: parsed.payment_method || "pending",
+
         status: "pending",
-        customer_id: "CUST-" + parsed.email.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
+
+        customer_id:
+          "CUST-" +
+          parsed.email
+            .replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
+
         form_data: {
           source: "ai-chat",
           ai: true,
@@ -187,23 +197,80 @@ JSON FORMAT:
         partner_id: BookingLogic.CONFIG.PARTNER_ID
       };
 
-      const { data, error } = await supabase
-        .from("bookings")
-        .insert([insertPayload])
-        .select();
+      console.log(
+        "INSERT PAYLOAD:",
+        insertPayload
+      );
+
+      const existingBooking =
+  await supabase
+    .from("bookings")
+    .select("id, form_data")
+    .eq("email", parsed.email)
+    .eq("datetime", parsed.date)
+    .eq("time", parsed.time)
+    .maybeSingle();
+
+if (existingBooking.data) {
+  // If the booking was created in this same AI session, don't repeat the error
+  const isSameSession = conversationHistory.some(m =>
+    m.role === "assistant" && m.content.includes(existingBooking.data.id)
+  );
+
+  if (!isSameSession) {
+    const duplicateMsg = {
+      en: "A booking already exists for this date and time.",
+      nl: "Er bestaat al een boeking voor deze datum en tijd.",
+      fr: "Une réservation existe déjà pour cette date et cette heure."
+    };
+
+    // Simple language detection based on current reply
+    let reply = duplicateMsg.en;
+    if (/[a-z]/.test(parsed.reply)) {
+       // Heuristic: check for common Dutch/French words
+       if (/\b(de|het|een|is|voor|op)\b/i.test(parsed.reply)) reply = duplicateMsg.nl;
+       else if (/\b(le|la|les|est|pour|sur)\b/i.test(parsed.reply)) reply = duplicateMsg.fr;
+    }
+
+    return res.status(200).json({
+      ...parsed,
+      reply: reply
+    });
+  }
+}
+     const { data, error } =
+  await supabase
+    .from("bookings")
+    .insert([insertPayload])
+    .select();
 
       if (error) {
         console.error("SUPABASE INSERT ERROR:", error);
         return res.status(500).json({ error: error.message });
       }
 
-      const confirmMsg = {
-        en: "Your taxi booking has been confirmed successfully.",
-        nl: "Uw taxiboeking is succesvol bevestigd.",
-        fr: "Votre réservation de taxi a été confirmée avec succès."
-      };
+      console.log(
+        "BOOKING CREATED:",
+        data
+      );
 
-      parsed.reply = parsed.reply + `\n\nBooking ID: ${bookingId}\n\n${confirmMsg[lang] || confirmMsg.en}`;
+     const confirmMsg = {
+       en: "Your taxi booking has been confirmed successfully.",
+       nl: "Uw taxiboeking is succesvol bevestigd.",
+       fr: "Votre réservation de taxi a été confirmée avec succès."
+     };
+
+     let lang = "en";
+     if (/\b(de|het|een|is|voor|op)\b/i.test(parsed.reply)) lang = "nl";
+     else if (/\b(le|la|les|est|pour|sur)\b/i.test(parsed.reply)) lang = "fr";
+
+     parsed.reply =
+  parsed.reply +
+  `
+
+Booking ID: ${bookingId}
+
+${confirmMsg[lang]}`;
     }
 
     return res.status(200).json(parsed);

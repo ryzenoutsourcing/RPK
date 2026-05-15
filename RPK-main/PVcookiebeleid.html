@@ -35,7 +35,7 @@
         .floating-container::-webkit-scrollbar { width: 6px; }
         .floating-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
         .floating-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.3); border-radius: 10px; }
-
+        
         .content-card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
@@ -109,7 +109,7 @@
         ul { margin-left: 24px; margin-bottom: 16px; }
         a { color: #2c7da0; text-decoration: none; font-weight: 500; }
         a:hover { text-decoration: underline; }
-
+        
         .cookie-table {
             width: 100%;
             border-collapse: collapse;
@@ -125,7 +125,7 @@
             font-size: 0.85rem;
         }
         .cookie-table th { background: rgba(44, 125, 160, 0.1); font-weight: 600; color: #1a5c8c; }
-
+        
         .footer-links {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
@@ -178,10 +178,10 @@
             </div>
             <h1 id="cookie-title">Cookiebeleid</h1>
             <div class="last-updated" id="last-updated">Laatst bijgewerkt: 1 mei 2026</div>
-
+            
             <h2 id="h2-1">1. Wat zijn cookies?</h2>
             <p id="p-1">Cookies zijn kleine tekstbestandjes die worden opgeslagen op uw computer of mobiele apparaat wanneer u onze website bezoekt. Via de cookiebanner krijgen bezoekers de mogelijkheid om aan te geven of ze hun toestemming geven voor het gebruik van specifieke cookies.</p>
-
+            
             <h2 id="h2-2">2. Welke cookies gebruiken wij?</h2>
             <table class="cookie-table" id="cookie-table">
                 <thead><tr><th id="th-type">Soort cookie</th><th id="th-purpose">Doel</th><th id="th-consent">Toestemming nodig?</th></tr></thead>
@@ -191,23 +191,23 @@
                     <tr><td id="cell-marketing-name"><strong>Marketingcookies</strong></td><td id="cell-marketing-desc">Worden gebruikt om advertenties relevanter te maken</td><td id="cell-marketing-consent">Ja – expliciete toestemming via cookiebanner</td></tr>
                 </tbody>
             </table>
-
+            
             <h2 id="h2-3">3. Cookiebanner en toestemming</h2>
             <p id="p-3">Wij zijn verplicht om u vooraf te informeren over het gebruik van cookies en uw expliciete toestemming te vragen voor het plaatsen van niet-noodzakelijke cookies. U kunt uw toestemming op elk moment intrekken.</p>
-
+            
             <h2 id="h2-4">4. Uw cookievoorkeuren beheren</h2>
             <p id="p-4">U kunt op elk moment uw cookievoorkeuren wijzigen of uw toestemming intrekken via de knop 'Cookie-instellingen' hieronder.</p>
             <div style="text-align: center; margin: 24px 0;">
                 <button id="openCookieSettingsBtn" style="background:#2c7da0; color:white; padding: 10px 30px; border-radius: 40px; font-weight: bold; border: none; cursor: pointer;">🍪 Cookie-instellingen aanpassen</button>
             </div>
-
+            
             <h2 id="h2-5">5. Vragen?</h2>
             <p id="p-5">Als u vragen heeft over ons cookiebeleid, kunt u contact met ons opnemen via <a href="mailto:info@fleetconnect.be">info@fleetconnect.be</a>.</p>
-
+            
             <hr>
             <p id="copyright" style="text-align:center; font-size:0.8rem;">© 2026 Fleetconnect Taxi</p>
         </div>
-
+        
         <div class="footer-links" id="footer-links">
             <a href="PV.html">🏠 Home</a> |
             <a href="PVfaq.html">❓ FAQ</a> |
@@ -216,7 +216,7 @@
             <a href="PValgemene-voorwaarden.html">📜 Algemene voorwaarden</a>
         </div>
     </div>
-
+    
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         var map = L.map('background-map').setView([50.85, 4.35], 13);
@@ -225,7 +225,7 @@
             subdomains: 'abcd',
             maxZoom: 19
         }).addTo(map);
-
+        
         const cookieTranslations = {
             nl: {
                 title: "Cookiebeleid",
@@ -291,7 +291,7 @@
                 copyright: "© 2026 Fleetconnect Taxi"
             }
         };
-
+        
         function setCookieLanguage(lang) {
             const t = cookieTranslations[lang];
             document.getElementById('cookie-title').innerText = t.title;
@@ -325,19 +325,19 @@
                 else btn.classList.remove('active');
             });
         }
-
+        
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.addEventListener('click', () => setCookieLanguage(btn.getAttribute('data-lang')));
         });
         setCookieLanguage('nl');
-
+        
         // Cookie modal functies (ongewijzigd)
-        function getCookiePreferences() {
-            const prefs = localStorage.getItem('cookiePreferences');
-            return prefs ? JSON.parse(prefs) : null;
+        function getCookiePreferences() { 
+            const prefs = localStorage.getItem('cookiePreferences'); 
+            return prefs ? JSON.parse(prefs) : null; 
         }
-        function setCookiePreferences(preferences) {
-            localStorage.setItem('cookiePreferences', JSON.stringify(preferences));
+        function setCookiePreferences(preferences) { 
+            localStorage.setItem('cookiePreferences', JSON.stringify(preferences)); 
         }
         function showCookieModal() {
             const prefs = getCookiePreferences() || { analytical: true, marketing: false };
