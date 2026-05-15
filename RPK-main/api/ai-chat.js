@@ -1,21 +1,18 @@
 const OpenAI = require("openai").default;
-const { createClient } =
-  require("@supabase/supabase-js");
+const { createClient } = require("@supabase/supabase-js");
+const BookingLogic = require("../booking-logic");
 
-const supabase =
-  createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  );
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
 module.exports = async function handler(req, res) {
-
   try {
-
     if (req.method !== "POST") {
       return res.status(405).json({
         error: "Method not allowed"
@@ -33,8 +30,11 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    const messages = [
+    // Get current time in Europe/Brussels for the prompt
+    const now = new Date();
+    const brusselsTimeStr = now.toLocaleString("en-GB", { timeZone: "Europe/Brussels" });
 
+    const messages = [
       {
         role: "system",
         content: `
@@ -69,6 +69,7 @@ IMPORTANT:
 JSON FORMAT:
 {
   "intent": "booking",
+  "language": "en|nl|fr",
   "name": "",
   "email": "",
   "phone": "",
@@ -93,91 +94,87 @@ Rules:
 - Respond in the "reply" field in the user's language using your premium assistant persona.
 `
       },
-
       ...conversationHistory,
-
       {
         role: "user",
         content: message
       }
     ];
 
-    const completion =
-      await client.chat.completions.create({
-
+    const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
-
       messages
     });
 
-    let raw =
-      completion
-        .choices[0]
-        .message
-        .content;
+    let raw = completion.choices[0].message.content;
+    raw = raw.replace(/```json/g, "").replace(/```/g, "").trim();
+    const parsed = JSON.parse(raw);
+    const lang = parsed.language || "en";
 
-    console.log("RAW AI:", raw);
+    // Use Shared Logic for Validation
+    const validation = BookingLogic.validateBooking(parsed);
 
-    raw = raw
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
+    // Custom check for past dates using Brussels context
+    if (parsed.date && parsed.time) {
+      const bDate = BookingLogic.parseDate(parsed.date, parsed.time);
+      if (bDate < now) {
+         const pastDateMsg = {
+           en: "That departure time appears to be in the past. Could you provide a valid future time?",
+           nl: "Die vertrektijd lijkt in het verleden te liggen. Kunt u een geldige tijd in de toekomst opgeven?",
+           fr: "Cette heure de départ semble être passée. Pourriez-vous indiquer une heure future valide ?"
+         };
+         return res.status(200).json({
+           ...parsed,
+           missing_fields: ["date", "time"],
+           reply: pastDateMsg[lang] || pastDateMsg.en
+         });
+      }
+    }
 
-    const parsed =
-      JSON.parse(raw);
+    if (parsed.intent === "booking" && validation.isValid) {
 
-    console.log("PARSED:", parsed);
+      const bookingId = BookingLogic.generateBookingId();
 
-    if (
-      parsed.intent === "booking" &&
-      parsed.missing_fields &&
-      parsed.missing_fields.length === 0
-    ) {
+      // Check for Duplicates - Improved logic to avoid false positives
+      const existingBooking = await supabase
+        .from("bookings")
+        .select("id, form_data")
+        .eq("email", parsed.email)
+        .eq("datetime", parsed.date)
+        .eq("time", parsed.time)
+        .maybeSingle();
 
-    const today = new Date();
+      if (existingBooking.data) {
+        // If we already talked about THIS specific booking in this session, don't block it
+        const alreadyConfirmedInSession = conversationHistory.some(m =>
+          m.role === "assistant" && m.content.includes(existingBooking.data.id)
+        );
 
-const year =
-  today.getFullYear();
-
-const month =
-  String(today.getMonth() + 1)
-    .padStart(2, "0");
-
-const day =
-  String(today.getDate())
-    .padStart(2, "0");
-
-const sequence =
-  String(
-    Math.floor(Math.random() * 999)
-  ).padStart(3, "0");
-
-const bookingId =
-  `T-PV-${year}${month}${day}-${sequence}`;
+        if (!alreadyConfirmedInSession) {
+          const duplicateMsg = {
+            en: "An identical booking already exists in our system for this time.",
+            nl: "Er bestaat al een identieke boeking in ons systeem voor dit tijdstip.",
+            fr: "Une réservation identique existe alreadey in ons systeem voor dit tijdstip."
+          };
+          return res.status(200).json({
+            ...parsed,
+            reply: duplicateMsg[lang] || duplicateMsg.en
+          });
+        }
+      }
 
       const insertPayload = {
-
         id: bookingId,
-
         datetime: parsed.date,
         time: parsed.time,
-
         name: parsed.name,
         email: parsed.email,
         phone: parsed.phone,
-
         pickup: parsed.pickup,
         destination: parsed.destination,
-
-        flight_number:
-          parsed.flight_number || "",
-
-        vehicle:
-          parsed.vehicle || "",
-
-        extras:
-          parsed.extras || "",
-
+        flight_number: parsed.flight_number || "",
+        vehicle: parsed.vehicle || "Business Class",
+        extras: parsed.extras || "",
         amount: 0,
 
         payment: parsed.payment_method || "pending",
@@ -191,10 +188,13 @@ const bookingId =
 
         form_data: {
           source: "ai-chat",
-          ai: true
+          ai: true,
+          payment_method: parsed.payment_method,
+          passengers: parsed.passengers || 1,
+          luggage: parsed.luggage || 0,
+          language: lang
         },
-
-        partner_id: 1
+        partner_id: BookingLogic.CONFIG.PARTNER_ID
       };
 
       console.log(
@@ -245,16 +245,8 @@ if (existingBooking.data) {
     .select();
 
       if (error) {
-
-        console.error(
-          "SUPABASE INSERT ERROR:",
-          error
-        );
-
-        return res.status(500).json({
-          error: error.message,
-          details: error
-        });
+        console.error("SUPABASE INSERT ERROR:", error);
+        return res.status(500).json({ error: error.message });
       }
 
       console.log(
@@ -284,14 +276,7 @@ ${confirmMsg[lang]}`;
     return res.status(200).json(parsed);
 
   } catch (error) {
-
-    console.error(
-      "SERVER ERROR:",
-      error
-    );
-
-    return res.status(500).json({
-      error: error.message
-    });
+    console.error("SERVER ERROR:", error);
+    return res.status(500).json({ error: error.message });
   }
 };
