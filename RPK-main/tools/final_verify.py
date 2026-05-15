@@ -30,7 +30,7 @@ def run_final_verification(page):
 
     # Step 2: Vehicle
     assert page.locator("text=Business Class").is_visible()
-    page.screenshot(path="/home/jules/verification/screenshots/final_verify.png")
+    page.screenshot(path="/home/jules/verification/screenshots/final_verify_v2.png")
     print("Final verification screenshot saved.")
 
 if __name__ == "__main__":

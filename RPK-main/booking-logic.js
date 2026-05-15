@@ -47,7 +47,6 @@ function parseDate(dateStr, timeStr) {
   if (!dateStr) return null;
   const [d, m, y] = dateStr.split("-").map(Number);
   const [h, min] = (timeStr || "00:00").split(":").map(Number);
-  // Note: month is 0-indexed in JS Date
   return new Date(y, m - 1, d, h, min);
 }
 
@@ -68,7 +67,7 @@ function validateBooking(data) {
 
   if (data.date && data.time) {
     const bookingDate = parseDate(data.date, data.time);
-    const now = new Date(); // Use system time (should be Brussels in prod)
+    const now = new Date();
     if (bookingDate < now) {
       errors.push("Departure time must be in the future.");
     }

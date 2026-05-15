@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Fleetconnect Taxi | K2000 Driving Assistant</title>
+    <title>Fleetconnect Taxi | K2000 — Driving Assistant</title>
     <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/nl.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Common Booking Logic -->
+    <!-- Shared Logic -->
     <script src="booking-logic.js"></script>
     <style>
         /* ===== UI STYLES ===== */
@@ -25,24 +25,28 @@
             --text-greyblue: #3a4a5a;
             --card-bg: rgba(255, 255, 255, 0.95);
             --border-light: #e0e8f0;
+            --footer-text: #e0edf5;
             --sidebar-bg: #f8fafc;
             --sidebar-width-collapsed: 0px;
             --sidebar-width-expanded: 280px;
             --overlay-bg: rgba(0, 0, 0, 0.5);
             --whatsapp-green: #075E54;
         }
+        html, body { margin: 0; padding: 0; height: 100%; }
         body {
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
             color: var(--header-dark);
             line-height: 1.4;
             overflow-x: hidden;
-            background: #f0f4f8;
         }
         #background-map { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.3; }
-        .content-overlay { position: relative; z-index: 10; min-height: 100vh; display: flex; flex-direction: column; }
-        .container { width: 100%; max-width: 1300px; margin: 0 auto; padding: 0 24px; }
+        .content-overlay {
+            position: relative; z-index: 10;
+            min-height: 100vh; display: flex; flex-direction: column;
+        }
+        .container { width: 100%; max-width: 1300px; margin: 0 auto; padding: 0 24px; box-sizing: border-box; }
 
-        /* Sidebar & Trigger */
+        /* Sidebar */
         .sidebar-trigger { position: fixed; top: 0; right: 0; width: 30px; height: 100%; z-index: 199; cursor: pointer; }
         .sidebar-wrapper { position: sticky; top: 0; z-index: 200; display: flex; justify-content: flex-end; float: right; pointer-events: none; }
         .sidebar {
@@ -59,7 +63,7 @@
             transition: 0.2s;
         }
         .sidebar-nav a:hover { border-color: var(--prim-accent); background: #eef2f6; }
-        .sidebar-nav a i { color: var(--prim-accent); width: 20px; text-align: center; }
+        .sidebar-nav a i { color: var(--prim-accent); width: 24px; font-size: 1.2rem; }
 
         /* Hero */
         .hero { padding: 80px 0 40px; text-align: center; }
@@ -121,7 +125,6 @@
             display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s;
         }
         .payment-item input { width: auto; margin: 0; }
-        .payment-item:hover { border-color: var(--prim-accent); }
 
         .nav-buttons { padding: 20px 40px 40px; display: flex; justify-content: space-between; gap: 20px; }
         .nav-btn {
@@ -132,14 +135,13 @@
         .nav-btn.next { background: var(--prim-accent); color: white; flex: 1; }
         .nav-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Map & Info */
         #map { width: 100%; height: 400px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #eee; }
         .info-strip { display: flex; gap: 15px; margin-bottom: 20px; }
         .info-card { flex: 1; background: #f8fafc; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #eee; }
         .info-card .val { font-size: 1.5rem; font-weight: 800; color: var(--prim-accent); }
         .info-card .lab { font-size: 0.7rem; text-transform: uppercase; color: #64748b; font-weight: 700; }
 
-        /* Restored Landing Page Sections */
+        /* Sections */
         .services-grid { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; padding: 50px 0; }
         .service-card {
             background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 36px;
@@ -147,24 +149,16 @@
         }
         .service-card:hover { transform: translateY(-6px); border-color: var(--prim-accent); }
         .service-icon { font-size: 2.5rem; margin-bottom: 12px; color: var(--prim-accent); }
-        .service-card h3 { font-size: 1.2rem; margin-bottom: 8px; }
 
         .contact-wrapper { width: 100%; display: flex; justify-content: center; padding: 40px 16px; }
         .contact-row { background: #ffffff; border-radius: 44px; padding: 40px; border: 1px solid var(--border-light); width: 100%; max-width: 700px; }
-        .compact-form { display: flex; flex-direction: column; gap: 16px; }
-        .button-row { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 15px; margin-top: 10px; }
         .btn-whatsapp {
             background: var(--whatsapp-green); color: white; padding: 12px 28px; border-radius: 40px; font-weight: 600;
             display: inline-flex; align-items: center; gap: 8px; text-decoration: none; transition: 0.2s;
         }
-        .btn-whatsapp:hover { background: #054A44; transform: translateY(-1px); }
 
         footer { background: var(--footer-dark); color: white; padding: 60px 0 30px; margin-top: 60px; }
         .footer-grid { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 40px; margin-bottom: 40px; }
-        .footer-brand p { color: #cbd5e1; max-width: 300px; margin-top: 15px; }
-        .footer-links h4 { margin-bottom: 20px; color: var(--prim-accent); }
-        .footer-links a { color: #e2e8f0; text-decoration: none; display: block; margin-bottom: 10px; font-size: 0.9rem; }
-        .footer-bottom { text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 25px; color: #94a3b8; font-size: 0.85rem; }
 
         /* AI CHAT WIDGET */
         #ai-chat-launcher {
@@ -181,7 +175,10 @@
             padding: 12px 20px; border-radius: 25px; font-weight: 600; font-size: 0.9rem;
             white-space: nowrap; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             border: 1px solid var(--prim-accent); pointer-events: none;
+            animation: slideIn 1s ease 1s both;
         }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
         #ai-chat-container {
             position: fixed; bottom: 110px; right: 30px;
             width: 450px; max-width: calc(100vw - 60px); height: 700px; max-height: calc(100vh - 160px);
@@ -192,21 +189,27 @@
         }
         #ai-chat-container.active { transform: translateY(0) scale(1); opacity: 1; visibility: visible; }
         .ai-header { background: var(--header-dark); color: white; padding: 25px; display: flex; justify-content: space-between; align-items: center; }
-        .ai-header .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; }
         #ai-messages { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: #f9fbff; }
         .msg { max-width: 85%; padding: 15px 20px; border-radius: 20px; font-size: 0.95rem; line-height: 1.5; }
         .msg.ai { align-self: flex-start; background: white; border: 1px solid #eee; border-bottom-left-radius: 4px; }
         .msg.user { align-self: flex-end; background: var(--prim-accent); color: white; border-bottom-right-radius: 4px; }
-        .ai-input-area { padding: 20px 25px; border-top: 1px solid #eee; }
-        .input-wrap { background: #f1f5f9; border-radius: 30px; display: flex; padding: 5px 20px; align-items: center; }
-        #ai-input { flex: 1; border: none; background: none; padding: 10px 0; outline: none; }
-        #ai-send { background: var(--prim-accent); color: white; border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; }
+
+        /* Premium Card in Chat */
+        .booking-card {
+            background: white; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden;
+            margin-top: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-left: 5px solid var(--prim-accent);
+        }
+        .bc-head { background: #f8fafc; padding: 12px 20px; border-bottom: 1px solid #eee; font-weight: 700; font-size: 0.8rem; display: flex; justify-content: space-between; }
+        .bc-body { padding: 20px; display: grid; gap: 12px; }
+        .bc-row { display: flex; gap: 12px; align-items: flex-start; font-size: 0.9rem; }
+        .bc-row i { color: var(--prim-accent); width: 16px; margin-top: 3px; }
+        .bc-row .lab { font-size: 0.65rem; text-transform: uppercase; color: #64748b; font-weight: 700; display: block; }
+        .bc-row .val { font-weight: 600; color: var(--header-dark); }
+        .bc-foot { padding: 15px 20px; background: #f8fafc; border-top: 1px solid #eee; text-align: center; font-weight: 700; color: var(--prim-accent); }
 
         @media (max-width: 600px) {
             #ai-chat-container { width: 100vw; height: 100vh; bottom: 0; right: 0; border-radius: 0; }
             #ai-chat-launcher::after { display: none; }
-            .hero-card h1 { font-size: 2.2rem; }
-            .carousel-page { padding: 20px; }
         }
     </style>
 </head>
@@ -331,7 +334,7 @@
     <!-- AI Widget -->
     <div id="ai-chat-launcher"><i class="fas fa-robot"></i></div>
     <div id="ai-chat-container">
-        <div class="ai-header"><div class="brand">K2000 — Driving Assistant</div><div class="close" id="close-ai">&times;</div></div>
+        <div class="ai-header"><div class="brand">K2000 — Driving Assistant</div><div class="close" id="close-ai" style="cursor:pointer;">&times;</div></div>
         <div id="ai-messages"><div class="msg ai">Welcome. I am K2000. How may I assist you today?</div></div>
         <div class="ai-input-area"><div class="input-wrap"><input type="text" id="ai-input" placeholder="Stel een vraag..."><button id="ai-send">></button></div></div>
     </div>
@@ -398,25 +401,49 @@
         const val = BookingLogic.validateBooking(payload); if(!val.isValid) { alert("Fields: " + val.missingFields.join(", ")); return; }
         const id = BookingLogic.generateBookingId();
         const { error } = await supabase.from('bookings').insert([{ id, ...payload, amount: parseFloat(document.getElementById('priceVal').innerText), partner_id: BookingLogic.CONFIG.PARTNER_ID, status: "pending" }]);
-        if(!error) { alert("ID: " + id); location.reload(); } else alert(error.message);
+        if(!error) {
+            // Show premium card replacement or success alert
+            alert("Boeking Bevestigd! Referentie: " + id);
+            location.reload();
+        } else alert(error.message);
     }
 
     document.getElementById('nextBtn').onclick = () => state.currentPage === 4 ? submitBooking() : showPage(state.currentPage + 1);
     document.getElementById('prevBtn').onclick = () => showPage(state.currentPage - 1);
 
-    // AI Chat
+    // AI Chat Logic
     const l = document.getElementById('ai-chat-launcher'), c = document.getElementById('ai-chat-container'), i = document.getElementById('ai-input'), m = document.getElementById('ai-messages');
     let h = [];
     l.onclick = () => { c.classList.add('active'); l.style.display='none'; };
     document.getElementById('close-ai').onclick = () => { c.classList.remove('active'); l.style.display='flex'; };
+
     async function send() {
         const text = i.value.trim(); if(!text) return;
         const u = document.createElement('div'); u.className='msg user'; u.innerText=text; m.appendChild(u);
         i.value=''; h.push({role:'user',content:text});
-        const res = await fetch('/api/ai-chat', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:text, conversationHistory:h})});
-        const d = await res.json();
-        const a = document.createElement('div'); a.className='msg ai'; a.innerText=d.reply; m.appendChild(a);
-        h.push({role:'assistant',content:JSON.stringify(d)});
+        m.scrollTop = m.scrollHeight;
+
+        try {
+            const res = await fetch('/api/ai-chat', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:text, conversationHistory:h})});
+            const d = await res.json();
+            const a = document.createElement('div'); a.className='msg ai'; a.innerText=d.reply; m.appendChild(a);
+            h.push({role:'assistant',content:JSON.stringify(d)});
+
+            if (d.intent === 'booking' && d.missing_fields.length === 0) {
+                const card = document.createElement('div');
+                card.className = 'booking-card';
+                card.innerHTML = `
+                    <div class="bc-head"><span>CONFIRMED</span><span>${d.date}</span></div>
+                    <div class="bc-body">
+                        <div class="bc-row"><i class="fas fa-map-marker-alt"></i><div><span class="lab">PICKUP</span><span class="val">${d.pickup}</span></div></div>
+                        <div class="bc-row"><i class="fas fa-flag"></i><div><span class="lab">DESTINATION</span><span class="val">${d.destination}</span></div></div>
+                        <div class="bc-row"><i class="fas fa-car"></i><div><span class="lab">VEHICLE</span><span class="val">${d.vehicle}</span></div></div>
+                    </div>
+                    <div class="bc-foot">K2000 Intelligence Layer</div>
+                `;
+                m.appendChild(card);
+            }
+        } catch(e) { console.error(e); }
         m.scrollTop = m.scrollHeight;
     }
     document.getElementById('ai-send').onclick = send;

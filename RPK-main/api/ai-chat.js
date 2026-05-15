@@ -157,8 +157,6 @@ JSON FORMAT:
         }
       }
 
-      // Calculate amount using shared logic (placeholder distance of 0 if unknown, normally AI doesn't calculate final price)
-      // But we use it to maintain consistency in structure
       const insertPayload = {
         id: bookingId,
         datetime: parsed.date,
@@ -171,7 +169,7 @@ JSON FORMAT:
         flight_number: parsed.flight_number || "",
         vehicle: parsed.vehicle || "Business Class",
         extras: parsed.extras || "",
-        amount: 0, // Calculated by dispatcher/admin later or via distance service
+        amount: 0,
         payment: parsed.payment_method || "pending",
         status: "pending",
         customer_id: "CUST-" + parsed.email.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
