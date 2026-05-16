@@ -3,1056 +3,728 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Fleet Connect - Onderaannemer Paneel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Fleetconnect | Professioneel taxivervoer België</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/nl.js"></script>
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #f1f5f9; height: 100vh; display: flex; }
-        .sidebar { width: 260px; background: #0f172a; color: #e2e8f0; overflow-y: auto; display: flex; flex-direction: column; flex-shrink: 0; }
-        .logo { padding: 24px 20px; font-size: 1.3rem; font-weight: 700; border-bottom: 1px solid #1e293b; cursor: pointer; transition: background-color 0.2s ease; }
-        .logo:hover { background-color: #1e293b; }
-        .logo i { color: #2dd4bf; margin-right: 10px; }
-        .logo small { font-size: 0.7rem; display: block; color: #64748b; margin-top: 4px; }
-        .nav-menu { padding: 20px 16px; flex: 1; }
-        .nav-section { margin-bottom: 20px; }
-        .nav-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; padding: 8px 12px; margin-top: 8px; }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; font-weight: 500; font-size: 0.9rem; color: #cbd5e1; cursor: pointer; transition: all 0.2s; }
-        .nav-item:hover { background: #1e293b; }
-        .nav-item.active { background: #2dd4bf20; color: #2dd4bf; }
-        .nav-item i { width: 22px; }
-        .nav-item.logout-item { margin-top: 16px; border-top: 1px solid #1e293b; border-radius: 0; padding-top: 16px; color: #f87171; }
-        .nav-item.switch-item { border-top: 1px solid #1e293b; margin-top: 8px; padding-top: 16px; color: #f59e0b; }
-        .nav-item.switch-item:hover { background: #f59e0b20; color: #f59e0b; }
-        .main { flex: 1; display: flex; flex-direction: column; overflow: auto; }
-        .header { background: white; padding: 20px 32px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-        .header h1 { font-size: 1.5rem; font-weight: 600; }
-        .header-right { display: flex; gap: 12px; align-items: center; }
-        .switch-btn { background: #f59e0b; color: #0f172a; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .switch-btn:hover { background: #d97706; }
-        .switch-woningen-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .switch-woningen-btn:hover { background: #059669; }
-        .refresh-btn { background: #2dd4bf; color: #0f172a; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .refresh-btn:hover { background: #14b8a6; }
-        .back-btn { background: #e2e8f0; color: #0f172a; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .back-btn:hover { background: #cbd5e1; }
-        .user-info { font-size: 0.8rem; color: #64748b; }
-        .content { padding: 32px; }
-        
-        .filter-bar { background: white; padding: 8px 16px; border-radius: 48px; margin-bottom: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; border: 1px solid #e2e8f0; }
-        .filter-group { display: flex; align-items: center; gap: 6px; background: #f8fafc; padding: 4px 12px; border-radius: 32px; border: 1px solid #e2e8f0; }
-        .filter-group label { font-size: 0.7rem; font-weight: 600; color: #475569; }
-        .filter-group input { border: none; background: transparent; padding: 6px 0; font-family: 'Inter', sans-serif; font-size: 0.8rem; width: 120px; outline: none; }
-        .filter-actions { display: flex; gap: 6px; margin-left: auto; }
-        .filter-actions button { padding: 6px 14px; border-radius: 32px; border: none; cursor: pointer; font-weight: 500; font-size: 0.75rem; }
-        .btn-filter { background: #0f172a; color: white; }
-        .btn-reset { background: #e2e8f0; color: #1e293b; }
-        
-        .orders-table-wrapper { overflow-x: auto; background: white; border-radius: 16px; padding: 20px; }
-        .orders-table { width: 100%; border-collapse: collapse; }
-        .orders-table th { text-align: left; padding: 12px 8px; border-bottom: 1px solid #e2e8f0; font-size: 0.75rem; font-weight: 600; color: #64748b; }
-        .orders-table td { padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; }
-        
-        .action-btn { background: #2dd4bf; color: #0f172a; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.75rem; }
-        .delete-btn { background: #ef4444; color: white; margin-left: 8px; padding: 4px 10px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.7rem; }
-        .add-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 0.8rem; margin-bottom: 16px; }
-        .order-count { background: #2dd4bf20; padding: 4px 12px; border-radius: 40px; font-size: 0.75rem; font-weight: 600; color: #0f172a; }
-        
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-        .modal-content { background: white; border-radius: 20px; max-width: 700px; width: 90%; max-height: 85vh; overflow-y: auto; }
-        .fiche-header { background: #0f172a; color: white; padding: 20px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; align-items: center; }
-        .fiche-header h3 { font-size: 1.2rem; }
-        .close-modal { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
-        .fiche-body { padding: 24px; }
-        .fiche-section { margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px; }
-        .fiche-section h4 { color: #2dd4bf; margin-bottom: 12px; font-size: 0.9rem; }
-        .fiche-row { display: flex; padding: 6px 0; font-size: 0.85rem; }
-        .fiche-label { width: 130px; font-weight: 600; color: #475569; }
-        .fiche-value { flex: 1; color: #1e293b; }
-        .fiche-total { background: #f0fdf4; padding: 12px; border-radius: 12px; margin-top: 16px; text-align: center; }
-        .fiche-total .amount { font-size: 1.5rem; font-weight: 700; color: #2dd4bf; }
-        .fiche-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0; }
-        .fiche-btn { padding: 8px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; }
-        .fiche-btn.confirm { background: #10b981; color: white; }
-        .fiche-btn.close { background: #64748b; color: white; }
-        .fiche-btn.assign { background: #f59e0b; color: white; }
-        .fiche-btn.complete { background: #2dd4bf; color: #0f172a; }
-        
-        .people-card { background: white; border-radius: 16px; padding: 20px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .stat-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .stat-card h4 { font-size: 0.75rem; text-transform: uppercase; color: #64748b; margin-bottom: 8px; }
-        .stat-card .value { font-size: 1.8rem; font-weight: 700; }
-        
-        .calendar-container { background: white; border-radius: 16px; padding: 20px; margin-bottom: 24px; }
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-        .calendar-header h2 { font-size: 1.3rem; font-weight: 600; }
-        .calendar-nav { display: flex; gap: 12px; }
-        .calendar-nav button { background: #f1f5f9; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; }
-        .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; padding: 12px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 8px; }
-        .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-        .calendar-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; position: relative; }
-        .calendar-day:hover { background: #e2e8f0; }
-        .calendar-day.selected { background: #2dd4bf; color: #0f172a; font-weight: 600; }
-        .calendar-day.other-month { color: #94a3b8; }
-        .calendar-day.today { border: 2px solid #2dd4bf; }
-        .calendar-day.has-rides { background: #dbeafe; }
-        .calendar-day.has-expired { background: #fee2e2; }
-        .ride-dot { width: 6px; height: 6px; background: #2dd4bf; border-radius: 50%; margin-top: 2px; }
-        .expired-dot { width: 6px; height: 6px; background: #ef4444; border-radius: 50%; margin-top: 2px; }
-        
-        .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-        @media (max-width: 1000px) { .dashboard-grid { grid-template-columns: repeat(2, 1fr); } }
-        
-        .info-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor: pointer; }
-        .mini-flip-container { perspective: 600px; height: 140px; }
-        .mini-flip-card { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.4s; transform-style: preserve-3d; }
-        .mini-flip-card.flipped { transform: rotateY(180deg); }
-        .mini-flip-front, .mini-flip-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 16px; }
-        .mini-flip-front { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; transform: rotateY(0deg); }
-        .mini-flip-back { background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%); color: #0f172a; transform: rotateY(180deg); }
-        .mini-flip-front .value, .mini-flip-back .value { font-size: 1.8rem; font-weight: 700; margin: 8px 0; }
-        
-        .planning-container { margin-top: 20px; background: white; border-radius: 16px; padding: 20px; }
-        .planning-list { max-height: 400px; overflow-y: auto; }
-        .planning-item { background: #f1f5f9; border-radius: 12px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #2dd4bf; }
-        .planning-item.expired { border-left-color: #ef4444; background: #fef2f2; }
-        .planning-time { font-weight: 700; color: #0f172a; margin-bottom: 4px; }
-        .planning-ride { font-size: 0.85rem; color: #475569; }
-        .empty-planning { text-align: center; padding: 40px; color: #94a3b8; }
-        
-        .finance-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
-        .period-buttons { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-        .period-btn { padding: 8px 20px; border-radius: 40px; border: none; cursor: pointer; font-weight: 500; background: #e2e8f0; transition: all 0.2s; }
-        .period-btn.active { background: #2dd4bf; color: #0f172a; }
-        .chart-container { background: white; border-radius: 16px; padding: 20px; margin-top: 24px; }
-        canvas { max-height: 300px; width: 100% !important; }
-        
-        .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
-        @media (max-width: 1000px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
-        .kpi-card { background: white; border-radius: 16px; padding: 20px; text-align: center; }
-        .kpi-card .value { font-size: 1.8rem; font-weight: 700; }
-        .kpi-card .label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; margin-top: 8px; }
-        
-        .wiki-container { background: white; border-radius: 16px; padding: 24px; }
-        .wiki-content { text-align: left; max-width: 1000px; margin: 0 auto; line-height: 1.6; }
-        .wiki-content h2 { color: #0f172a; border-bottom: 2px solid #2dd4bf; padding-bottom: 10px; margin-bottom: 20px; }
-        .wiki-content h3 { color: #2dd4bf; margin-top: 20px; margin-bottom: 10px; }
-        .wiki-content ul, .wiki-content ol { margin-left: 20px; margin-bottom: 15px; }
-        
-        .partner-card { border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 16px; background: #f8fafc; }
-        .partner-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
-        .partner-name { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
-        .driver-list { margin-top: 12px; padding-left: 16px; border-left: 2px solid #2dd4bf; }
-        .driver-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
-        .add-driver-form { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-        .add-driver-form input { padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.8rem; flex: 1; min-width: 120px; }
-        select { padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; font-family: 'Inter', sans-serif; }
-        
-        .alert-no-data { background: #fef3c7; color: #92400e; padding: 20px; border-radius: 16px; text-align: center; margin: 20px; }
-        .toast { position: fixed; bottom: 20px; right: 20px; background: #10b981; color: white; padding: 12px 24px; border-radius: 40px; z-index: 2000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
-        .toast.show { opacity: 1; }
-        .hidden { display: none; }
-        .template-tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
-        .template-T1 { background: #dbeafe; color: #1e40af; }
-        .template-T2 { background: #fef3c7; color: #92400e; }
-        .template-T3 { background: #e0e7ff; color: #3730a3; }
-        .template-T4 { background: #d1fae5; color: #065f46; }
-        .template-T5 { background: #e0f2fe; color: #0369a1; }
-        
-        .status-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
-        .status-pending { background: #fef3c7; color: #92400e; }
-        .status-accepted { background: #dbeafe; color: #1e40af; }
-        .status-completed { background: #d1fae5; color: #065f46; }
-        .status-cancelled { background: #fee2e2; color: #991b1b; }
+        *{margin:0;padding:0;box-sizing:border-box}
+        #background-map{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;background-image:url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1920&q=80');background-size:cover;background-position:center;background-repeat:no-repeat;background-attachment:fixed;filter:brightness(1.05);opacity:0.9}
+        :root{--primary:#2c6e9e;--primary-dark:#1e4a6e;--accent-gold:#c9a03d;--text-dark:#1a2a3a;--text-light:#4a627a;--white:#ffffff;--card-bg:rgba(255,255,255,0.92);--border-light:#e2edf7}
+        body{font-family:'Inter',sans-serif;background:#f4f7fc;color:var(--text-dark);overflow-x:hidden}
+        .content-overlay{position:relative;z-index:10;background:rgba(255,255,255,0.85);min-height:100vh;display:flex;flex-direction:column}
+        .container{width:100%;max-width:1300px;margin:0 auto;padding:0 24px}
+        .hamburger-btn{position:fixed;top:20px;left:20px;background:var(--primary);color:white;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:1000;border:none;font-size:1.4rem}
+        .hamburger-btn:hover{background:var(--primary-dark)}
+        .sidebar-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.3);z-index:1001;visibility:hidden;opacity:0;transition:all 0.3s}
+        .sidebar-overlay.active{visibility:visible;opacity:1}
+        .sidebar{position:fixed;top:0;right:-300px;width:300px;height:100%;background:white;box-shadow:-4px 0 25px rgba(0,0,0,0.15);transition:right 0.3s;z-index:1002;display:flex;flex-direction:column;border-radius:20px 0 0 20px}
+        .sidebar-overlay.active .sidebar{right:0}
+        .sidebar-header{display:flex;justify-content:space-between;align-items:center;padding:24px 20px;border-bottom:1px solid var(--border-light);background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:20px 0 0 0}
+        .sidebar-header h3{color:white;display:flex;align-items:center;gap:8px}
+        .close-menu{background:rgba(255,255,255,0.2);border:none;font-size:1.5rem;cursor:pointer;color:white;width:32px;height:32px;border-radius:50%}
+        .sidebar-nav{display:flex;flex-direction:column;padding:20px 16px;gap:8px;flex:1}
+        .sidebar-nav a{color:var(--text-dark);text-decoration:none;padding:14px 16px;border-radius:14px;font-weight:500;display:flex;align-items:center;gap:14px;background:white;border:1px solid var(--border-light)}
+        .sidebar-nav a i{width:24px;color:var(--primary)}
+        .sidebar-nav a:hover{background:#eef2fa;border-color:var(--primary)}
+        .login-section{padding:16px;border-top:1px solid var(--border-light);margin-top:auto}
+        .login-btn{background:linear-gradient(135deg,var(--accent-gold),#b8860b);color:white;text-decoration:none;padding:14px 16px;border-radius:14px;font-weight:600;display:flex;align-items:center;gap:12px}
+        .hero{padding:80px 0 40px;text-align:center}
+        .hero-card{background:var(--card-bg);backdrop-filter:blur(8px);max-width:700px;margin:0 auto;padding:40px 30px;border-radius:48px;border:1px solid var(--border-light)}
+        .hero-card h1{font-size:2.6rem;font-weight:800;color:var(--primary)}
+        .hero-card p{font-size:1.2rem;color:var(--text-light);margin-bottom:30px}
+        .btn-primary{background:var(--primary);color:white;border:none;padding:12px 28px;border-radius:40px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+        .btn-primary:hover{background:var(--primary-dark)}
+        .booking-container{max-width:850px;width:100%;background:white;border:1px solid var(--border-light);margin:0 auto 40px;border-radius:24px;overflow:hidden}
+        .steps{display:flex;background:#f8fafc;border-bottom:1px solid var(--border-light)}
+        .step-btn{flex:1;background:none;border:none;padding:18px 12px;font-weight:700;font-size:0.8rem;color:var(--text-light);cursor:pointer;border-bottom:3px solid transparent;text-transform:uppercase}
+        .step-btn.active{color:var(--primary);border-bottom-color:var(--primary);background:white}
+        .carousel-page{display:none;padding:32px 36px;min-height:520px}
+        .carousel-page.active-page{display:block}
+        .nav-buttons{display:flex;justify-content:space-between;padding:20px 36px 32px;gap:16px;border-top:1px solid var(--border-light);background:white}
+        .nav-btn{background:var(--primary);color:white;border:none;padding:12px 28px;font-weight:700;border-radius:40px;cursor:pointer;text-transform:uppercase}
+        .nav-btn.prev{background:#a0b8ce}
+        .nav-btn:disabled{background:#cbd5e1;cursor:not-allowed}
+        .field{margin-bottom:22px;position:relative}
+        label{font-weight:600;margin-bottom:8px;display:block;font-size:0.75rem;text-transform:uppercase;color:var(--text-light)}
+        .required-star{color:var(--accent-gold)}
+        input,select,textarea{width:100%;padding:14px 18px;border:1px solid var(--border-light);font-size:0.9rem;background:white;border-radius:12px}
+        input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)}
+        .date-icon{position:absolute;right:15px;top:42px;color:var(--primary);pointer-events:none}
+        .suggest-wrapper{position:relative}
+        .suggestions{position:absolute;background:white;border:1px solid var(--border-light);border-top:none;max-height:200px;overflow-y:auto;width:100%;z-index:1000;display:none;border-radius:0 0 12px 12px}
+        .suggestion-item{padding:10px 16px;cursor:pointer;color:var(--text-light)}
+        .suggestion-item:hover{background:#f1f5f9}
+        .roundtrip-box{background:#f8fafc;padding:14px 20px;margin:16px 0 20px;border-left:3px solid var(--primary);display:flex;align-items:center;gap:12px;border-radius:12px}
+        .error{background:#fee2e2;color:#b91c1c;padding:10px;border-radius:8px;margin-top:12px;display:none;font-size:0.8rem}
+        .urgent-whatsapp{background:#dcfce7;border-left:4px solid #25d366;padding:12px 16px;margin-top:16px;display:none;align-items:center;justify-content:space-between;border-radius:12px}
+        .urgent-whatsapp.show{display:flex}
+        .whatsapp-btn{background:#25d366;color:white;padding:6px 18px;border-radius:40px;text-decoration:none}
+        #map{width:100%;height:420px;margin-bottom:16px;border-radius:12px;border:1px solid var(--border-light)}
+        .info-strip{display:flex;gap:16px;background:#f8fafc;padding:16px 20px;margin-bottom:16px;border-radius:12px}
+        .info-card{flex:1;text-align:center;background:white;padding:12px;border:1px solid var(--border-light);border-radius:12px}
+        .info-card .value{font-size:1.8rem;font-weight:700;color:var(--primary)}
+        .route-legend{display:flex;gap:24px;padding:12px 20px;background:white;border:1px solid var(--border-light);margin:8px 0 16px;border-radius:12px}
+        .legend-item{display:flex;align-items:center;gap:8px}
+        .legend-color{width:20px;height:20px;border-radius:50%}
+        .legend-color.green{background:#22c55e}
+        .legend-color.red{background:#ef4444}
+        .legend-color.blue{background:#d4af37;height:4px;width:30px}
+        .vehicle-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:20px 0}
+        .vehicle-card{background:#f8fafc;border:2px solid var(--border-light);padding:16px 8px;text-align:center;cursor:pointer;border-radius:12px}
+        .vehicle-card.selected{border-color:var(--primary);background:#eef2fa}
+        .vehicle-emoji{font-size:2rem}
+        .vehicle-name{font-weight:700;margin-top:8px}
+        .extra-fields{background:#f8fafc;padding:18px 20px;margin:20px 0;border-radius:12px}
+        .extra-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+        .checkbox-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+        .checkbox-grid label{display:flex;align-items:center;gap:8px;background:white;padding:8px 12px;border:1px solid var(--border-light);border-radius:20px;font-weight:400;text-transform:none}
+        .sub{color:var(--text-light);border-left:3px solid var(--primary);padding-left:14px;margin-bottom:24px;font-size:0.85rem}
+        h1{font-size:1.5rem;margin-bottom:12px}
+        h2{font-size:1.3rem;margin-bottom:20px;color:var(--primary)}
+        .payment-method{display:flex;gap:20px;align-items:center;background:#f8fafc;padding:14px 20px;margin:20px 0;border-radius:20px}
+        .return-date-field{display:none}
+        .return-date-field.visible{display:block}
+        .rit-overzicht{background:#f8fafc;border:1px solid var(--border-light);border-radius:16px;padding:20px;margin-bottom:20px}
+        .total-display{background:#f8fafc;padding:20px;text-align:center;font-size:1.5rem;font-weight:700;margin:20px 0;border-radius:12px;color:var(--primary)}
+        .overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:2000;justify-content:center;align-items:center}
+        .overlay.active{display:flex}
+        .overlay-content{max-width:1000px;width:90%;background:white;padding:32px;max-height:85vh;overflow-y:auto;border-radius:32px}
+        .summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin:20px 0}
+        .summary-section{background:#f8fafc;padding:16px 20px;border-left:4px solid var(--primary);border-radius:16px}
+        .overlay-actions{display:flex;gap:16px;justify-content:flex-end;margin-top:20px}
+        .services-grid,.uitleg-grid{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;padding:50px 0 30px}
+        .service-card,.uitleg-item{background:var(--card-bg);backdrop-filter:blur(4px);border:1px solid var(--border-light);border-radius:36px;padding:30px 24px;text-align:center;flex:1 1 240px;text-decoration:none;color:inherit}
+        .service-card:hover,.uitleg-item:hover{transform:translateY(-6px);border-color:var(--primary)}
+        .contact-wrapper{width:100%;display:flex;justify-content:center;padding:0 16px}
+        .contact-row{background:white;border-radius:44px;padding:30px;margin:40px 0;border:1px solid var(--border-light);width:100%;max-width:600px}
+        .contact-form h3{margin-bottom:20px;color:var(--primary);text-align:center}
+        .compact-form{display:flex;flex-direction:column;gap:16px}
+        .compact-form input,.compact-form textarea{width:100%;padding:12px 16px;border-radius:28px;border:1px solid var(--border-light);font-size:1rem;background:white}
+        .button-row{display:flex;justify-content:space-between;gap:15px;margin-top:20px;flex-wrap:wrap}
+        .btn-whatsapp{background:#25D366;color:white;border:none;padding:12px 28px;border-radius:40px;font-weight:600;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+        .btn-whatsapp:hover{background:#128C7E}
+        .footer-dark{background:#0d1f2c;color:#e0edf5;padding:48px 0 24px;margin-top:40px}
+        .footer-grid{display:flex;justify-content:space-between;flex-wrap:wrap;gap:40px;margin-bottom:30px}
+        .footer-bottom{text-align:center;border-top:1px solid rgba(224,237,245,0.2);padding-top:24px}
+        @media (max-width:800px){.vehicle-grid,.checkbox-grid{grid-template-columns:repeat(2,1fr)}.carousel-page{padding:20px}.summary-grid{grid-template-columns:1fr}}
     </style>
 </head>
 <body>
+
+<div id="background-map"></div>
+
+<button class="hamburger-btn" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
+
+<div class="sidebar-overlay" id="sidebarOverlay">
     <div class="sidebar">
-        <div class="logo" onclick="window.location.href='admin-index.html'" style="cursor: pointer;">
-            <i class="fas fa-taxi"></i> Fleet Connect
-            <br><small>Onderaannemer Paneel</small>
+        <div class="sidebar-header"><h3><i class="fas fa-car"></i> Fleetconnect</h3><button class="close-menu" id="closeMenuBtn">&times;</button></div>
+        <div class="sidebar-nav">
+            <a href="PV.html"><i class="fas fa-home"></i><span> Home</span></a>
+            <a href="PV_Exclusieve_Service.html"><i class="fas fa-gem"></i><span> Exclusieve service</span></a>
+            <a href="PV-vaste-prijzen.html"><i class="fas fa-euro-sign"></i><span> Vaste prijzen</span></a>
+            <a href="PV-premium-vloot.html"><i class="fas fa-car-side"></i><span> Premium vloot</span></a>
+            <a href="#contact"><i class="fas fa-envelope"></i><span> Contact</span></a>
+            <a href="#booking"><i class="fas fa-calendar-alt"></i><span> Reserveer nu</span></a>
         </div>
-        <div class="nav-menu">
-            <div class="nav-section"><div class="nav-section-title">📋 BOEKINGEN</div>
-                <div class="nav-item active" data-tab="neworders" onclick="app.switchTab('neworders')"><i class="fas fa-clipboard-list"></i> New Orders</div>
-                <div class="nav-item" data-tab="orders" onclick="app.switchTab('orders')"><i class="fas fa-box"></i> Orders</div>
-                <div class="nav-item" data-tab="history" onclick="app.switchTab('history')"><i class="fas fa-history"></i> History</div>
-                <div class="nav-item" data-tab="agenda" onclick="app.switchTab('agenda')"><i class="fas fa-calendar-alt"></i> Agenda</div>
-            </div>
-            <div class="nav-section"><div class="nav-section-title">👥 BEHEER</div>
-                <div class="nav-item" data-tab="drivers" onclick="app.switchTab('drivers')"><i class="fas fa-id-card"></i> Drivers</div>
-                <div class="nav-item" data-tab="partners" onclick="app.switchTab('partners')"><i class="fas fa-handshake"></i> Mijn Partners</div>
-            </div>
-            <div class="nav-section"><div class="nav-section-title">💰 FINANCIËN</div>
-                <div class="nav-item" data-tab="financieel" onclick="app.switchTab('financieel')"><i class="fas fa-chart-line"></i> Financieel</div>
-            </div>
-            <div class="nav-section"><div class="nav-section-title">ℹ️ INFORMATIE</div>
-                <div class="nav-item" data-tab="wiki" onclick="app.switchTab('wiki')"><i class="fas fa-robot"></i> Wiki Agent</div>
-            </div>
-            <div class="nav-item switch-item" onclick="app.switchToWoningen()"><i class="fas fa-home"></i> Switch naar Woningen</div>
-            <div class="nav-item switch-item" onclick="app.switchToAutoDealer()"><i class="fas fa-exchange-alt"></i> Switch naar Auto Dealer</div>
-            <div class="nav-item logout-item" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Uitloggen</div>
-        </div>
+        <div class="login-section"><a href="index.html" class="login-btn"><i class="fas fa-sign-in-alt"></i><span>LOGIN</span><i class="fas fa-arrow-right"></i></a></div>
     </div>
-    <div class="main">
-        <div id="errorMsg" class="hidden" style="background:#fee2e2; color:#b91c1c; padding:12px; text-align:center; font-weight:600;"></div>
-        <div class="header">
-            <h1 id="pageTitle">New Orders</h1>
-            <div class="header-right">
-                <button class="back-btn" onclick="window.location.href='admin-index.html'"><i class="fas fa-home"></i> Terug naar overzicht</button>
-                <button class="switch-woningen-btn" onclick="app.switchToWoningen()"><i class="fas fa-home"></i> Woningen Paneel</button>
-                <button class="switch-btn" onclick="app.switchToAutoDealer()"><i class="fas fa-exchange-alt"></i> Switch naar Auto Dealer</button>
-                <button class="refresh-btn" onclick="app.refreshAllData()"><i class="fas fa-sync-alt"></i> Vernieuwen</button>
-                <span class="user-info" id="userEmail"><i class="fas fa-user-circle"></i> Gekoppeld aan Supabase</span>
-            </div>
-        </div>
-        <div class="content" id="contentArea"></div>
-    </div>
+</div>
 
-    <div id="bookingModal" class="modal">
-        <div class="modal-content">
-            <div class="fiche-header"><h3><i class="fas fa-file-invoice"></i> Rit Fiche</h3><button class="close-modal" onclick="app.closeModal()">&times;</button></div>
-            <div class="fiche-body" id="ficheBody"></div>
+<div class="content-overlay">
+    <section class="hero"><div class="container"><div class="hero-card"><h1><i class="fas fa-car"></i> Fleetconnect</h1><p>Professioneel taxivervoer in België – Stipt, betrouwbaar & comfortabel</p><a href="#booking" class="btn-primary"><i class="fas fa-calendar-alt"></i> Reserveer nu</a></div></div></section>
+
+    <div class="container"><div class="uitleg-grid">
+        <a href="PV_Exclusieve_Service.html" class="uitleg-item"><i class="fas fa-gem"></i><h3>Exclusieve service</h3><p>Persoonlijke chauffeur, altijd op tijd</p><div class="service-summary">Ontdek onze exclusieve service met persoonlijke chauffeur en luxe voertuigen.</div><div class="read-more-hint"><i class="fas fa-arrow-right"></i> Lees meer <i class="fas fa-search"></i></div></a>
+        <a href="PV-vaste-prijzen.html" class="uitleg-item"><i class="fas fa-euro-sign"></i><h3>Vaste prijzen</h3><p>Transparant, geen meters</p><div class="service-summary">Geen verrassingen achteraf. Onze vaste prijzen zijn transparant en duidelijk.</div><div class="read-more-hint"><i class="fas fa-arrow-right"></i> Lees meer <i class="fas fa-search"></i></div></a>
+        <a href="PV-premium-vloot.html" class="uitleg-item"><i class="fas fa-car-side"></i><h3>Premium vloot</h3><p>Mercedes, BMW & luxe minivans</p><div class="service-summary">Rij in stijl met onze premium vloot. Ontdek Mercedes, BMW en luxe minivans.</div><div class="read-more-hint"><i class="fas fa-arrow-right"></i> Lees meer <i class="fas fa-search"></i></div></a>
+    </div></div>
+
+    <div class="container" id="booking"><div class="booking-container"><div class="carousel">
+        <div class="steps"><button class="step-btn active" data-page="1">1. Ritgegevens</button><button class="step-btn" data-page="2">2. Route & Prijs</button><button class="step-btn" data-page="3">3. Voertuig & Opties</button><button class="step-btn" data-page="4">4. Klantgegevens</button><button class="step-btn" data-page="5">5. Afrekenen</button></div>
+        
+        <div id="page1" class="carousel-page active-page">
+            <h1>🚖 Ritgegevens</h1><div class="sub">België – €1,50/km | spoedritten via WhatsApp</div>
+            <div class="field"><label>📍 Ophaaladres <span class="required-star">*</span></label><div class="suggest-wrapper" id="pickupWrap"><input type="text" id="pickupInput" placeholder="bv. Antwerpen" autocomplete="off"><div id="pickupSuggest" class="suggestions"></div></div></div>
+            <div class="field"><label>🏁 Afzetadres <span class="required-star">*</span></label><div class="suggest-wrapper" id="dropoffWrap"><input type="text" id="dropoffInput" placeholder="bv. Brussel-Zaventem" autocomplete="off"><div id="dropoffSuggest" class="suggestions"></div></div></div>
+            <div class="roundtrip-box"><input type="checkbox" id="roundtripCheckbox"><label>🔄 Heen en terug rit (prijs x2)</label></div>
+            <div class="field"><label>✈️ Vluchtnummer (optioneel)</label><input type="text" id="flightNumber" placeholder="bv. KL1704"></div>
+            <div class="field"><label>📅 Heen datum & tijd <span class="required-star">*</span></label><input type="text" id="datetime" placeholder="Klik om datum & tijd te kiezen" readonly><i class="fas fa-calendar-alt date-icon"></i></div>
+            <div class="field return-date-field" id="returnDateContainer"><label>📅 Terug datum & tijd</label><input type="text" id="returnDatetime" placeholder="Klik om datum & tijd te kiezen" readonly><i class="fas fa-calendar-alt date-icon"></i></div>
+            <div id="urgentWhatsApp" class="urgent-whatsapp"><span>⚠️ Vertrekt binnen het uur – WhatsApp</span><a href="https://wa.me/32470123456" target="_blank" class="whatsapp-btn">📱 WhatsApp nu</a></div>
+            <div id="page1Error" class="error"></div><div class="footnote">* Verplicht – klik in het datumveld om de kalender te openen</div>
         </div>
-    </div>
+        
+        <div id="page2" class="carousel-page">
+            <h2>🗺️ Route & Prijs</h2><div id="map"></div>
+            <div class="route-legend"><div class="legend-item"><div class="legend-color green"></div><span>🟢 Ophalen</span></div><div class="legend-item"><div class="legend-color red"></div><span>🔴 Afzetten</span></div><div class="legend-item"><div class="legend-color blue"></div><span>🟡 Route</span></div></div>
+            <div class="info-strip"><div class="info-card"><div class="label">📏 Afstand</div><div class="value" id="distVal">—</div><small>km</small></div><div class="info-card"><div class="label">⏱️ Reistijd</div><div class="value" id="timeVal">—</div><small>min</small></div><div class="info-card"><div class="label">💰 Prijs</div><div class="value" id="priceVal">—</div><small>€</small></div></div>
+            <div id="page2Error" class="error"></div>
+        </div>
+        
+        <div id="page3" class="carousel-page">
+            <h2>🚘 Kies uw voertuig</h2>
+            <div class="vehicle-grid" id="vehicleGrid">
+                <div class="vehicle-card" data-vehicle="Standaard" data-extraprice="0"><div class="vehicle-emoji">🚗</div><div class="vehicle-name">Standaard</div><div class="vehicle-price">geen meerprijs</div></div>
+                <div class="vehicle-card" data-vehicle="Break" data-extraprice="5"><div class="vehicle-emoji">🚙</div><div class="vehicle-name">Break</div><div class="vehicle-price">+ €5</div></div>
+                <div class="vehicle-card" data-vehicle="Exclusieve" data-extraprice="15"><div class="vehicle-emoji">🚘</div><div class="vehicle-name">Exclusieve</div><div class="vehicle-price">+ €15</div></div>
+                <div class="vehicle-card" data-vehicle="Mini Van" data-extraprice="10"><div class="vehicle-emoji">🚐</div><div class="vehicle-name">Mini Van</div><div class="vehicle-price">+ €10</div></div>
+            </div>
+            <div class="extra-fields"><h3>➕ Extra opties</h3><div class="extra-grid"><div><label>👥 Aantal passagiers</label><input type="number" id="passengers" min="1" value="1"></div><div><label>🧳 Bagagestuks</label><input type="number" id="luggage" min="0" value="0"></div></div>
+            <div class="checkbox-grid"><label><input type="checkbox" id="meetGreet"> 🤝 Meet & Greet</label><label><input type="checkbox" id="kissRide"> 💋 Kiss & Ride</label><label><input type="checkbox" id="waterBottle"> 💧 Waterfles</label><label><input type="checkbox" id="wifi"> 📶 WiFi</label></div>
+            <div><label>📝 Speciale wensen</label><textarea id="specialWishes" rows="2" placeholder="bv. kinderzitje, champagne..."></textarea></div></div>
+            <div id="page3Error" class="error"></div>
+        </div>
+        
+        <div id="page4" class="carousel-page">
+            <h1>📋 Uw gegevens</h1><div class="sub">Vul uw contactgegevens in</div>
+            <div class="field"><label>Voornaam <span class="required-star">*</span></label><input type="text" id="firstName"></div>
+            <div class="field"><label>Achternaam <span class="required-star">*</span></label><input type="text" id="lastName"></div>
+            <div class="field"><label>GSM <span class="required-star">*</span></label><input type="tel" id="phone" placeholder="+32 4xx xx xx xx"></div>
+            <div class="field"><label>E-mail <span class="required-star">*</span></label><input type="email" id="email" placeholder="info@voorbeeld.be"></div>
+            <div class="field"><label>BTW (optioneel)</label><input type="text" id="vat" placeholder="BE 0123.456.789"></div>
+            <div id="page4Error" class="error"></div>
+        </div>
+        
+        <div id="page5" class="carousel-page">
+            <h1>💰 Afrekenen</h1><div class="sub">Kies betaalmethode & bevestig</div>
+            <div class="rit-overzicht"><h3>📋 Uw ritoverzicht</h3>
+                <div><strong>📍 Ophalen:</strong> <span id="overviewPickup">—</span></div>
+                <div><strong>🏁 Afzetten:</strong> <span id="overviewDestination">—</span></div>
+                <div><strong>📅 Heen datum/tijd:</strong> <span id="overviewHeen">—</span></div>
+                <div id="overviewReturnContainer" style="display:none;"><strong>🔄 Terug datum/tijd:</strong> <span id="overviewReturn">—</span></div>
+                <div><strong>🚘 Voertuig:</strong> <span id="overviewVehicle">—</span></div>
+                <div><strong>➕ Extra opties:</strong> <span id="overviewExtras">—</span></div>
+                <div><strong>💰 Totaalprijs:</strong> <span id="overviewTotal">€ 0,00</span></div>
+            </div>
+            <div class="payment-method"><span>Betaalmethode:</span><label><input type="radio" name="payment" value="Cash" checked> 💵 Cash</label><label><input type="radio" name="payment" value="Kaart"> 💳 Kaart</label><label><input type="radio" name="payment" value="App"> 📱 App</label></div>
+            <div id="totalDisplay" class="total-display">Totaal: € 0,00</div>
+            <button id="finalConfirmBtn" class="btn-primary" style="width:100%">✅ Bevestig boeking</button>
+            <div id="page5Error" class="error"></div>
+        </div>
+        
+        <div class="nav-buttons"><button class="nav-btn prev" id="prevBtn" disabled>◀ Vorige</button><button class="nav-btn next" id="nextBtn">Volgende ▶</button></div>
+    </div></div></div>
+
+    <div class="container"><h2 style="text-align:center;margin-bottom:20px;"><i class="fas fa-concierge-bell"></i> Onze diensten</h2><div class="services-grid">
+        <a href="PV_Luchthavenvervoer.html" class="service-card"><div class="service-icon"><i class="fas fa-plane-departure"></i></div><h3>Luchthavenvervoer</h3><p>Vaste prijs, vluchtmonitoring</p><div class="service-summary">Stress-free naar de luchthaven. Wij volgen uw vlucht en wachten op u, ook bij vertraging.</div><div class="read-more-hint"><i class="fas fa-arrow-right"></i> Lees meer <i class="fas fa-search"></i></div></a>
+        <a href="PV_Zakelijk_Vervoer.html" class="service-card"><div class="service-icon"><i class="fas fa-briefcase"></i></div><h3>Zakelijk vervoer</h3><p>Executive class, facturatie</p><div class="service-summary">Maak indruk met executive class vervoer. Facturatie achteraf mogelijk voor uw bedrijf.</div><div class="read-more-hint"><i class="fas fa-arrow-right"></i> Lees meer <i class="fas fa-search"></i></div></a>
+        <a href="PV_Events_Gala.html" class="service-card"><div class="service-icon"><i class="fas fa-glass-cheers"></i></div><h3>Events & Gala</h3><p>Luxe wagen met chauffeur</p><div class="service-summary">Maak uw speciale avond compleet met een luxe chauffeur. Ontdek de mogelijkheden for events.</div><div class="read-more-hint"><i class="fas fa-arrow-right"></i> Lees meer <i class="fas fa-search"></i></div></a>
+        <a href="PV_Koeriersdienst.html" class="service-card"><div class="service-icon"><i class="fas fa-file-signature"></i></div><h3>Koeriersdienst</h3><p>Snelle documentleveringen</p><div class="service-summary">Snelle en betrouwbare documentleveringen in heel België. Ontdek onze koerierservice.</div><div class="read-more-hint"><i class="fas fa-arrow-right"></i> Lees meer <i class="fas fa-search"></i></div></a>
+    </div></div>
+
+    <div class="contact-wrapper" id="contact"><div class="contact-row"><div class="contact-form"><h3><i class="fas fa-paper-plane"></i> Stuur een bericht</h3><div class="compact-form"><div class="form-group"><label><i class="fas fa-user"></i> Uw naam *</label><input type="text" id="contactNaam"></div><div class="form-group"><label><i class="fas fa-envelope"></i> E-mail *</label><input type="email" id="contactEmail"></div><div class="form-group"><label><i class="fas fa-comment"></i> Bericht *</label><textarea id="contactBericht" rows="2"></textarea></div><div class="button-row"><button class="btn-primary" id="verstuurBerichtBtn"><i class="fas fa-paper-plane"></i> Verstuur</button><a href="https://wa.me/32470123456" target="_blank" class="btn-whatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</a></div></div></div></div></div>
+
+    <footer class="footer-dark"><div class="container"><div class="footer-grid"><div class="footer-brand"><h4><i class="fas fa-car"></i> Fleetconnect</h4><p>Professioneel taxivervoer in België – Stijl, stiptheid en service.</p></div><div class="footer-ryz3n"><h4>Fleetconnect | Digital</h4><a href="#">Control Panel</a><a href="#">Taxi Dispatch</a><a href="#">Legal & Privacy</a></div><div class="footer-legal"><h4>Juridisch</h4><a href="PVfaq.html">❓ FAQ</a><br><a href="PVprivacy.html">🔒 Privacy</a><br><a href="PVcookiebeleid.html">🍪 Cookiebeleid</a><br><a href="PValgemene-voorwaarden.html">📜 Algemene voorwaarden</a></div><div class="footer-partners"><h4>Partners</h4><a href="#">Horizon Of Infinity</a></div></div><div class="footer-bottom">© 2026 Fleetconnect – <a href="#">Fleetconnect</a></div></div></footer>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
     
-    <div id="toast" class="toast"></div>
-
-    <script type="module">
-        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-        const SUPABASE_URL = 'https://rreqjjrmvytnwnsidmqi.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyZXFqanJtdnl0bnduc2lkbXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjAxMzcsImV4cCI6MjA5Mzk5NjEzN30.q4M3A6Dix3F_9Im2pw8DUIeE4C-INtUlvImRDM58MTA';
-
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        const app = {
-            allBookings: [],
-            newOrders: [],
-            ordersList: [],
-            historyOrders: [],
-            partners: [],
-            drivers: [],
-            currentTab: 'neworders',
-            selectedDate: new Date(),
-            currentMonth: new Date(),
-            financePeriod: 'month',
-            revenueChart: null,
-            flipStates: { omzet: false, cash: false, orders: false },
-            
-            showToast(msg, isError) {
-                const toast = document.getElementById('toast');
-                toast.textContent = msg;
-                toast.style.backgroundColor = isError ? '#ef4444' : '#10b981';
-                toast.classList.add('show');
-                setTimeout(() => toast.classList.remove('show'), 3000);
-            },
-            
-            async loadPartners() {
-                const { data, error } = await supabase
-                    .from('partners')
-                    .select('*')
-                    .order('is_hoofd', { ascending: false });
-                if (error) {
-                    this.showToast('Fout bij laden partners: ' + error.message, true);
-                    return;
-                }
-                this.partners = data;
-            },
-            
-            async loadDrivers() {
-                const { data, error } = await supabase
-                    .from('drivers')
-                    .select('*');
-                if (error) {
-                    this.showToast('Fout bij laden drivers: ' + error.message, true);
-                    return;
-                }
-                this.drivers = data;
-            },
-            
-            switchToWoningen() { window.location.href = 'commander.html'; },
-            switchToAutoDealer() { window.location.href = 'autodealerpaneel.html'; },
-            
-            formatDate(date) {
-                let d = new Date(date);
-                return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()}`;
-            },
-            
-            parseDate(dateStr, timeStr) {
-                let parts = dateStr.split('-');
-                let timeParts = timeStr ? timeStr.split(':') : ['00','00'];
-                return new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]), parseInt(timeParts[0]), parseInt(timeParts[1]));
-            },
-            
-            isFuture(dateStr, timeStr) { return this.parseDate(dateStr, timeStr) > new Date(); },
-            isExpired(dateStr, timeStr) { return this.parseDate(dateStr, timeStr) < new Date(); },
-            
-            escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); },
-            closeModal() { document.getElementById('bookingModal').style.display = 'none'; },
-            
-            // ============================================
-            // BELANGRIJKSTE FIX: filterAndSortData()
-            // ============================================
-            filterAndSortData() {
-                // New Orders: alleen pending (nog niet geaccepteerd)
-                this.newOrders = this.allBookings.filter(b => b.status === 'pending');
-                
-                // Orders: geaccepteerde ritten die nog NIET verlopen zijn (toekomstig OF vandaag maar nog niet geweest)
-                // Een rit blijft in Orders TOTDAT de tijd verstreken is!
-                this.ordersList = this.allBookings.filter(b => 
-                    b.status === 'accepted' && !this.isExpired(b.datetime, b.time)
-                );
-                
-                // History: voltooide, geannuleerde, OF verlopen (expired) ritten
-                this.historyOrders = this.allBookings.filter(b => 
-                    b.status === 'completed' || 
-                    b.status === 'cancelled' ||
-                    (b.status === 'accepted' && this.isExpired(b.datetime, b.time))
-                );
-                
-                // Sorteren
-                this.ordersList.sort((a,b) => this.parseDate(a.datetime, a.time) - this.parseDate(b.datetime, b.time));
-                this.historyOrders.sort((a,b) => this.parseDate(b.datetime, b.time) - this.parseDate(a.datetime, a.time));
-                this.newOrders.sort((a,b) => this.parseDate(a.datetime, a.time) - this.parseDate(b.datetime, b.time));
-            },
-            
-            getRidesByDate(dateStr) { return this.allBookings.filter(b => b.datetime === dateStr); },
-            
-            getTodayStats() {
-                let todayStr = this.formatDate(new Date());
-                let todayRides = this.getRidesByDate(todayStr);
-                let todayCompleted = todayRides.filter(r => r.status === 'completed');
-                let todayTotal = todayRides.reduce((sum, r) => sum + (r.amount || 0), 0);
-                let todayCash = todayRides.filter(r => r.payment === 'Cash').reduce((sum, r) => sum + (r.amount || 0), 0);
-                let commission = todayTotal * 0.10;
-                let nowTime = `${new Date().getHours().toString().padStart(2,'0')}:${new Date().getMinutes().toString().padStart(2,'0')}`;
-                let futureRidesToday = todayRides.filter(r => r.status !== 'completed' && r.status !== 'cancelled' && r.time > nowTime);
-                return { total: todayTotal, cash: todayCash, commission: commission, completed: todayCompleted.length, canceled: todayRides.filter(r => r.status === 'cancelled').length, futureRides: futureRidesToday.length };
-            },
-            
-            toggleFlipCard(cardName) { this.flipStates[cardName] = !this.flipStates[cardName]; if(this.currentTab === 'agenda') this.renderAgenda(); },
-            
-            renderDashboardGrid() {
-                let stats = this.getTodayStats();
-                return `
-                    <div class="dashboard-grid">
-                        <div class="info-card" onclick="app.toggleFlipCard('omzet')">
-                            <div class="mini-flip-container"><div class="mini-flip-card ${this.flipStates.omzet ? 'flipped' : ''}">
-                                <div class="mini-flip-front"><i class="fas fa-euro-sign" style="font-size:1.5rem;"></i><div class="value">€ ${stats.total.toFixed(2)}</div><div class="label">Dagelijkse Omzet</div></div>
-                                <div class="mini-flip-back"><i class="fas fa-percent" style="font-size:1.5rem;"></i><div class="value">€ ${stats.commission.toFixed(2)}</div><div class="label">10% Commissie</div></div>
-                            </div></div>
-                        </div>
-                        <div class="info-card">
-                            <div class="mini-flip-container"><div class="mini-flip-card">
-                                <div class="mini-flip-front"><i class="fas fa-money-bill-wave" style="font-size:1.5rem;"></i><div class="value">€ ${stats.cash.toFixed(2)}</div><div class="label">Cash Betalingen</div></div>
-                            </div></div>
-                        </div>
-                        <div class="info-card" onclick="app.toggleFlipCard('orders')">
-                            <div class="mini-flip-container"><div class="mini-flip-card ${this.flipStates.orders ? 'flipped' : ''}">
-                                <div class="mini-flip-front"><i class="fas fa-check-circle" style="font-size:1.5rem;"></i><div class="value">${stats.completed}</div><div class="label">Uitgevoerde Orders</div></div>
-                                <div class="mini-flip-back"><i class="fas fa-ban" style="font-size:1.5rem;"></i><div class="value">${stats.canceled}</div><div class="label">Geannuleerde Ritten</div></div>
-                            </div></div>
-                        </div>
-                        <div class="info-card"><div class="mini-flip-container"><div class="mini-flip-card"><div class="mini-flip-front"><i class="fas fa-clock" style="font-size:1.5rem;"></i><div class="value">${stats.futureRides}</div><div class="label">Toekomstige ritten</div></div></div></div></div>
-                    </div>
-                `;
-            },
-            
-            renderCalendar() {
-                let year = this.currentMonth.getFullYear();
-                let month = this.currentMonth.getMonth();
-                let firstDay = new Date(year, month, 1);
-                let startDay = firstDay.getDay();
-                let daysInMonth = new Date(year, month + 1, 0).getDate();
-                let prevMonthDays = new Date(year, month, 0).getDate();
-                let adjustedStart = startDay === 0 ? 6 : startDay - 1;
-                let html = `<div class="calendar-container"><div class="calendar-header"><h2>${firstDay.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })}</h2><div class="calendar-nav"><button onclick="app.changeMonth(-1)"><i class="fas fa-chevron-left"></i></button><button onclick="app.goToToday()">Vandaag</button><button onclick="app.changeMonth(1)"><i class="fas fa-chevron-right"></i></button></div></div><div class="calendar-weekdays"><div>Ma</div><div>Di</div><div>Wo</div><div>Do</div><div>Vr</div><div>Za</div><div>Zo</div></div><div class="calendar-days">`;
-                for (let i = adjustedStart - 1; i >= 0; i--) html += `<div class="calendar-day other-month" onclick="app.selectDate(${prevMonthDays - i}, ${month-1}, ${year})">${prevMonthDays - i}</div>`;
-                for (let day = 1; day <= daysInMonth; day++) {
-                    let dateStr = `${day.toString().padStart(2,'0')}-${(month+1).toString().padStart(2,'0')}-${year}`;
-                    let rides = this.getRidesByDate(dateStr);
-                    let hasRides = rides.length > 0;
-                    let hasExpired = rides.some(r => r.status === 'accepted' && this.isExpired(r.datetime, r.time));
-                    let isToday = (day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear());
-                    let isSelected = (this.selectedDate && day === this.selectedDate.getDate() && month === this.selectedDate.getMonth() && year === this.selectedDate.getFullYear());
-                    let classes = 'calendar-day';
-                    if (isToday) classes += ' today';
-                    if (isSelected) classes += ' selected';
-                    if (hasRides) classes += ' has-rides';
-                    if (hasExpired) classes += ' has-expired';
-                    html += `<div class="${classes}" onclick="app.selectDate(${day}, ${month+1}, ${year})">${day}${hasRides ? '<div class="ride-dot"></div>' : ''}${hasExpired ? '<div class="expired-dot"></div>' : ''}</div>`;
-                }
-                let remaining = 42 - (adjustedStart + daysInMonth);
-                for (let day = 1; day <= remaining; day++) html += `<div class="calendar-day other-month" onclick="app.selectDate(${day}, ${month+2}, ${year})">${day}</div>`;
-                html += `</div></div>`;
-                return html;
-            },
-            
-            renderPlanning() {
-                let dateStr = `${this.selectedDate.getDate().toString().padStart(2,'0')}-${(this.selectedDate.getMonth()+1).toString().padStart(2,'0')}-${this.selectedDate.getFullYear()}`;
-                let rides = this.getRidesByDate(dateStr).sort((a,b) => a.time.localeCompare(b.time));
-                let formattedDate = this.selectedDate.toLocaleDateString('nl-NL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-                let ridesHtml = rides.length === 0 ? '<div class="empty-planning">Geen ritten op deze dag</div>' : rides.map(r => {
-                    const driver = this.drivers.find(d => d.id === r.assigned_driver_id);
-                    const driverText = driver ? `${driver.name} (${driver.vehicle})` : (r.assigned_driver ? `${r.assigned_driver.name} (${r.assigned_driver.vehicle})` : null);
-                    const isExpired = r.status === 'accepted' && this.isExpired(r.datetime, r.time);
-                    const expiredClass = isExpired ? 'expired' : '';
-                    let statusBadge = '';
-                    if (r.status === 'pending') statusBadge = '<span class="status-badge status-pending">⏳ Nieuw</span>';
-                    else if (r.status === 'accepted') statusBadge = isExpired ? '<span class="status-badge status-cancelled">⏰ Verlopen</span>' : '<span class="status-badge status-accepted">✅ Geaccepteerd</span>';
-                    else if (r.status === 'completed') statusBadge = '<span class="status-badge status-completed">✓ Voltooid</span>';
-                    else if (r.status === 'cancelled') statusBadge = '<span class="status-badge status-cancelled">✗ Geannuleerd</span>';
-                    return `
-                    <div class="planning-item ${expiredClass}">
-                        <div class="planning-time"><i class="fas fa-clock"></i> ${r.time} uur ${statusBadge}</div>
-                        <div class="planning-ride"><strong>${this.escapeHtml(r.name)}</strong> - ${this.escapeHtml(r.pickup)} → ${this.escapeHtml(r.destination)}</div>
-                        <div class="planning-ride"><i class="fas fa-car"></i> ${r.vehicle}</div>
-                        ${driverText ? `<div class="planning-ride"><i class="fas fa-user-check"></i> Driver: ${driverText}</div>` : '<div class="planning-ride"><i class="fas fa-user-clock"></i> Nog geen driver</div>'}
-                    </div>
-                `;}).join('');
-                return `<div class="planning-container"><h3><i class="fas fa-calendar-day"></i> ${formattedDate}</h3><div class="planning-list">${ridesHtml}</div></div>`;
-            },
-            
-            selectDate(day, month, year) { this.selectedDate = new Date(year, month-1, day); this.currentMonth = new Date(year, month-1, 1); if(this.currentTab === 'agenda') this.renderAgenda(); },
-            changeMonth(delta) { this.currentMonth.setMonth(this.currentMonth.getMonth() + delta); if(this.currentTab === 'agenda') this.renderAgenda(); },
-            goToToday() { this.currentMonth = new Date(); this.selectedDate = new Date(); if(this.currentTab === 'agenda') this.renderAgenda(); },
-            
-            renderEmptyTable() { return `<div class="alert-no-data"><i class="fas fa-database"></i> Geen ritten gevonden</div>`; },
-            
-            renderNewOrders() {
-                let html = `<div class="filter-bar"><div class="filter-group"><label>Order ID</label><input type="text" id="filterOrderNew" placeholder="Zoek op ID"></div><div class="filter-group"><label>Naam</label><input type="text" id="filterNameNew" placeholder="Klant"></div><div class="filter-actions"><button class="btn-filter" onclick="app.applyFiltersNew()">Zoek</button><button class="btn-reset" onclick="app.resetFiltersNew()">Reset</button></div></div><div class="orders-table-wrapper"><table class="orders-table"><thead><tr><th>Order ID</th><th>Datum & Tijd</th><th>Klant</th><th>Route</th><th>Voertuig</th><th>Bedrag</th><th>Actie</th></tr></thead><tbody id="newOrdersTable"></tbody>}</div>`;
-                document.getElementById('contentArea').innerHTML = html;
-                this.renderNewOrdersTable(this.newOrders);
-                document.getElementById('pageTitle').innerHTML = `New Orders <span class="order-count">${this.newOrders.length}</span>`;
-            },
-            
-            renderNewOrdersTable(orders) {
-                let tbody = document.getElementById('newOrdersTable');
-                if (!tbody) return;
-                if (orders.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="empty-planning">${this.renderEmptyTable()}</td></tr>`;
-                } else {
-                    tbody.innerHTML = orders.map(o => `
-                        <tr>
-                            <td><strong>${o.id}</strong><br><span class="status-badge status-pending">Nieuw</span></span></td>
-                            <td>${o.datetime} ${o.time}</span></span></td>
-                            <td>${this.escapeHtml(o.name)}</span></span></td>
-                            <td>${this.escapeHtml(o.pickup)} → ${this.escapeHtml(o.destination)}</span></span></td>
-                            <td>${o.vehicle}</span></span></td>
-                            <td>€${(o.amount || 0).toFixed(2)}</span></span></td>
-                            <td><button class="action-btn" onclick='app.showBookingFiche(${JSON.stringify(o).replace(/'/g, "&#39;")})'>Bekijk Fiche</button></span></span></tr>
-                    `).join('');
-                }
-            },
-            
-            renderOrders() {
-                let html = `<div class="filter-bar"><div class="filter-group"><label>Order ID</label><input type="text" id="filterOrderOrders" placeholder="Zoek op ID"></div><div class="filter-group"><label>Naam</label><input type="text" id="filterNameOrders" placeholder="Klant"></div><div class="filter-actions"><button class="btn-filter" onclick="app.applyFiltersOrders()">Zoek</button><button class="btn-reset" onclick="app.resetFiltersOrders()">Reset</button></div></div><div class="orders-table-wrapper"><table class="orders-table"><thead><tr><th>Order ID</th><th>Datum & Tijd</th><th>Klant</th><th>Route</th><th>Voertuig</th><th>Bedrag</th><th>Driver</th><th>Actie</th></tr></thead><tbody id="ordersTable"></tbody>}</div>`;
-                document.getElementById('contentArea').innerHTML = html;
-                this.renderOrdersTable(this.ordersList);
-                document.getElementById('pageTitle').innerHTML = `Orders <span class="order-count">${this.ordersList.length}</span>`;
-            },
-            
-            renderOrdersTable(orders) {
-                let tbody = document.getElementById('ordersTable');
-                if (!tbody) return;
-                if (orders.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" class="empty-planning">${this.renderEmptyTable()}</td></tr>`;
-                } else {
-                    tbody.innerHTML = orders.map(o => {
-                        const driver = this.drivers.find(d => d.id === o.assigned_driver_id);
-                        const driverText = driver ? driver.name : (o.assigned_driver ? o.assigned_driver.name : '<span style="color:#f59e0b;">Niet toegewezen</span>');
-                        return `
-                        <tr>
-                            <td><strong>${o.id}</strong><br><span class="status-badge status-accepted">Geaccepteerd</span></span></span></td>
-                            <td>${o.datetime} ${o.time}</span></span></span></td>
-                            <td>${this.escapeHtml(o.name)}</span></span></span></td>
-                            <td>${this.escapeHtml(o.pickup)} → ${this.escapeHtml(o.destination)}</span></span></span></td>
-                            <td>${o.vehicle}</span></span></span></td>
-                            <td>€${(o.amount || 0).toFixed(2)}</span></span></span></td>
-                            <td>${driverText}</span></span></span></td>
-                            <td><button class="action-btn" onclick='app.showBookingFiche(${JSON.stringify(o).replace(/'/g, "&#39;")})'>Bekijk Fiche</button></span></span></span></tr>
-                    `;}).join('');
-                }
-            },
-            
-            renderHistory() {
-                let html = `<div class="filter-bar"><div class="filter-group"><label>Order ID</label><input type="text" id="filterOrderHistory" placeholder="Zoek op ID"></div><div class="filter-group"><label>Naam</label><input type="text" id="filterNameHistory" placeholder="Klant"></div><div class="filter-actions"><button class="btn-filter" onclick="app.applyFiltersHistory()">Zoek</button><button class="btn-reset" onclick="app.resetFiltersHistory()">Reset</button></div></div><div class="orders-table-wrapper"><table class="orders-table"><thead><tr><th>Order ID</th><th>Datum & Tijd</th><th>Klant</th><th>Route</th><th>Voertuig</th><th>Bedrag</th><th>Driver</th><th>Status</th></tr></thead><tbody id="historyTable"></tbody>}</div>`;
-                document.getElementById('contentArea').innerHTML = html;
-                this.renderHistoryTable(this.historyOrders);
-                document.getElementById('pageTitle').innerHTML = `History <span class="order-count">${this.historyOrders.length}</span>`;
-            },
-            
-            renderHistoryTable(orders) {
-                let tbody = document.getElementById('historyTable');
-                if (!tbody) return;
-                if (orders.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" class="empty-planning">${this.renderEmptyTable()}</td></tr>`;
-                } else {
-                    tbody.innerHTML = orders.map(o => {
-                        let statusText = '';
-                        let statusClass = '';
-                        if (o.status === 'completed') { statusText = '✓ Uitgevoerd'; statusClass = 'status-completed'; }
-                        else if (o.status === 'cancelled') { statusText = '✗ Geannuleerd'; statusClass = 'status-cancelled'; }
-                        else if (o.status === 'accepted' && this.isExpired(o.datetime, o.time)) { statusText = '⏰ Verlopen'; statusClass = 'status-cancelled'; }
-                        else { statusText = '📋 Onbekend'; statusClass = 'status-pending'; }
-                        
-                        const driver = this.drivers.find(d => d.id === o.assigned_driver_id);
-                        const driverText = driver ? driver.name : (o.assigned_driver ? o.assigned_driver.name : 'Niet toegewezen');
-                        return `<tr>
-                            <td><strong>${o.id}</strong><br><span class="status-badge ${statusClass}">${statusText}</span></span></span></td>
-                            <td>${o.datetime} ${o.time}</span></span></span></td>
-                            <td>${this.escapeHtml(o.name)}</span></span></span></td>
-                            <td>${this.escapeHtml(o.pickup)} → ${this.escapeHtml(o.destination)}</span></span></span></td>
-                            <td>${o.vehicle}</span></span></span></td>
-                            <td>€${(o.amount || 0).toFixed(2)}</span></span></span></td>
-                            <td>${driverText}</span></span></span></td>
-                            <td><span class="status-badge ${statusClass}">${statusText}</span></span></span></td>
-                        </tr>`;
-                    }).join('');
-                }
-            },
-            
-            renderAgenda() {
-                document.getElementById('contentArea').innerHTML = `${this.renderDashboardGrid()}${this.renderCalendar()}${this.renderPlanning()}`;
-                document.getElementById('pageTitle').innerHTML = `Agenda`;
-            },
-            
-            renderDrivers() {
-                let myDrivers = this.drivers.filter(c => {
-                    let partner = this.partners.find(p => p.id === c.partner_id);
-                    return partner && partner.is_hoofd === true;
-                });
-                let html = `<div class="people-card"><h3><i class="fas fa-id-card"></i> Drivers</h3><button class="add-btn" onclick="app.showAddDriverForm()">➕ Nieuwe Driver</button><div style="margin-top:20px;">`;
-                if (myDrivers.length === 0) html += `<div class="empty-planning">Geen drivers gevonden</div>`;
-                else myDrivers.forEach(c => {
-                    html += `<div style="border:1px solid #e2e8f0; border-radius:12px; padding:12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                        <div><strong>${c.driver_code}</strong> – ${this.escapeHtml(c.name)}<br><small>🚗 ${c.vehicle} | ${c.license_plate}</small></div>
-                        <button class="delete-btn" onclick="app.deleteDriver(${c.id})">Verwijder</button>
-                    </div>`;
-                });
-                html += `</div></div>`;
-                document.getElementById('contentArea').innerHTML = html;
-                document.getElementById('pageTitle').innerHTML = `Drivers`;
-            },
-            
-            renderPartners() {
-                let html = `<div class="people-card"><h3><i class="fas fa-handshake"></i> Mijn Partners</h3><button class="add-btn" onclick="app.showAddPartnerForm()">➕ Nieuwe Partner</button><div style="margin-top:20px;">`;
-                if (this.partners.length === 0) html += `<div class="empty-planning">Geen partners gevonden</div>`;
-                else this.partners.forEach(p => {
-                    let partnerDrivers = this.drivers.filter(c => c.partner_id === p.id);
-                    html += `<div class="partner-card">
-                        <div class="partner-header"><div class="partner-name">${this.escapeHtml(p.name)}</div><button class="delete-btn" onclick="app.deletePartner(${p.id})">Verwijder Partner</button></div>
-                        <div><small>Contact: ${this.escapeHtml(p.contact)} | ${p.email} | ${p.phone}</small></div>
-                        <div class="driver-list"><strong>Drivers:</strong>
-                            ${partnerDrivers.length === 0 ? '<div><small>Geen drivers</small></div>' : partnerDrivers.map(c => `
-                                <div class="driver-item"><span>${c.driver_code} – ${this.escapeHtml(c.name)} (${c.vehicle})</span><button class="delete-btn" style="padding:2px 8px;" onclick="app.deleteDriver(${c.id})">✖</button></div>
-                            `).join('')}
-                            <div class="add-driver-form"><input type="text" id="driverName_${p.id}" placeholder="Naam"><input type="text" id="driverVoertuig_${p.id}" placeholder="Voertuig"><input type="text" id="driverPlaat_${p.id}" placeholder="Nummerplaat"><button class="action-btn" onclick="app.addDriverForPartner(${p.id})">+ Driver</button></div>
-                        </div>
-                    </div>`;
-                });
-                html += `</div></div>`;
-                document.getElementById('contentArea').innerHTML = html;
-                document.getElementById('pageTitle').innerHTML = `Mijn Partners`;
-            },
-            
-            async addDriverForPartner(partnerId) {
-                let name = document.getElementById(`driverName_${partnerId}`)?.value;
-                let vehicle = document.getElementById(`driverVoertuig_${partnerId}`)?.value;
-                let plate = document.getElementById(`driverPlaat_${partnerId}`)?.value;
-                if (!name) { this.showToast('Vul een naam in', true); return; }
-
-                const partner = this.partners.find(p => p.id == partnerId);
-                if (!partner) { this.showToast('Partner niet gevonden', true); return; }
-
-                const { count, error: countError } = await supabase
-                    .from('drivers')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('partner_id', partnerId);
-                if (countError) {
-                    this.showToast('Fout bij tellen drivers', true);
-                    return;
-                }
-                const nextNumber = (count || 0) + 1;
-                const driverCode = `${partner.prefix}-${String(nextNumber).padStart(2, '0')}`;
-
-                const { error } = await supabase
-                    .from('drivers')
-                    .insert({
-                        partner_id: partnerId,
-                        driver_code: driverCode,
-                        name: name,
-                        vehicle: vehicle || 'Standaard',
-                        license_plate: plate || 'Onbekend'
-                    });
-
-                if (error) {
-                    this.showToast('Fout bij toevoegen driver: ' + error.message, true);
-                    return;
-                }
-
-                this.showToast(`Driver ${name} toegevoegd (code: ${driverCode})`);
-                await this.loadDrivers();
-                this.renderPartners();
-
-                document.getElementById(`driverName_${partnerId}`).value = '';
-                document.getElementById(`driverVoertuig_${partnerId}`).value = '';
-                document.getElementById(`driverPlaat_${partnerId}`).value = '';
-            },
-            
-            async showAddDriverForm() {
-                const hoofdPartner = this.partners.find(p => p.is_hoofd === true);
-                if (!hoofdPartner) {
-                    this.showToast('Geen hoofdpartner gevonden', true);
-                    return;
-                }
-                const partnerId = hoofdPartner.id;
-
-                let name = prompt('Naam driver:');
-                if (!name) return;
-                let vehicle = prompt('Type voertuig:') || 'Standaard';
-                let plate = prompt('Nummerplaat:') || 'Onbekend';
-
-                const { count, error: countError } = await supabase
-                    .from('drivers')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('partner_id', partnerId);
-                if (countError) {
-                    this.showToast('Fout bij tellen drivers', true);
-                    return;
-                }
-                const nextNumber = (count || 0) + 1;
-                const driverCode = `${hoofdPartner.prefix}-${String(nextNumber).padStart(2, '0')}`;
-
-                const { error } = await supabase
-                    .from('drivers')
-                    .insert({
-                        partner_id: partnerId,
-                        driver_code: driverCode,
-                        name: name,
-                        vehicle: vehicle,
-                        license_plate: plate
-                    });
-
-                if (error) {
-                    this.showToast('Fout bij toevoegen driver: ' + error.message, true);
-                } else {
-                    this.showToast(`Driver ${name} toegevoegd (code: ${driverCode})`);
-                    await this.loadDrivers();
-                    if (this.currentTab === 'drivers') this.renderDrivers();
-                    if (this.currentTab === 'partners') this.renderPartners();
-                }
-            },
-            
-            async showAddPartnerForm() {
-                let name = prompt('Bedrijfsnaam partner:');
-                if (!name) return;
-                let contact = prompt('Contactpersoon:') || '';
-                let email = prompt('Email:') || '';
-                let phone = prompt('Telefoon:') || '';
-                let prefix = prompt('Prefix voor driver ID (2 letters):') || name.slice(0,2).toUpperCase();
-                prefix = prefix.slice(0,2).toUpperCase();
-
-                const hoofdPartner = this.partners.find(p => p.is_hoofd === true);
-                if (!hoofdPartner) {
-                    this.showToast('Geen hoofdpartner gevonden. Voeg eerst een hoofdpartner toe via SQL.', true);
-                    return;
-                }
-
-                const { error } = await supabase
-                    .from('partners')
-                    .insert({
-                        name: name,
-                        is_hoofd: false,
-                        parent_partner_id: hoofdPartner.id,
-                        prefix: prefix,
-                        contact: contact,
-                        email: email,
-                        phone: phone
-                    });
-
-                if (error) {
-                    this.showToast('Fout bij toevoegen partner: ' + error.message, true);
-                } else {
-                    this.showToast(`Partner ${name} toegevoegd`);
-                    await this.loadPartners();
-                    this.renderPartners();
-                }
-            },
-            
-            async deleteDriver(driverId) {
-                if (!confirm('Weet u zeker dat u deze driver wilt verwijderen?')) return;
-                const { error } = await supabase
-                    .from('drivers')
-                    .delete()
-                    .eq('id', driverId);
-                if (error) {
-                    this.showToast('Fout bij verwijderen driver: ' + error.message, true);
-                } else {
-                    this.showToast('Driver verwijderd');
-                    await this.loadDrivers();
-                    if (this.currentTab === 'drivers' || this.currentTab === 'partners') this.refreshCurrentTab();
-                }
-            },
-            
-            async deletePartner(partnerId) {
-                if (!confirm('Weet u zeker dat u deze partner wilt verwijderen? Alle drivers van deze partner worden ook verwijderd.')) return;
-                const { error } = await supabase
-                    .from('partners')
-                    .delete()
-                    .eq('id', partnerId);
-                if (error) {
-                    this.showToast('Fout bij verwijderen partner: ' + error.message, true);
-                } else {
-                    this.showToast('Partner verwijderd');
-                    await this.loadPartners();
-                    await this.loadDrivers();
-                    if (this.currentTab === 'partners') this.refreshCurrentTab();
-                }
-            },
-            
-            filterBookingsByPeriod(period, bookings) {
-                let now = new Date();
-                let startDate, endDate;
-                switch(period) {
-                    case 'today': startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()); endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1); break;
-                    case 'month': startDate = new Date(now.getFullYear(), now.getMonth(), 1); endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0); break;
-                    case 'year': startDate = new Date(now.getFullYear(), 0, 1); endDate = new Date(now.getFullYear(), 11, 31); break;
-                    default: return bookings;
-                }
-                return bookings.filter(b => { let rideDate = this.parseDate(b.datetime, '00:00'); return rideDate >= startDate && rideDate <= endDate; });
-            },
-            
-            renderFinance() {
-                let filteredBookings = this.filterBookingsByPeriod(this.financePeriod, this.allBookings);
-                let totalRevenue = filteredBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
-                let cashRevenue = filteredBookings.filter(b => b.payment === 'Cash').reduce((sum, b) => sum + (b.amount || 0), 0);
-                let factuurRevenue = filteredBookings.filter(b => b.payment === 'Factuur').reduce((sum, b) => sum + (b.amount || 0), 0);
-                let commission = totalRevenue * 0.10;
-                let periodLabel = { today: 'Vandaag', month: 'Deze Maand', year: 'Dit Jaar' }[this.financePeriod];
-                
-                let monthlyData = {};
-                this.allBookings.forEach(b => {
-                    let date = this.parseDate(b.datetime, '00:00');
-                    let monthKey = `${date.getFullYear()}-${date.getMonth()+1}`;
-                    monthlyData[monthKey] = (monthlyData[monthKey] || 0) + (b.amount || 0);
-                });
-                let sortedMonths = Object.keys(monthlyData).sort();
-                let chartLabels = sortedMonths.map(m => { let [year, month] = m.split('-'); return `${year}-${month.padStart(2,'0')}`; });
-                let chartData = sortedMonths.map(m => monthlyData[m]);
-                
-                let html = `
-                    <div class="finance-toolbar"><div class="period-buttons">
-                        <button class="period-btn ${this.financePeriod === 'today' ? 'active' : ''}" onclick="app.setFinancePeriod('today')">Vandaag</button>
-                        <button class="period-btn ${this.financePeriod === 'month' ? 'active' : ''}" onclick="app.setFinancePeriod('month')">Deze Maand</button>
-                        <button class="period-btn ${this.financePeriod === 'year' ? 'active' : ''}" onclick="app.setFinancePeriod('year')">Dit Jaar</button>
-                    </div></div>
-                    <div class="kpi-grid">
-                        <div class="kpi-card"><div class="value">${this.formatPrice(totalRevenue)}</div><div class="label">${periodLabel} - Omzet</div></div>
-                        <div class="kpi-card"><div class="value">${this.formatPrice(cashRevenue)}</div><div class="label">${periodLabel} - Cash</div></div>
-                        <div class="kpi-card"><div class="value">${this.formatPrice(factuurRevenue)}</div><div class="label">${periodLabel} - Factuur</div></div>
-                        <div class="kpi-card"><div class="value">${filteredBookings.length}</div><div class="label">${periodLabel} - Ritten</div></div>
-                        <div class="kpi-card"><div class="value">${this.formatPrice(commission)}</div><div class="label">${periodLabel} - Commissie</div></div>
-                    </div>
-                    <div class="stats-grid">
-                        <div class="stat-card"><h4>📋 New Orders</h4><div class="value">${this.newOrders.length}</div></div>
-                        <div class="stat-card"><h4>✅ Actieve Orders</h4><div class="value">${this.ordersList.length}</div></div>
-                        <div class="stat-card"><h4>📜 History</h4><div class="value">${this.historyOrders.length}</div></div>
-                    </div>
-                    <div class="chart-container"><canvas id="revenueChart" width="400" height="200"></canvas></div>
-                `;
-                document.getElementById('contentArea').innerHTML = html;
-                document.getElementById('pageTitle').innerHTML = `Financieel Overzicht - ${periodLabel}`;
-                
-                let ctx = document.getElementById('revenueChart')?.getContext('2d');
-                if (ctx) {
-                    if (this.revenueChart) this.revenueChart.destroy();
-                    this.revenueChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: { labels: chartLabels.length ? chartLabels : ['Geen data'], datasets: [{ label: 'Omzet (€)', data: chartData.length ? chartData : [0], backgroundColor: '#2dd4bf', borderRadius: 8 }] },
-                        options: { responsive: true, maintainAspectRatio: true }
-                    });
-                }
-            },
-            
-            formatPrice(price) { return '€ ' + (price || 0).toLocaleString(); },
-            setFinancePeriod(period) { this.financePeriod = period; this.renderFinance(); },
-            
-            renderWiki() {
-                document.getElementById('contentArea').innerHTML = `
-                    <div class="wiki-container">
-                        <div class="wiki-content">
-                            <h2><i class="fas fa-robot"></i> Wiki Agent - Gebruikershandleiding</h2>
-                            <p>Welkom bij het <strong>Fleet Connect Onderaannemer Paneel</strong>.</p>
-                            <h3>📋 1. Nieuwe Orders</h3><p>Hier verschijnen ritten met status 'pending'. Klik op "Bekijk Fiche" en daarna op "Accepteren" om de rit naar Orders te verplaatsen.</p>
-                            <h3>📦 2. Orders</h3><p>Geaccepteerde ritten die nog in de toekomst liggen. U kunt hier een driver toewijzen. <strong>Ritten blijven in Orders totdat de datum en tijd verstreken zijn!</strong> Daarna gaan ze automatisch naar History.</p>
-                            <h3>📜 3. History</h3><p>Voltooide, geannuleerde of verlopen ritten. U kunt exporteren naar CSV of JSON via de console (F12 -> type app.downloadCSV()).</p>
-                            <h3>📅 4. Agenda</h3><p>Kalender met flipcard dashboard. Klik op een dag voor de planning. Rode stippen = verlopen ritten.</p>
-                            <h3>👥 5. Drivers</h3><p>Beheer uw eigen drivers: toevoegen en verwijderen.</p>
-                            <h3>🤝 6. Mijn Partners</h3><p>Beheer partners (onderaannemers onder u). U kunt partners toevoegen, verwijderen en voor hen drivers aanmaken.</p>
-                            <h3>💰 7. Financieel Overzicht</h3><p>Filters: Vandaag / Deze Maand / Dit Jaar. Toont omzet, cash/factuur, aantal ritten, commissie en grafiek.</p>
-                            <h3>🔄 Switch naar Auto Dealer / Woningen</h3><p>Gebruik de switch knoppen om naar andere panelen te gaan.</p>
-                            <hr><p style="text-align:center;"><i class="fas fa-code-branch"></i> Fleet Connect - Gekoppeld aan Supabase</p>
-                        </div>
-                    </div>
-                `;
-                document.getElementById('pageTitle').innerHTML = `Wiki Agent`;
-            },
-            
-            applyFiltersNew() {
-                let orderFilter = document.getElementById("filterOrderNew")?.value.toLowerCase() || "";
-                let nameFilter = document.getElementById("filterNameNew")?.value.toLowerCase() || "";
-                let filtered = this.newOrders.filter(o => (orderFilter === "" || o.id?.toLowerCase().includes(orderFilter)) && (nameFilter === "" || o.name?.toLowerCase().includes(nameFilter)));
-                this.renderNewOrdersTable(filtered);
-            },
-            resetFiltersNew() { let o = document.getElementById("filterOrderNew"); let n = document.getElementById("filterNameNew"); if(o) o.value = ""; if(n) n.value = ""; this.renderNewOrdersTable(this.newOrders); },
-            applyFiltersOrders() {
-                let orderFilter = document.getElementById("filterOrderOrders")?.value.toLowerCase() || "";
-                let nameFilter = document.getElementById("filterNameOrders")?.value.toLowerCase() || "";
-                let filtered = this.ordersList.filter(o => (orderFilter === "" || o.id?.toLowerCase().includes(orderFilter)) && (nameFilter === "" || o.name?.toLowerCase().includes(nameFilter)));
-                this.renderOrdersTable(filtered);
-            },
-            resetFiltersOrders() { let o = document.getElementById("filterOrderOrders"); let n = document.getElementById("filterNameOrders"); if(o) o.value = ""; if(n) n.value = ""; this.renderOrdersTable(this.ordersList); },
-            applyFiltersHistory() {
-                let orderFilter = document.getElementById("filterOrderHistory")?.value.toLowerCase() || "";
-                let nameFilter = document.getElementById("filterNameHistory")?.value.toLowerCase() || "";
-                let filtered = this.historyOrders.filter(o => (orderFilter === "" || o.id?.toLowerCase().includes(orderFilter)) && (nameFilter === "" || o.name?.toLowerCase().includes(nameFilter)));
-                this.renderHistoryTable(filtered);
-            },
-            resetFiltersHistory() { let o = document.getElementById("filterOrderHistory"); let n = document.getElementById("filterNameHistory"); if(o) o.value = ""; if(n) n.value = ""; this.renderHistoryTable(this.historyOrders); },
-            
-            showBookingFiche(booking) {
-                let driverOptions = '<option value="">-- Selecteer Driver --</option>';
-                let availableDrivers = this.drivers.filter(c => c.partner_id === booking.partner_id);
-                availableDrivers.forEach(d => { driverOptions += `<option value="${d.id}">${this.escapeHtml(d.name)} (${d.vehicle})</option>`; });
-                let ficheBody = document.getElementById('ficheBody');
-                const isExpired = this.isExpired(booking.datetime, booking.time);
-                ficheBody.innerHTML = `
-                    <div class="fiche-section"><h4>Boekingsinformatie</h4>
-                        <div class="fiche-row"><span class="fiche-label">Boekingsnummer:</span><span class="fiche-value"><strong>${booking.id}</strong></span></div>
-                        <div class="fiche-row"><span class="fiche-label">Status:</span><span class="fiche-value"><span class="status-badge status-${booking.status}">${booking.status === 'pending' ? 'Nieuw' : (booking.status === 'accepted' ? 'Geaccepteerd' : (booking.status === 'completed' ? 'Voltooid' : 'Geannuleerd'))}</span></span></div>
-                        <div class="fiche-row"><span class="fiche-label">Datum & Tijd:</span><span class="fiche-value">${booking.datetime} om ${booking.time} uur ${isExpired && booking.status === 'accepted' ? '<span class="status-badge status-cancelled">Verlopen</span>' : ''}</span></div>
-                        ${booking.flight_number ? `<div class="fiche-row"><span class="fiche-label">✈️ Vluchtnummer:</span><span class="fiche-value">${booking.flight_number}</span></div>` : ''}
-                    </div>
-                    <div class="fiche-section"><h4>Klantgegevens</h4>
-                        <div class="fiche-row"><span class="fiche-label">Naam:</span><span class="fiche-value">${this.escapeHtml(booking.name)}</span></div>
-                        <div class="fiche-row"><span class="fiche-label">Email:</span><span class="fiche-value">${booking.email || '-'}</span></div>
-                        <div class="fiche-row"><span class="fiche-label">Telefoon:</span><span class="fiche-value">${booking.phone || '-'}</span></div>
-                    </div>
-                    <div class="fiche-section"><h4>Ritgegevens</h4>
-                        <div class="fiche-row"><span class="fiche-label">Pickup:</span><span class="fiche-value">${this.escapeHtml(booking.pickup)}</span></div>
-                        <div class="fiche-row"><span class="fiche-label">Destination:</span><span class="fiche-value">${this.escapeHtml(booking.destination)}</span></div>
-                        <div class="fiche-row"><span class="fiche-label">Voertuig:</span><span class="fiche-value">${booking.vehicle}</span></div>
-                        <div class="fiche-row"><span class="fiche-label">Extra's:</span><span class="fiche-value">${booking.extras || '-'}</span></div>
-                    </div>
-                    ${booking.status === 'accepted' && !isExpired ? `<div class="fiche-section"><h4>Driver Toewijzen</h4><select id="driverSelect">${driverOptions}</select></div>` : ''}
-                    <div class="fiche-total"><div class="amount">€ ${(booking.amount || 0).toFixed(2)}</div><div>Betaling: ${booking.payment || 'Onbekend'}</div></div>
-                    <div class="fiche-actions">
-                        ${booking.status === 'pending' ? `<button class="fiche-btn confirm" onclick="app.confirmBooking('${booking.id}')">Accepteren</button>` : ''}
-                        ${booking.status === 'accepted' && !isExpired ? `<button class="fiche-btn assign" onclick="app.assignDriverToBooking('${booking.id}')">Driver Toewijzen</button>` : ''}
-                        <button class="fiche-btn close" onclick="app.closeModal()">Sluiten</button>
-                    </div>
-                `;
-                document.getElementById('bookingModal').style.display = 'flex';
-            },
-            
-            async fetchBookingsFromSupabase() {
-                const { data, error } = await supabase
-                    .from('bookings')
-                    .select('*')
-                    .order('datetime', { ascending: false });
-                if (error) {
-                    console.error('Supabase fout:', error);
-                    this.showToast('Fout bij laden van ritten: ' + error.message, true);
-                    return [];
-                }
-                return data;
-            },
-            
-            // ============================================
-            // GECORRIGEERDE confirmBooking()
-            // ============================================
-            async confirmBooking(bookingId) {
-                const { error } = await supabase
-                    .from('bookings')
-                    .update({ status: 'accepted' })
-                    .eq('id', bookingId);
-                if (error) {
-                    this.showToast('Fout bij accepteren: ' + error.message, true);
-                } else {
-                    this.showToast(`Rit ${bookingId} geaccepteerd`);
-                    this.allBookings = await this.fetchBookingsFromSupabase();
-                    this.filterAndSortData();
-                    this.refreshCurrentTab();
-                }
-                this.closeModal();
-            },
-            
-            // ============================================
-            // GECORRIGEERDE assignDriverToBooking() - Nu met Supabase update!
-            // ============================================
-            async assignDriverToBooking(bookingId) {
-                const select = document.getElementById('driverSelect');
-                const driverId = select?.value;
-                if (!driverId) { this.showToast('Selecteer een driver', true); return; }
-                const driver = this.drivers.find(c => c.id == driverId);
-                if (!driver) { this.showToast('Driver niet gevonden', true); return; }
-                
-                // Update Supabase met de driver toewijzing
-                const { error } = await supabase
-                    .from('bookings')
-                    .update({ 
-                        assigned_driver_id: driver.id,
-                        assigned_driver: {
-                            id: driver.id,
-                            name: driver.name,
-                            vehicle: driver.vehicle
-                        }
-                    })
-                    .eq('id', bookingId);
-                    
-                if (error) {
-                    this.showToast('Fout bij toewijzen driver: ' + error.message, true);
-                } else {
-                    this.showToast(`Driver ${driver.name} toegewezen`);
-                    this.allBookings = await this.fetchBookingsFromSupabase();
-                    this.filterAndSortData();
-                    this.refreshCurrentTab();
-                }
-                this.closeModal();
-            },
-            
-            downloadCSV() {
-                let headers = ["ID","Datum","Tijd","Naam","Pickup","Destination","Bedrag","Betaling","Status"];
-                let rows = this.historyOrders.map(b => [b.id, b.datetime, b.time, b.name, b.pickup, b.destination, b.amount, b.payment, b.status]);
-                let csvContent = [headers, ...rows].map(row => row.map(cell => `"${cell || ''}"`).join(";")).join("\n");
-                let blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
-                let link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `fleet_history_${new Date().toISOString().slice(0,10)}.csv`; link.click();
-                this.showToast("CSV geëxporteerd!");
-            },
-            
-            downloadJSON() {
-                let blob = new Blob([JSON.stringify(this.historyOrders, null, 2)], { type: "application/json" });
-                let link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `fleet_history_${new Date().toISOString().slice(0,10)}.json`; link.click();
-                this.showToast("JSON geëxporteerd!");
-            },
-            
-            refreshCurrentTab() {
-                switch(this.currentTab) {
-                    case 'neworders': this.renderNewOrders(); break;
-                    case 'orders': this.renderOrders(); break;
-                    case 'history': this.renderHistory(); break;
-                    case 'agenda': this.renderAgenda(); break;
-                    case 'drivers': this.renderDrivers(); break;
-                    case 'partners': this.renderPartners(); break;
-                    case 'financieel': this.renderFinance(); break;
-                    case 'wiki': this.renderWiki(); break;
-                    default: this.renderNewOrders();
-                }
-            },
-            
-            switchTab(tabName) {
-                this.currentTab = tabName;
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    if (item.getAttribute('data-tab') === tabName) item.classList.add('active');
-                    else item.classList.remove('active');
-                });
-                this.refreshCurrentTab();
-            },
-            
-            refreshAllData() { 
-                this.filterAndSortData();
-                this.refreshCurrentTab(); 
-                this.showToast('Data ververst');
-            },
-            
-            async logout() { if(confirm('Weet u zeker dat u wilt uitloggen?')) { await supabase.auth.signOut(); window.location.href = 'admin-index.html'; } },
-            
-            // ============================================
-            // Auto-archief functie: verplaatst verlopen ritten naar History
-            // ============================================
-            async autoArchiveExpiredRides() {
-                const expiredRides = this.allBookings.filter(b => 
-                    b.status === 'accepted' && this.isExpired(b.datetime, b.time)
-                );
-                
-                let changed = false;
-                for (const ride of expiredRides) {
-                    const { error } = await supabase
-                        .from('bookings')
-                        .update({ status: 'completed' })
-                        .eq('id', ride.id);
-                    if (!error) {
-                        changed = true;
-                        console.log(`Rit ${ride.id} automatisch gearchiveerd (verlopen)`);
-                    }
-                }
-                
-                if (changed) {
-                    this.allBookings = await this.fetchBookingsFromSupabase();
-                    this.filterAndSortData();
-                    if (this.currentTab === 'orders' || this.currentTab === 'history' || this.currentTab === 'agenda') {
-                        this.refreshCurrentTab();
-                    }
-                    this.showToast(`${expiredRides.length} verlopen ritten zijn naar History verplaatst`);
-                }
-            },
-            
-            async init() {
-                try {
-                    const bookings = await this.fetchBookingsFromSupabase();
-                    this.allBookings = bookings;
-                    this.filterAndSortData();
-
-                    await this.loadPartners();
-                    await this.loadDrivers();
-
-                    this.switchTab('neworders');
-                    
-                    // Start auto-archief (checkt elke minuut)
-                    setInterval(() => {
-                        this.autoArchiveExpiredRides();
-                    }, 60000);
-                    
-                } catch (err) {
-                    console.error('Initialisatie fout:', err);
-                    document.getElementById('errorMsg').textContent = 'Fout bij het laden van de applicatie. Controleer de console.';
-                    document.getElementById('errorMsg').classList.remove('hidden');
-                }
+    // WERKENDE Supabase configuratie
+    const SUPABASE_URL = 'https://rreqjjrmvytnwnsidmqi.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyZXFqanJtdnl0bnduc2lkbXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjAxMzcsImV4cCI6MjA5Mzk5NjEzN30.q4M3A6Dix3F_9Im2pw8DUIeE4C-INtUlvImRDM58MTA';
+    
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    let map, pickupCoord = null, dropoffCoord = null, routeLayer = null, pickupMarker = null, dropoffMarker = null;
+    let currentRouteData = null, currentRoundTrip = false, currentFlight = "", currentDateTime = "", currentReturnDateTime = "";
+    let selectedVehicle = null, selectedVehicleExtra = 0;
+    let returnFlatpickrInstance = null;
+    let currentPage = 1;
+    
+    // Hamburger menu
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const closeMenuBtn = document.getElementById('closeMenuBtn');
+    
+    function openMenu() { sidebarOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+    function closeMenu() { sidebarOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+    
+    if (hamburgerBtn) hamburgerBtn.addEventListener('click', openMenu);
+    if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeMenu);
+    if (sidebarOverlay) sidebarOverlay.addEventListener('click', function(e) { if (e.target === sidebarOverlay) closeMenu(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && sidebarOverlay && sidebarOverlay.classList.contains('active')) closeMenu(); });
+    
+    function generateBookingId() {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        let counter = parseInt(localStorage.getItem('bookingCounter') || '0');
+        counter++;
+        localStorage.setItem('bookingCounter', counter);
+        const formatted = String(counter).padStart(3, '0');
+        return `T-PV-${yyyy}${mm}${dd}-${formatted}`;
+    }
+    
+    function getExtrasString() {
+        const extras = [];
+        if (document.getElementById('meetGreet')?.checked) extras.push("Meet & Greet");
+        if (document.getElementById('kissRide')?.checked) extras.push("Kiss & Ride");
+        if (document.getElementById('waterBottle')?.checked) extras.push("Waterfles");
+        if (document.getElementById('wifi')?.checked) extras.push("WiFi");
+        return extras.join(", ") || "Geen";
+    }
+    
+    function parseEuroDate(str) {
+        if (!str) return null;
+        let [datePart, timePart] = str.split(' ');
+        if (!datePart) return null;
+        let [dd, mm, yyyy] = datePart.split('-');
+        let [hh, min] = timePart ? timePart.split(':') : ['0', '0'];
+        return new Date(parseInt(yyyy), parseInt(mm) - 1, parseInt(dd), parseInt(hh), parseInt(min));
+    }
+    
+    function isPast(ds) {
+        if (!ds) return false;
+        const parsed = parseEuroDate(ds);
+        return parsed ? parsed < new Date() : false;
+    }
+    
+    function isWithinNextHour(ds) {
+        if (!ds) return false;
+        const parsed = parseEuroDate(ds);
+        if (!parsed) return false;
+        const diff = parsed - new Date();
+        return diff > 0 && diff < 3600000;
+    }
+    
+    // AUTOCOMPLETE FUNCTIES
+    async function fetchAddresses(q, wid) {
+        if (q.length < 3) { clearSuggestions(wid); return; }
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&countrycodes=be&accept-language=nl`;
+        try {
+            const response = await fetch(url, { headers: { 'User-Agent': 'Fleetconnect/2.0' } });
+            if (!response.ok) throw new Error();
+            const data = await response.json();
+            if (!data.length) { showTempMsg(wid, 'Geen adres in België'); return; }
+            const wrapper = document.getElementById(wid);
+            const suggestionsDiv = wrapper.querySelector('.suggestions');
+            suggestionsDiv.innerHTML = '';
+            data.forEach(place => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.setAttribute('data-lat', place.lat);
+                div.setAttribute('data-lon', place.lon);
+                div.textContent = place.display_name.length > 80 ? place.display_name.slice(0, 80) + '…' : place.display_name;
+                div.onclick = (function(lat, lon, name) {
+                    return function() {
+                        document.getElementById(wid === 'pickupWrap' ? 'pickupInput' : 'dropoffInput').value = name;
+                        if (wid === 'pickupWrap') { pickupCoord = { lat: parseFloat(lat), lon: parseFloat(lon) }; }
+                        else { dropoffCoord = { lat: parseFloat(lat), lon: parseFloat(lon) }; }
+                        suggestionsDiv.style.display = 'none';
+                        if (pickupCoord && dropoffCoord) calculateAndStoreRoute();
+                    };
+                })(place.lat, place.lon, place.display_name);
+                suggestionsDiv.appendChild(div);
+            });
+            suggestionsDiv.style.display = 'block';
+        } catch (error) {
+            console.error('Autocomplete fout:', error);
+            showTempMsg(wid, 'Netwerkfout');
+        }
+    }
+    
+    function clearSuggestions(wid) { const el = document.getElementById(wid)?.querySelector('.suggestions'); if (el) el.style.display = 'none'; }
+    
+    function showTempMsg(wid, msg) {
+        const w = document.getElementById(wid);
+        const sd = w.querySelector('.suggestions');
+        if (!sd) return;
+        sd.innerHTML = `<div class="suggestion-item" style="color:#b91c1c;">❌ ${msg}</div>`;
+        sd.style.display = 'block';
+        setTimeout(() => { if (sd.style.display === 'block') sd.style.display = 'none'; }, 8000);
+    }
+    
+    async function calcRoute(lat1, lon1, lat2, lon2) {
+        const url = `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`;
+        try {
+            const r = await fetch(url);
+            const d = await r.json();
+            if (d.code === 'Ok' && d.routes.length) {
+                const rt = d.routes[0];
+                return { distanceKm: (rt.distance / 1000).toFixed(1), durationMin: Math.round(rt.duration / 60), geometry: rt.geometry };
             }
+        } catch (e) { }
+        return null;
+    }
+    
+    function showError(page, msg) { const errDiv = document.getElementById(`page${page}Error`); if (errDiv) { errDiv.innerText = msg; errDiv.style.display = 'block'; setTimeout(() => errDiv.style.display = 'none', 4000); } }
+    
+    async function updateMapAndInfo(rd) {
+        if (!rd) return;
+        if (pickupMarker) map.removeLayer(pickupMarker);
+        if (dropoffMarker) map.removeLayer(dropoffMarker);
+        if (routeLayer) map.removeLayer(routeLayer);
+        
+        const pickupIcon = L.divIcon({ className: 'custom-div-icon', html: '<div style="background-color:#22c55e;width:32px;height:32px;border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;font-size:18px;">📍</div>', iconSize: [32, 32], popupAnchor: [0, -16] });
+        const dropoffIcon = L.divIcon({ className: 'custom-div-icon', html: '<div style="background-color:#ef4444;width:32px;height:32px;border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;font-size:18px;">🏁</div>', iconSize: [32, 32], popupAnchor: [0, -16] });
+        
+        pickupMarker = L.marker([pickupCoord.lat, pickupCoord.lon], { icon: pickupIcon }).addTo(map);
+        dropoffMarker = L.marker([dropoffCoord.lat, dropoffCoord.lon], { icon: dropoffIcon }).addTo(map);
+        routeLayer = L.geoJSON(rd.geometry, { color: '#d4af37', weight: 6 }).addTo(map);
+        
+        const bounds = L.latLngBounds([pickupCoord.lat, pickupCoord.lon], [dropoffCoord.lat, dropoffCoord.lon]);
+        map.fitBounds(bounds, { padding: [80, 80] });
+        
+        let d = parseFloat(rd.distanceKm), t = rd.durationMin;
+        if (currentRoundTrip) { d *= 2; t *= 2; }
+        const price = d * 1.5;
+        document.getElementById('distVal').innerHTML = d.toFixed(1);
+        document.getElementById('timeVal').innerHTML = t;
+        document.getElementById('priceVal').innerHTML = price.toFixed(2);
+        updateTotalDisplay();
+    }
+    
+    function updateTotalDisplay() {
+        if (!currentRouteData) return;
+        let dist = parseFloat(currentRouteData.distanceKm);
+        if (currentRoundTrip) dist *= 2;
+        let total = (dist * 1.5) + (selectedVehicleExtra || 0);
+        const totalDisplay = document.getElementById('totalDisplay');
+        if (totalDisplay) totalDisplay.innerHTML = `Totaal: € ${total.toFixed(2)}`;
+        const overviewTotal = document.getElementById('overviewTotal');
+        if (overviewTotal) overviewTotal.innerHTML = `€ ${total.toFixed(2)}`;
+    }
+    
+    function updateRitOverzicht() {
+        document.getElementById('overviewPickup').innerText = document.getElementById('pickupInput').value || '—';
+        document.getElementById('overviewDestination').innerText = document.getElementById('dropoffInput').value || '—';
+        document.getElementById('overviewHeen').innerText = document.getElementById('datetime').value || '—';
+        document.getElementById('overviewVehicle').innerText = selectedVehicle || '—';
+        document.getElementById('overviewExtras').innerText = getExtrasString();
+        
+        const returnContainer = document.getElementById('overviewReturnContainer');
+        if (currentRoundTrip && currentReturnDateTime) {
+            returnContainer.style.display = 'block';
+            document.getElementById('overviewReturn').innerText = currentReturnDateTime;
+        } else {
+            returnContainer.style.display = 'none';
+        }
+        
+        let total = 0;
+        if (currentRouteData) {
+            let dist = parseFloat(currentRouteData.distanceKm);
+            if (currentRoundTrip) dist *= 2;
+            total = (dist * 1.5) + (selectedVehicleExtra || 0);
+        }
+        document.getElementById('overviewTotal').innerHTML = `€ ${total.toFixed(2)}`;
+    }
+    
+    async function calculateAndStoreRoute() {
+        if (!pickupCoord || !dropoffCoord) { showError(1, 'Selecteer adressen uit suggesties.'); return false; }
+        const dt = document.getElementById('datetime').value;
+        if (!dt) { showError(1, 'Kies heen datum/tijd.'); return false; }
+        if (isPast(dt)) { showError(1, '❌ Geen ritten in verleden.'); return false; }
+        if (currentRoundTrip) {
+            const returnDt = document.getElementById('returnDatetime').value;
+            if (!returnDt) { showError(1, 'Kies terug datum/tijd voor retour.'); return false; }
+            if (isPast(returnDt)) { showError(1, '❌ Terug rit mag niet in verleden zijn.'); return false; }
+            currentReturnDateTime = returnDt;
+        }
+        const urgent = isWithinNextHour(dt);
+        const urgentDiv = document.getElementById('urgentWhatsApp');
+        if (urgentDiv) urgent ? urgentDiv.classList.add('show') : urgentDiv.classList.remove('show');
+        
+        const rd = await calcRoute(pickupCoord.lat, pickupCoord.lon, dropoffCoord.lat, dropoffCoord.lon);
+        if (!rd) { showError(1, 'Route mislukt.'); return false; }
+        currentRouteData = rd;
+        currentRoundTrip = document.getElementById('roundtripCheckbox').checked;
+        currentFlight = document.getElementById('flightNumber').value;
+        currentDateTime = dt;
+        await updateMapAndInfo(rd);
+        return true;
+    }
+    
+    function initVehicleSelection() {
+        document.querySelectorAll('.vehicle-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.vehicle-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                selectedVehicle = card.getAttribute('data-vehicle');
+                selectedVehicleExtra = parseInt(card.getAttribute('data-extraprice')) || 0;
+                updateTotalDisplay();
+                if (currentPage === 5) updateRitOverzicht();
+            });
+        });
+    }
+    
+    function addOkButtonToFlatpickr(instance) {
+        const existing = instance.calendarContainer.querySelector('.flatpickr-ok-button');
+        if (!existing) {
+            const btn = document.createElement('button');
+            btn.textContent = 'OK';
+            btn.className = 'flatpickr-ok-button';
+            btn.style.cssText = 'margin-left:10px; background:#28a745; color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer;';
+            btn.addEventListener('click', (e) => { e.preventDefault(); instance.close(); });
+            let footer = instance.calendarContainer.querySelector('.flatpickr-footer');
+            if (!footer) { footer = document.createElement('div'); footer.className = 'flatpickr-footer'; instance.calendarContainer.appendChild(footer); }
+            footer.appendChild(btn);
+        }
+    }
+    
+    function showPage(page) {
+        document.querySelectorAll('.carousel-page').forEach((p, idx) => { p.classList.remove('active-page'); if (idx + 1 === page) p.classList.add('active-page'); });
+        document.querySelectorAll('.step-btn').forEach((s, idx) => { s.classList.remove('active'); if (idx + 1 === page) s.classList.add('active'); if (idx + 1 < page) s.classList.add('done'); else s.classList.remove('done'); });
+        document.getElementById('prevBtn').disabled = (page === 1);
+        currentPage = page;
+        if (page === 2 && map) {
+            setTimeout(() => {
+                map.invalidateSize();
+                if (currentRouteData && pickupCoord && dropoffCoord) {
+                    const bounds = L.latLngBounds([pickupCoord.lat, pickupCoord.lon], [dropoffCoord.lat, dropoffCoord.lon]);
+                    map.fitBounds(bounds, { padding: [80, 80] });
+                }
+            }, 150);
+        }
+        if (page === 5) {
+            updateRitOverzicht();
+            updateTotalDisplay();
+            const nextBtn = document.getElementById('nextBtn');
+            if (nextBtn) nextBtn.style.display = 'none';
+        } else {
+            const nextBtn = document.getElementById('nextBtn');
+            if (nextBtn) nextBtn.style.display = 'flex';
+        }
+    }
+    
+    // SUPABASE FUNCTIE - WERKT!
+    async function sendToSupabase(bookingData) {
+        console.log('📦 Verzenden naar Supabase:', bookingData);
+        try {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/bookings`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify(bookingData)
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+            
+            console.log('✅ Boeking opgeslagen in Supabase!');
+            return true;
+        } catch (error) {
+            console.error('❌ Supabase fout:', error);
+            return false;
+        }
+    }
+    
+    // FINALIZE BOOKING - Met customer_id en form_data voor jouw tabel
+    async function finalizeBooking() {
+        const paymentMethod = document.querySelector('input[name="payment"]:checked')?.value || "Cash";
+        
+        let totalAmount = 0;
+        if (currentRouteData) {
+            let dist = parseFloat(currentRouteData.distanceKm);
+            if (currentRoundTrip) dist *= 2;
+            totalAmount = (dist * 1.5) + (selectedVehicleExtra || 0);
+        }
+        
+        const nameValue = `${document.getElementById('firstName').value.trim()} ${document.getElementById('lastName').value.trim()}`;
+        const emailValue = document.getElementById('email').value.trim();
+        const phoneValue = document.getElementById('phone').value.trim();
+        
+        if (!nameValue || !emailValue || !phoneValue) {
+            alert('Vul alle verplichte velden in');
+            return;
+        }
+        
+        if (!selectedVehicle) {
+            alert('Selecteer een voertuig');
+            return;
+        }
+        
+        const bookingData = {
+            id: generateBookingId(),
+            datetime: currentDateTime.split(' ')[0] || "",
+            time: currentDateTime.split(' ')[1] || "",
+            name: nameValue,
+            email: emailValue,
+            phone: phoneValue,
+            pickup: document.getElementById('pickupInput').value,
+            destination: document.getElementById('dropoffInput').value,
+            flight_number: document.getElementById('flightNumber').value.trim() || "",
+            vehicle: selectedVehicle,
+            extras: getExtrasString(),
+            amount: totalAmount,
+            payment: paymentMethod,
+            status: "pending",
+            customer_id: "CUST-" + emailValue.toLowerCase().replace(/[^a-z0-9]/g, ""),
+            form_data: { source: "web-booking" },
+            partner_id: 1
         };
         
-        app.init().catch(console.error);
+        const success = await sendToSupabase(bookingData);
         
-        window.app = app;
-        window.switchTab = app.switchTab.bind(app);
-        window.refreshAllData = app.refreshAllData.bind(app);
-        window.logout = app.logout.bind(app);
-        window.showBookingFiche = app.showBookingFiche.bind(app);
-        window.confirmBooking = app.confirmBooking.bind(app);
-        window.assignDriverToBooking = app.assignDriverToBooking.bind(app);
-        window.closeModal = app.closeModal.bind(app);
-        window.applyFiltersNew = app.applyFiltersNew.bind(app);
-        window.resetFiltersNew = app.resetFiltersNew.bind(app);
-        window.applyFiltersOrders = app.applyFiltersOrders.bind(app);
-        window.resetFiltersOrders = app.resetFiltersOrders.bind(app);
-        window.applyFiltersHistory = app.applyFiltersHistory.bind(app);
-        window.resetFiltersHistory = app.resetFiltersHistory.bind(app);
-        window.selectDate = app.selectDate.bind(app);
-        window.changeMonth = app.changeMonth.bind(app);
-        window.goToToday = app.goToToday.bind(app);
-        window.deleteDriver = app.deleteDriver.bind(app);
-        window.addDriverForPartner = app.addDriverForPartner.bind(app);
-        window.deletePartner = app.deletePartner.bind(app);
-        window.showAddDriverForm = app.showAddDriverForm.bind(app);
-        window.showAddPartnerForm = app.showAddPartnerForm.bind(app);
-        window.setFinancePeriod = app.setFinancePeriod.bind(app);
-        window.toggleFlipCard = app.toggleFlipCard.bind(app);
-        window.downloadCSV = app.downloadCSV.bind(app);
-        window.downloadJSON = app.downloadJSON.bind(app);
-    </script>
+        if (success) {
+            alert(`✅ Boeking bevestigd!\n\n📋 Boekingsnummer: ${bookingData.id}\n💰 Totaalbedrag: € ${totalAmount.toFixed(2)}\n\nEen bevestiging is opgeslagen in de database.`);
+            resetAll();
+            hideOverlay();
+        } else {
+            alert('❌ Er ging iets mis met het opslaan van uw boeking. Probeer opnieuw of contacteer ons.');
+        }
+    }
+    
+    function resetAll() {
+        if (routeLayer) map.removeLayer(routeLayer);
+        if (pickupMarker) map.removeLayer(pickupMarker);
+        if (dropoffMarker) map.removeLayer(dropoffMarker);
+        currentRouteData = null; pickupCoord = null; dropoffCoord = null; selectedVehicle = null; selectedVehicleExtra = 0;
+        document.getElementById('distVal').innerHTML = '—';
+        document.getElementById('timeVal').innerHTML = '—';
+        document.getElementById('priceVal').innerHTML = '—';
+        document.getElementById('pickupInput').value = '';
+        document.getElementById('dropoffInput').value = '';
+        document.getElementById('firstName').value = '';
+        document.getElementById('lastName').value = '';
+        document.getElementById('phone').value = '';
+        document.getElementById('email').value = '';
+        document.getElementById('vat').value = '';
+        document.getElementById('flightNumber').value = '';
+        document.getElementById('roundtripCheckbox').checked = false;
+        document.getElementById('meetGreet').checked = false;
+        document.getElementById('kissRide').checked = false;
+        document.getElementById('waterBottle').checked = false;
+        document.getElementById('wifi').checked = false;
+        document.getElementById('specialWishes').value = '';
+        document.getElementById('returnDatetime').value = '';
+        currentRoundTrip = false;
+        currentReturnDateTime = '';
+        document.getElementById('returnDateContainer').classList.remove('visible');
+        showPage(1);
+        if (document.getElementById('totalDisplay')) document.getElementById('totalDisplay').innerHTML = 'Totaal: € 0,00';
+    }
+    
+    function buildSummaryHTML() {
+        const fn = document.getElementById('firstName').value.trim(), ln = document.getElementById('lastName').value.trim();
+        const ph = document.getElementById('phone').value.trim(), em = document.getElementById('email').value.trim();
+        const pu = document.getElementById('pickupInput').value, doff = document.getElementById('dropoffInput').value;
+        let d = parseFloat(currentRouteData.distanceKm), t = currentRouteData.durationMin;
+        if (currentRoundTrip) { d *= 2; t *= 2; }
+        const base = d * 1.5, total = base + selectedVehicleExtra;
+        return `<div class="summary-section"><h3>🚖 Rit</h3><div class="summary-line"><strong>📍</strong> ${pu}</div><div class="summary-line"><strong>🏁</strong> ${doff}</div><div class="summary-line"><strong>📅 Heen:</strong> ${currentDateTime}</div><div class="summary-line"><strong>✈️</strong> ${currentFlight || "geen"}</div></div>
+                <div class="summary-section"><h3>👤 Klant</h3><div class="summary-line"><strong>Naam:</strong> ${fn} ${ln}</div><div class="summary-line"><strong>GSM:</strong> ${ph}</div><div class="summary-line"><strong>E-mail:</strong> ${em}</div></div>
+                <div class="summary-section"><h3>🚘 Voertuig</h3><div class="summary-line"><strong>Type:</strong> ${selectedVehicle} (+€${selectedVehicleExtra})</div></div>
+                <div class="summary-section"><h3>💰 Prijs</h3><div class="summary-line"><strong>Afstand:</strong> ${d.toFixed(1)} km</div><div class="summary-line"><strong>Basis:</strong> € ${base.toFixed(2)}</div><div class="summary-line"><strong>Totaal:</strong> € ${total.toFixed(2)}</div></div>`;
+    }
+    
+    function showOverlay() { document.getElementById('overlaySummary').innerHTML = buildSummaryHTML(); document.getElementById('summaryOverlay').classList.add('active'); }
+    function hideOverlay() { document.getElementById('summaryOverlay').classList.remove('active'); }
+    
+    async function nextPage() {
+        if (currentPage === 1) { const ok = await calculateAndStoreRoute(); if (ok) showPage(2); }
+        else if (currentPage === 2) { if (!currentRouteData) { showError(2, 'Bereken eerst een rit in stap 1'); return; } showPage(3); }
+        else if (currentPage === 3) { if (!selectedVehicle) { showError(3, 'Selecteer een voertuig'); return; } showPage(4); }
+        else if (currentPage === 4) {
+            const fn = document.getElementById('firstName').value.trim(), ln = document.getElementById('lastName').value.trim(), ph = document.getElementById('phone').value.trim(), em = document.getElementById('email').value.trim();
+            if (!fn || !ln || !ph || !em) { showError(4, 'Vul alle verplichte velden in'); return; }
+            if (!currentRouteData) { showError(4, 'Geen ritgegevens'); return; }
+            if (!selectedVehicle) { showError(4, 'Geen voertuig gekozen'); return; }
+            showPage(5);
+            updateRitOverzicht();
+            updateTotalDisplay();
+        } else if (currentPage === 5) { showOverlay(); }
+    }
+    
+    function prevPage() { if (currentPage > 1) showPage(currentPage - 1); }
+    
+    function initAutocomplete() {
+        const pickupInput = document.getElementById('pickupInput');
+        const dropoffInput = document.getElementById('dropoffInput');
+        let pickupTimeout, dropoffTimeout;
+        if (pickupInput) {
+            pickupInput.addEventListener('input', function(e) {
+                clearTimeout(pickupTimeout);
+                const query = e.target.value;
+                if (query.length >= 3) { pickupTimeout = setTimeout(() => fetchAddresses(query, 'pickupWrap'), 300); }
+                else { clearSuggestions('pickupWrap'); }
+            });
+        }
+        if (dropoffInput) {
+            dropoffInput.addEventListener('input', function(e) {
+                clearTimeout(dropoffTimeout);
+                const query = e.target.value;
+                if (query.length >= 3) { dropoffTimeout = setTimeout(() => fetchAddresses(query, 'dropoffWrap'), 300); }
+                else { clearSuggestions('dropoffWrap'); }
+            });
+        }
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.suggest-wrapper')) {
+                clearSuggestions('pickupWrap');
+                clearSuggestions('dropoffWrap');
+            }
+        });
+    }
+    
+    function initMap() { map = L.map('map').setView([50.85, 4.35], 13); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map); }
+    
+    document.getElementById('roundtripCheckbox')?.addEventListener('change', function (e) {
+        const returnContainer = document.getElementById('returnDateContainer');
+        e.target.checked ? returnContainer.classList.add('visible') : returnContainer.classList.remove('visible');
+        if (currentRouteData) {
+            currentRoundTrip = e.target.checked;
+            let d = parseFloat(currentRouteData.distanceKm), t = currentRouteData.durationMin;
+            if (currentRoundTrip) { d *= 2; t *= 2; }
+            document.getElementById('distVal').innerHTML = d.toFixed(1);
+            document.getElementById('timeVal').innerHTML = t;
+            document.getElementById('priceVal').innerHTML = (d * 1.5).toFixed(2);
+            updateTotalDisplay();
+        }
+    });
+    
+    document.getElementById('nextBtn').addEventListener('click', nextPage);
+    document.getElementById('prevBtn').addEventListener('click', prevPage);
+    document.getElementById('finalConfirmBtn').addEventListener('click', finalizeBooking);
+    
+    const closeOverlayBtn = document.getElementById('closeOverlayBtn');
+    const cancelOverlayBtn = document.getElementById('cancelOverlayBtn');
+    const confirmBookingBtn = document.getElementById('confirmBookingBtn');
+    
+    if (closeOverlayBtn) closeOverlayBtn.addEventListener('click', hideOverlay);
+    if (cancelOverlayBtn) cancelOverlayBtn.addEventListener('click', hideOverlay);
+    if (confirmBookingBtn) confirmBookingBtn.addEventListener('click', finalizeBooking);
+    
+    document.getElementById('verstuurBerichtBtn')?.addEventListener('click', () => alert('Bedankt! We nemen spoedig contact op.'));
+    
+    initMap(); initAutocomplete(); initVehicleSelection(); showPage(1);
+    
+    flatpickr("#datetime", {
+        locale: "nl", enableTime: true, dateFormat: "d-m-Y H:i", time_24hr: true,
+        defaultDate: (() => { let d = new Date(); d.setHours(d.getHours() + 1); return d; })(),
+        minuteIncrement: 1, onReady: (_, __, inst) => addOkButtonToFlatpickr(inst)
+    });
+    
+    returnFlatpickrInstance = flatpickr("#returnDatetime", {
+        locale: "nl", enableTime: true, dateFormat: "d-m-Y H:i", time_24hr: true,
+        minuteIncrement: 1, onReady: (_, __, inst) => addOkButtonToFlatpickr(inst)
+    });
+</script>
+
+<div id="summaryOverlay" class="overlay">
+    <div class="overlay-content">
+        <button id="closeOverlayBtn" style="float:right; background:none; border:none; font-size:28px; cursor:pointer;">&times;</button>
+        <h2>📋 Samenvatting reservatie</h2>
+        <div id="overlaySummary" class="summary-grid"></div>
+        <div class="overlay-actions">
+            <button id="cancelOverlayBtn" style="background:#f1f5f9; color:#334155; padding:12px 24px; border-radius:30px; border:none; cursor:pointer;">Annuleer</button>
+            <button id="confirmBookingBtn" style="background:var(--primary); color:white; padding:12px 24px; border-radius:30px; border:none; cursor:pointer;">✅ Bevestig boeking</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
