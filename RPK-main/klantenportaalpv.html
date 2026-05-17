@@ -522,29 +522,28 @@
 <div id="ritModal" class="modal"><div class="modal-content" id="modalContent"></div></div>
 
 <script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-    const SUPABASE_URL = 'https://rreqjjrmvytnwnsidmqi.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyZXFqanJtdnl0bnduc2lkbXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjAxMzcsImV4cCI6MjA5Mzk5NjEzN30.q4M3A6Dix3F_9Im2pw8DUIeE4C-INtUlvImRDM58MTA';
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    import { AuthHelper, supabase } from './auth-helper.js';
 
     // AUTH & SESSION
-    const loggedInEmail = sessionStorage.getItem('loggedInEmail');
+    let currentUser = null;
 
-    if (!loggedInEmail) {
-        window.location.href = 'index.html';
+    async function initSession() {
+        const { session } = await AuthHelper.getSession();
+        if (!session) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        const { data: customer } = await supabase.from('customers').select('*').eq('id', session.user.id).single();
+        if (customer) {
+            currentUser = customer;
+            document.getElementById('userDisplay').innerText = `Ingelogd als: ${customer.full_name || customer.email} (${customer.customer_number})`;
+            loadUserProfile();
+            loadUserBookings();
+        }
     }
 
-    function generateCustomerId(email) {
-        return "CUST-" + email.toLowerCase().replace(/[^a-z0-9]/g, "");
-    }
-
-    let currentUser = {
-        id: loggedInEmail ? generateCustomerId(loggedInEmail) : 'demo-user',
-        full_name: 'Gebruiker',
-        email: loggedInEmail || 'demo@royalvelvet.be',
-        phone: '',
-        default_pickup_address: ''
-    };
+    initSession();
 
     let userBookings = [];
     let bookingMap, pickupCoord = null, dropoffCoord = null, routeLayer, currentRouteData = null, currentRoundTrip = false, currentReturnDateTime = "";
@@ -552,33 +551,19 @@
     let returnFlatpickr = null;
     let debounceTimer;
 
-    // UI Updates
-    document.addEventListener('DOMContentLoaded', () => {
-        const display = document.getElementById('userDisplay');
-        if(display && loggedInEmail) display.innerText = `Ingelogd als: ${loggedInEmail}`;
-    });
-
-
-    function logout() {
-        sessionStorage.removeItem('loggedInEmail');
+    async function logout() {
+        await AuthHelper.signOut();
         window.location.href = 'index.html';
     }
     document.querySelectorAll('.logout-action').forEach(btn => btn.addEventListener('click', logout));
     document.getElementById('logoutTabBtn')?.addEventListener('click', logout);
 
-    // PROFIEL - Mapped to 'customers' table and 'name' column
+    // PROFIEL - Mapped to 'customers' table
     async function loadUserProfile() {
-        const { data } = await supabase.from('customers').select('*').eq('id', currentUser.id).maybeSingle();
-        if (data) {
-            currentUser.full_name = data.name;
-            currentUser.email = data.email;
-            currentUser.phone = data.phone;
-            currentUser.default_pickup_address = ''; // Column not in customers table
-        }
+        if (!currentUser) return;
         document.getElementById('fullName').value = currentUser.full_name || '';
         document.getElementById('profileEmail').value = currentUser.email || '';
         document.getElementById('profilePhone').value = currentUser.phone || '';
-        document.getElementById('defaultPickup').value = currentUser.default_pickup_address || '';
 
         const nameParts = (currentUser.full_name || '').split(' ');
         document.getElementById('firstName').value = nameParts[0] || '';
@@ -586,33 +571,36 @@
         document.getElementById('phone').value = currentUser.phone || '';
         document.getElementById('email').value = currentUser.email || '';
     }
+
     document.getElementById('profileForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const name = document.getElementById('fullName').value;
+        const full_name = document.getElementById('fullName').value;
         const email = document.getElementById('profileEmail').value;
         const phone = document.getElementById('profilePhone').value;
 
         // Update customers table
-        const { error } = await supabase.from('customers').update({ name, email, phone }).eq('id', currentUser.id);
+        const { error } = await supabase.from('customers').update({ full_name, email, phone }).eq('id', currentUser.id);
 
         if (error) {
             alert('Fout bij opslaan: ' + error.message);
         } else {
-            currentUser = { ...currentUser, full_name: name, email, phone };
             alert('Profiel opgeslagen');
+            currentUser = { ...currentUser, full_name, email, phone };
+            document.getElementById('userDisplay').innerText = `Ingelogd als: ${currentUser.full_name || currentUser.email} (${currentUser.customer_number})`;
             loadUserProfile();
         }
     });
 
-    // DASHBOARD (grotendeels ongewijzigd, maar met roundtrip ondersteuning voor weergave)
+    // DASHBOARD
     async function loadUserBookings() {
-        const { data } = await supabase.from('bookings').select('*').eq('customer_id', currentUser.id).order('datetime', { ascending: false });
-        if (data && data.length) userBookings = data;
-        else {
-            userBookings = [
-                { id: "T-RV-20260515-001", datetime: "15-05-2026", time: "09:00", name: currentUser.full_name, pickup: "Gent, België", destination: "Brussel, België", vehicle: "Standaard", amount: 67.50, status: "completed", extras: "Meet & Greet", flight_number: "BA398", email: currentUser.email, phone: currentUser.phone, payment: "Cash" },
-                { id: "T-RV-20260516-002", datetime: "16-05-2026", time: "14:30", name: currentUser.full_name, pickup: "Antwerpen, België", destination: "Leuven, België", vehicle: "Break", amount: 55.00, status: "pending", extras: "WiFi", email: currentUser.email, phone: currentUser.phone, payment: "Cash" }
-            ];
+        if (!currentUser) return;
+        const { data, error } = await supabase.from('bookings')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('datetime', { ascending: false });
+
+        if (data) {
+            userBookings = data;
         }
         renderDashboard();
     }
@@ -938,7 +926,7 @@
             amount: parseFloat(amount),
             payment: paymentMethod,
             status: "pending",
-            customer_id: generateCustomerId(emailRaw),
+            user_id: currentUser ? currentUser.id : null,
             form_data: buildFormData()
         };
     }

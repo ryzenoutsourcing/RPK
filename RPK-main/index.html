@@ -172,6 +172,35 @@
         <button class="btn-login" id="loginBtn">Inloggen</button>
 
         <a href="#" class="forgot-password" id="forgotBtn">Wachtwoord vergeten?</a>
+
+        <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-light);">
+            <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 12px;">Nog geen account?</p>
+            <button class="btn-secondary" id="showSignupBtn" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 600;">Registreren</button>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal" id="signupModal">
+        <div class="modal-content">
+            <h2>Account aanmaken</h2>
+            <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 20px;">Maak een account aan voor Fleetconnect.</p>
+            <div class="field">
+                <label>Volledige naam</label>
+                <input type="text" id="signupName" placeholder="Uw Naam">
+            </div>
+            <div class="field">
+                <label>E-mailadres</label>
+                <input type="email" id="signupEmail" placeholder="uw@email.be">
+            </div>
+            <div class="field">
+                <label>Wachtwoord</label>
+                <input type="password" id="signupPass" placeholder="••••••••">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-secondary" id="closeSignupModal">Annuleren</button>
+                <button class="btn-login" id="signupBtn" style="margin-top:0;">Registreren</button>
+            </div>
+        </div>
     </div>
 
     <!-- Forgot Password Modal -->
@@ -191,38 +220,47 @@
     </div>
 
     <script type="module">
-        const SUPABASE_URL = 'https://rreqjjrmvytnwnsidmqi.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyZXFqanJtdnl0bnduc2lkbXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjAxMzcsImV4cCI6MjA5Mzk5NjEzN30.q4M3A6Dix3F_9Im2pw8DUIeE4C-INtUlvImRDM58MTA';
+        import { AuthHelper } from './auth-helper.js';
 
         const loginBtn = document.getElementById('loginBtn');
         const emailInput = document.getElementById('emailInput');
+        const passInput = document.getElementById('passInput');
         const errorBox = document.getElementById('errorBox');
         const forgotBtn = document.getElementById('forgotBtn');
         const forgotModal = document.getElementById('forgotModal');
         const closeModal = document.getElementById('closeModal');
         const sendMagicBtn = document.getElementById('sendMagicBtn');
 
+        const signupModal = document.getElementById('signupModal');
+        const showSignupBtn = document.getElementById('showSignupBtn');
+        const closeSignupModal = document.getElementById('closeSignupModal');
+        const signupBtn = document.getElementById('signupBtn');
+
+        // Check if already logged in
+        AuthHelper.redirectIfAuth('klantenportaalpv.html');
+
         async function handleLogin() {
             const email = emailInput.value.trim();
-            if (!email) {
-                showError('Voer uw e-mailadres in.');
+            const password = passInput.value;
+
+            if (!email || !password) {
+                showError('Voer uw e-mailadres en wachtwoord in.');
                 return;
             }
 
-            try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/customers?email=eq.${encodeURIComponent(email)}`, {
-                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-                });
-                const customers = await response.json();
+            loginBtn.disabled = true;
+            loginBtn.innerText = 'Bezig met inloggen...';
 
-                if (customers.length > 0) {
-                    sessionStorage.setItem('loggedInEmail', email);
-                    window.location.href = 'klantenportaalpv.html';
-                } else {
-                    showError('E-mailadres niet gevonden. Maak eerst een boeking.');
-                }
-            } catch (err) {
-                showError('Er is een fout opgetreden. Probeer het later opnieuw.');
+            const { data, error } = await AuthHelper.signIn(email, password);
+
+            if (error) {
+                showError(error.message === 'Invalid login credentials'
+                    ? 'Ongeldig e-mailadres of wachtwoord.'
+                    : error.message);
+                loginBtn.disabled = false;
+                loginBtn.innerText = 'Inloggen';
+            } else {
+                window.location.href = 'klantenportaalpv.html';
             }
         }
 
@@ -232,7 +270,9 @@
         }
 
         loginBtn.addEventListener('click', handleLogin);
-        emailInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleLogin(); });
+        [emailInput, passInput].forEach(el => {
+            el.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleLogin(); });
+        });
 
         forgotBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -243,11 +283,49 @@
             forgotModal.style.display = 'none';
         });
 
-        sendMagicBtn.addEventListener('click', () => {
+        showSignupBtn.addEventListener('click', () => {
+            signupModal.style.display = 'flex';
+        });
+
+        closeSignupModal.addEventListener('click', () => {
+            signupModal.style.display = 'none';
+        });
+
+        signupBtn.addEventListener('click', async () => {
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const pass = document.getElementById('signupPass').value;
+
+            if (!name || !email || !pass) {
+                alert('Vul alle velden in.');
+                return;
+            }
+
+            signupBtn.disabled = true;
+            signupBtn.innerText = 'Bezig...';
+
+            const { data, error } = await AuthHelper.signUp(email, pass, name);
+
+            if (error) {
+                alert('Fout: ' + error.message);
+                signupBtn.disabled = false;
+                signupBtn.innerText = 'Registreren';
+            } else {
+                alert('Registratie succesvol! Controleer uw e-mail voor verificatie (indien ingeschakeld) of log direct in.');
+                signupModal.style.display = 'none';
+            }
+        });
+
+        sendMagicBtn.addEventListener('click', async () => {
             const email = document.getElementById('forgotEmail').value.trim();
             if (email) {
-                alert(`Magische link gestuurd naar ${email}`);
-                forgotModal.style.display = 'none';
+                const { error } = await AuthHelper.resetPasswordForEmail(email);
+                if (error) {
+                    alert('Fout: ' + error.message);
+                } else {
+                    alert(`Herstellink verstuurd naar ${email}`);
+                    forgotModal.style.display = 'none';
+                }
             } else {
                 alert('Voer een geldig e-mailadres in.');
             }

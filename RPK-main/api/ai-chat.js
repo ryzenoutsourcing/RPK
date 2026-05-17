@@ -21,7 +21,8 @@ module.exports = async function handler(req, res) {
 
     const {
       message,
-      conversationHistory = []
+      conversationHistory = [],
+      userId = null
     } = req.body;
 
     if (!message) {
@@ -181,10 +182,8 @@ Rules:
 
         status: "pending",
 
-        customer_id:
-          "CUST-" +
-          parsed.email
-            .replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
+        user_id: userId,
+        customer_id: userId ? null : "CUST-" + parsed.email.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
 
         form_data: {
           source: "ai-chat",
