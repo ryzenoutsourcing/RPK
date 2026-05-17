@@ -366,31 +366,28 @@
 <div id="ritModal" class="modal"><div class="modal-content" id="modalContent"></div></div>
 
 <script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-    const SUPABASE_URL = 'https://rreqjjrmvytnwnsidmqi.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyZXFqanJtdnl0bnduc2lkbXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjAxMzcsImV4cCI6MjA5Mzk5NjEzN30.q4M3A6Dix3F_9Im2pw8DUIeE4C-INtUlvImRDM58MTA';
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    import { AuthHelper, supabase } from './auth-helper.js';
 
     // AUTH & SESSION
-    const loggedInEmail = sessionStorage.getItem('loggedInEmail');
+    let currentUser = null;
 
-    if (!loggedInEmail) {
-        // Toon een melding op de pagina en verberg de functionaliteit
-        document.body.innerHTML = '<div style="text-align:center; margin-top:100px; font-family: sans-serif;"><i class="fas fa-sign-out-alt" style="font-size:48px; color:#b91c1c;"></i><h2>U bent uitgelogd</h2><p>Log opnieuw in via de inlogpagina.</p><button onclick="sessionStorage.clear(); window.location.reload();" style="background:#0066cc; color:white; border:none; padding:10px 20px; border-radius:40px; cursor:pointer;">Opnieuw laden</button></div>';
-        // Stop verdere uitvoering van scripts
-        throw new Error('Niet ingelogd');
+    async function initSession() {
+        const { session } = await AuthHelper.getSession();
+        if (!session) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        const { data: customer } = await supabase.from('customers').select('*').eq('id', session.user.id).single();
+        if (customer) {
+            currentUser = customer;
+            document.getElementById('userDisplay').innerText = `Ingelogd als: ${customer.full_name || customer.email} (${customer.customer_number})`;
+            loadUserProfile();
+            loadUserBookings();
+        }
     }
 
-    function generateCustomerId(email) {
-        return "CUST-" + email.toLowerCase().replace(/[^a-z0-9]/g, "");
-    }
-
-    let currentUser = {
-        id: loggedInEmail ? generateCustomerId(loggedInEmail) : 'demo-user',
-        full_name: 'Gebruiker',
-        email: loggedInEmail || 'demo@fleetconnect.be',
-        phone: ''
-    };
+    initSession();
 
     let userBookings = [];
     let bookingMap, pickupCoord = null, dropoffCoord = null, routeLayer, currentRouteData = null, currentRoundTrip = false, currentReturnDateTime = "";
@@ -411,27 +408,16 @@
     setTimeout(function() { bgMap.invalidateSize(); }, 100);
     window.addEventListener('resize', function() { bgMap.invalidateSize(); });
 
-    function logout() {
-        sessionStorage.removeItem('loggedInEmail');
-        // Herlaad dezelfde pagina, dan wordt de check bij het laden uitgevoerd
-        window.location.reload();
+    async function logout() {
+        await AuthHelper.signOut();
+        window.location.href = 'index.html';
     }
     document.querySelectorAll('.logout-action').forEach(btn => btn.addEventListener('click', logout));
     document.getElementById('logoutTabBtn')?.addEventListener('click', logout);
 
-    // PROFIEL
+    // PROFIEL - Mapped to 'customers' table
     async function loadUserProfile() {
-        const { data } = await supabase.from('customers').select('name, email, phone').eq('id', currentUser.id).maybeSingle();
-        if (data) {
-            currentUser.full_name = data.name;   // let op: kolom 'name' wordt 'full_name' in de front-end
-            currentUser.email = data.email;
-            currentUser.phone = data.phone;
-        } else {
-            // Klant niet gevonden – dit hoort niet te gebeuren, want de klant bestaat al in customers (via login).
-            // Toon een error in de console, maar doe geen upsert.
-            console.error('Klant niet gevonden in customers tabel');
-        }
-
+        if (!currentUser) return;
         document.getElementById('fullName').value = currentUser.full_name || '';
         document.getElementById('profileEmail').value = currentUser.email || '';
         document.getElementById('profilePhone').value = currentUser.phone || '';
@@ -445,33 +431,33 @@
 
     document.getElementById('profileForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const name = document.getElementById('fullName').value;   // noem het 'name' voor de database
+        const full_name = document.getElementById('fullName').value;
         const email = document.getElementById('profileEmail').value;
         const phone = document.getElementById('profilePhone').value;
 
-        // Gebruik update, geen upsert (record bestaat gegarandeerd)
-        const { error } = await supabase.from('customers').update({ name, email, phone }).eq('id', currentUser.id);
+        // Update customers table
+        const { error } = await supabase.from('customers').update({ full_name, email, phone }).eq('id', currentUser.id);
 
         if (error) {
             alert('Fout bij opslaan: ' + error.message);
         } else {
-            currentUser.full_name = name;
-            currentUser.email = email;
-            currentUser.phone = phone;
             alert('Profiel opgeslagen');
-            await loadUserProfile();
+            currentUser = { ...currentUser, full_name, email, phone };
+            document.getElementById('userDisplay').innerText = `Ingelogd als: ${currentUser.full_name || currentUser.email} (${currentUser.customer_number})`;
+            loadUserProfile();
         }
     });
 
-    // DASHBOARD (grotendeels ongewijzigd, maar met roundtrip ondersteuning voor weergave)
+    // DASHBOARD
     async function loadUserBookings() {
-        const { data } = await supabase.from('bookings').select('*').eq('customer_id', currentUser.id).order('datetime', { ascending: false });
-        if (data && data.length) userBookings = data;
-        else {
-            userBookings = [
-                { id: "PZ-20260515-001", datetime: "15-05-2026", time: "09:00", name: currentUser.full_name, pickup: "Gent, België", destination: "Brussel, België", vehicle: "Standaard", amount: 67.50, status: "completed", extras: "Meet & Greet", flight_number: "BA398", email: currentUser.email, phone: currentUser.phone, payment: "Cash" },
-                { id: "PZ-20260516-002", datetime: "16-05-2026", time: "14:30", name: currentUser.full_name, pickup: "Antwerpen, België", destination: "Leuven, België", vehicle: "Break", amount: 55.00, status: "pending", extras: "WiFi", email: currentUser.email, phone: currentUser.phone, payment: "Cash" }
-            ];
+        if (!currentUser) return;
+        const { data, error } = await supabase.from('bookings')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('datetime', { ascending: false });
+
+        if (data) {
+            userBookings = data;
         }
         renderDashboard();
     }
@@ -797,7 +783,7 @@
             amount: parseFloat(amount),
             payment: paymentMethod,
             status: "pending",
-            customer_id: generateCustomerId(emailRaw),
+            user_id: currentUser ? currentUser.id : null,
             form_data: buildFormData()
         };
     }

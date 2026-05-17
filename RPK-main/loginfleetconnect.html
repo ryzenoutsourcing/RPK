@@ -131,10 +131,7 @@
 <div id="toast" class="toast"></div>
 
 <script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-    const SUPABASE_URL = 'https://rreqjjrmvytnwnsidmqi.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyZXFqanJtdnl0bnduc2lkbXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjAxMzcsImV4cCI6MjA5Mzk5NjEzN30.q4M3A6Dix3F_9Im2pw8DUIeE4C-INtUlvImRDM58MTA';
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    import { AuthHelper } from './auth-helper.js';
 
     // Achtergrondkaart (kopie uit klantenportaal.html)
     var bgMap = L.map('background-map').setView([50.8503, 4.3517], 8);
@@ -145,6 +142,9 @@
 
     const loginForm = document.getElementById('loginForm');
     const toast = document.getElementById('toast');
+
+    // Check if already logged in
+    AuthHelper.redirectIfAuth('klantenportaal.html');
 
     function showToast(message) {
         toast.innerText = message;
@@ -157,27 +157,14 @@
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
 
-        try {
-            const { data, error } = await supabase
-                .from('customers')
-                .select('email, password_hash')   // kolomnaam aangepast
-                .eq('email', email)
-                .single();
+        const { data, error } = await AuthHelper.signIn(email, password);
 
-            if (error || !data) {
-                showToast('Ongeldige e‑mail of wachtwoord');
-                return;
-            }
-
-            if (data.password_hash === password) {   // vergelijking met password_hash
-                sessionStorage.setItem('loggedInEmail', email);
-                window.location.href = 'klantenportaal.html';
-            } else {
-                showToast('Ongeldige e‑mail of wachtwoord');
-            }
-        } catch (err) {
-            console.error('Login error:', err);
-            showToast('Er is een fout opgetreden bij het inloggen');
+        if (error) {
+            showToast(error.message === 'Invalid login credentials'
+                ? 'Ongeldige e-mail of wachtwoord'
+                : error.message);
+        } else {
+            window.location.href = 'klantenportaal.html';
         }
     });
 </script>

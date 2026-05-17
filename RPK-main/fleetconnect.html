@@ -685,11 +685,7 @@
     });
 </script>
 <script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-    
-    const SUPABASE_URL = 'https://rreqjjrmvytnwnsidmqi.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyZXFqanJtdnl0bnduc2lkbXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjAxMzcsImV4cCI6MjA5Mzk5NjEzN30.q4M3A6Dix3F_9Im2pw8DUIeE4C-INtUlvImRDM58MTA';
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    import { AuthHelper, supabase } from './auth-helper.js';
     
     let bookingMap, pickupCoord = null, dropoffCoord = null, routeLayer = null, pickupMarker = null, dropoffMarker = null;
     let currentRouteData = null, currentRoundTrip = false, currentFlight = "", currentDateTime = "", currentReturnDateTime = "", selectedVehicle = null, selectedVehicleExtra = 0;
@@ -743,7 +739,7 @@
         };
     }
 
-    function buildSupabaseRecord(paymentMethod, finalAmount, isReturnTrip = false, baseId = null) {
+    async function buildSupabaseRecord(paymentMethod, finalAmount, isReturnTrip = false, baseId = null) {
         const nameRaw = document.getElementById('firstName').value.trim();
         const lastNameRaw = document.getElementById('lastName').value.trim();
         const fullName = `${nameRaw} ${lastNameRaw}`;
@@ -773,6 +769,9 @@
         } else {
             bookingId = generateBookingId();
         }
+
+        const { user } = await AuthHelper.getUser();
+
         return {
             id: bookingId,
             datetime: datePart,
@@ -788,7 +787,8 @@
             amount: parseFloat(finalAmount),
             payment: paymentMethod,
             status: "pending",
-            customer_id: generateCustomerId(emailRaw),
+            customer_id: user ? null : generateCustomerId(emailRaw),
+            user_id: user ? user.id : null,
             form_data: buildFormData()
         };
     }
@@ -807,11 +807,8 @@
     async function sendToSupabase(record) {
         console.log('📦 Verzenden naar Supabase (enkele rit):', record);
         try {
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/bookings`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Prefer': 'return=minimal' },
-                body: JSON.stringify(record)
-            });
-            if (!response.ok) throw new Error(await response.text());
+            const { error } = await supabase.from('bookings').insert([record]);
+            if (error) throw error;
             console.log('✅ Boeking opgeslagen (HTTP', response.status, ')');
             await sendEmailNotification(record, false, null);
             
@@ -852,26 +849,33 @@
         const terugDateTime = currentReturnDateTime;
         const terugDatePart = terugDateTime ? terugDateTime.split(' ')[0] : "";
         const terugTimePart = terugDateTime ? (terugDateTime.split(' ')[1] || "") : "";
+
+        const { user } = await AuthHelper.getUser();
+        const userId = user ? user.id : null;
+        const customerId = user ? null : generateCustomerId(emailRaw);
+
         const heenRecord = {
             id: baseId, datetime: heenDatePart, time: heenTimePart, name: fullName, email: emailRaw, phone: phoneRaw,
             pickup: pickupRaw, destination: destRaw, flight_number: flightNumberRaw, vehicle: vehicleRaw, extras: extrasRaw,
             amount: halfAmount, payment: paymentMethod, status: "pending",
-            customer_id: generateCustomerId(emailRaw),
+            customer_id: customerId,
+            user_id: userId,
             form_data: buildFormData()
         };
         const terugRecord = {
             id: `${baseId}/B`, datetime: terugDatePart, time: terugTimePart, name: fullName, email: emailRaw, phone: phoneRaw,
             pickup: pickupRaw, destination: destRaw, flight_number: flightNumberRaw, vehicle: vehicleRaw, extras: extrasRaw,
             amount: halfAmount, payment: paymentMethod, status: "pending",
-            customer_id: generateCustomerId(emailRaw),
+            customer_id: customerId,
+            user_id: userId,
             form_data: buildFormData()
         };
         console.log('📦 Verzenden heen rit:', heenRecord);
         console.log('📦 Verzenden terug rit:', terugRecord);
         try {
-            const res1 = await fetch(`${SUPABASE_URL}/rest/v1/bookings`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Prefer': 'return=minimal' }, body: JSON.stringify(heenRecord) });
-            const res2 = await fetch(`${SUPABASE_URL}/rest/v1/bookings`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Prefer': 'return=minimal' }, body: JSON.stringify(terugRecord) });
-            if (!res1.ok || !res2.ok) throw new Error('Fout bij opslaan roundtrip');
+            const { error: error1 } = await supabase.from('bookings').insert([heenRecord]);
+            const { error: error2 } = await supabase.from('bookings').insert([terugRecord]);
+            if (error1 || error2) throw new Error('Fout bij opslaan roundtrip');
             await sendEmailNotification(heenRecord, true, currentReturnDateTime);
             
             showPremiumConfirmation({
@@ -998,7 +1002,7 @@
             const success = await createRoundTripBookings(pm, totalAmount);
             if (success) resetAll();
         } else {
-            const record = buildSupabaseRecord(pm, totalAmount, false, null);
+            const record = await buildSupabaseRecord(pm, totalAmount, false, null);
             const success = await sendToSupabase(record);
             if (success) resetAll();
         }
@@ -1074,6 +1078,22 @@
     document.getElementById('finalConfirmBtn').addEventListener('click', finalizeBooking);
     
     initMap(); initAutocomplete(); initVehicleSelection(); showPage(1);
+
+    // Auto-fill profile data if logged in
+    AuthHelper.getUser().then(({user}) => {
+        if (user) {
+            supabase.from('customers').select('*').eq('id', user.id).single().then(({data}) => {
+                if (data) {
+                    const names = (data.full_name || '').split(' ');
+                    document.getElementById('firstName').value = names[0] || '';
+                    document.getElementById('lastName').value = names.slice(1).join(' ') || '';
+                    document.getElementById('phone').value = data.phone || '';
+                    document.getElementById('email').value = data.email || '';
+                }
+            });
+        }
+    });
+
     window.showPremiumConfirmation = showPremiumConfirmation;
     const defaultHeen = new Date(); defaultHeen.setHours(defaultHeen.getHours() + 1);
     flatpickr("#datetime", {
@@ -1238,11 +1258,17 @@
         aiTyping.style.display = 'flex';
         aiMessagesBox.scrollTop = aiMessagesBox.scrollHeight;
 
+        const { user } = await AuthHelper.getUser();
+
         try {
             const response = await fetch('/api/ai-chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: msg, conversationHistory: aiConversationHistory })
+                body: JSON.stringify({
+                    message: msg,
+                    conversationHistory: aiConversationHistory,
+                    userId: user ? user.id : null
+                })
             });
 
             if (!response.ok) throw new Error('Network response was not ok');
