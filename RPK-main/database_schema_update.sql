@@ -86,7 +86,10 @@ USING (auth.uid() = user_id OR auth.jwt() ->> 'email' = email);
 DROP POLICY IF EXISTS "Customers can insert their own bookings" ON public.bookings;
 CREATE POLICY "Customers can insert their own bookings"
 ON public.bookings FOR INSERT
-WITH CHECK (auth.uid() = user_id);
+WITH CHECK (
+    (auth.uid() IS NOT NULL AND auth.uid() = user_id) OR
+    (auth.uid() IS NULL AND user_id IS NULL)
+);
 
 -- 11. Allow AI Chat (service role) to manage bookings
 -- (This is usually handled by service_role key which bypasses RLS,
