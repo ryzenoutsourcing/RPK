@@ -35,7 +35,7 @@
         .floating-container::-webkit-scrollbar { width: 6px; }
         .floating-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
         .floating-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.3); border-radius: 10px; }
-        
+
         .content-card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
@@ -120,7 +120,7 @@
             padding: 0 24px 18px 24px;
         }
         .faq-answer a { color: #2c7da0; }
-        
+
         .footer-links {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
@@ -177,7 +177,7 @@
             <hr>
             <p id="copyright" style="text-align:center; font-size:0.8rem;">© 2026 Fleetconnect Taxi</p>
         </div>
-        
+
         <div class="footer-links" id="footer-links">
             <a href="PV.html">🏠 Home</a> |
             <a href="PVfaq.html">❓ FAQ</a> |
@@ -186,7 +186,7 @@
             <a href="PValgemene-voorwaarden.html">📜 Algemene voorwaarden</a>
         </div>
     </div>
-    
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         var map = L.map('background-map').setView([50.85, 4.35], 13);
@@ -195,7 +195,7 @@
             subdomains: 'abcd',
             maxZoom: 19
         }).addTo(map);
-        
+
         // Vertalingen voor FAQ
         const faqTranslations = {
             nl: {
@@ -247,7 +247,7 @@
                 copyright: "© 2026 Fleetconnect Taxi"
             }
         };
-        
+
         function renderFAQ(lang) {
             const data = faqTranslations[lang];
             document.getElementById('faq-title').innerText = data.title;
@@ -269,20 +269,20 @@
                 else btn.classList.remove('active');
             });
         }
-        
+
         window.toggleAnswer = function(element) {
             const answer = element.nextElementSibling;
             const icon = element.querySelector('.toggle-icon');
             answer.classList.toggle('open');
             icon.textContent = answer.classList.contains('open') ? '−' : '+';
         };
-        
+
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 renderFAQ(btn.getAttribute('data-lang'));
             });
         });
-        
+
         renderFAQ('nl');
     </script>
 </body>

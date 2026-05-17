@@ -1,5 +1,5 @@
 /**
- * SHARED BOOKING LOGIC FOR FLEETCONNECT
+ * SHARED BOOKING LOGIC FOR FLEETCONNECT & ROYAL VELVET
  * One operational source of truth.
  */
 
@@ -13,20 +13,24 @@ const CONFIG = {
     "Mercedes V-Class": { emoji: "🚐", surcharge: 15, description: "Premium MPV up to 7 pax" },
     "Van / Shuttle": { emoji: "🚌", surcharge: 25, description: "Large group transport 8+ pax" }
   },
-  EXTRAS: [
-    "Meet & Greet",
-    "Kiss & Ride",
-    "Waterfles",
-    "WiFi",
-    "Child Seat"
-  ],
+  EXTRAS: {
+    "Meet & Greet": 15,
+    "Kiss & Ride": 0,
+    "Waterfles": 0,
+    "WiFi": 0,
+    "Child Seat": 10
+  },
   PAYMENT_METHODS: ["Cash", "Card", "Invoice", "Online"]
 };
 
 /**
  * Universal Price Calculation
+ * @param {number} distanceKm
+ * @param {string} vehicleClass
+ * @param {string[]|string} extras
+ * @param {boolean} isRoundtrip
  */
-function calculatePrice(distanceKm, vehicleClass, isRoundtrip = false) {
+function calculatePrice(distanceKm, vehicleClass, extras = [], isRoundtrip = false) {
   let dist = parseFloat(distanceKm) || 0;
   if (isRoundtrip) dist *= 2;
 
@@ -36,6 +40,14 @@ function calculatePrice(distanceKm, vehicleClass, isRoundtrip = false) {
   if (vInfo) {
     total += vInfo.surcharge;
   }
+
+  // Handle extras (can be array or comma-separated string)
+  let extrasList = Array.isArray(extras) ? extras : (extras ? extras.split(',').map(e => e.trim()) : []);
+  extrasList.forEach(e => {
+    if (CONFIG.EXTRAS[e]) {
+      total += CONFIG.EXTRAS[e];
+    }
+  });
 
   return parseFloat(total.toFixed(2));
 }
@@ -92,8 +104,33 @@ function generateBookingId() {
   const yyyy = now.getFullYear();
   const mm = String(now.getMonth() + 1).padStart(2, "0");
   const dd = String(now.getDate()).padStart(2, "0");
+
+  // Use random counter
   const seq = String(Math.floor(Math.random() * 999)).padStart(3, "0");
   return `${CONFIG.ID_PREFIX}${yyyy}${mm}${dd}-${seq}`;
+}
+
+/**
+ * Format date to European DD-MM-YYYY
+ */
+function formatDate(date) {
+  if (!date) return "";
+  const dObj = (date instanceof Date) ? date : new Date(date);
+  const d = String(dObj.getDate()).padStart(2, "0");
+  const m = String(dObj.getMonth() + 1).padStart(2, "0");
+  const y = dObj.getFullYear();
+  return `${d}-${m}-${y}`;
+}
+
+/**
+ * Format time to European 24h HH:MM
+ */
+function formatTime(date) {
+  if (!date) return "";
+  const dObj = (date instanceof Date) ? date : new Date(date);
+  const h = String(dObj.getHours()).padStart(2, "0");
+  const m = String(dObj.getMinutes()).padStart(2, "0");
+  return `${h}:${m}`;
 }
 
 /**
@@ -104,7 +141,9 @@ const BookingLogic = {
   calculatePrice,
   validateBooking,
   generateBookingId,
-  parseDate
+  parseDate,
+  formatDate,
+  formatTime
 };
 
 if (typeof module !== "undefined" && module.exports) {
