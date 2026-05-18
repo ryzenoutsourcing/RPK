@@ -14,42 +14,63 @@ const client = new OpenAI({
 module.exports = async function handler(req, res) {
   try {
     if (req.method !== "POST") {
-      return res.status(405).json({ error: "Method not allowed" });
+      return res.status(405).json({
+        error: "Method not allowed"
+      });
     }
 
-    const { message, conversationHistory = [] } = req.body;
+    const {
+      message,
+      conversationHistory = []
+    } = req.body;
 
     if (!message) {
-      return res.status(400).json({ error: "Message required" });
+      return res.status(400).json({
+        error: "Message required"
+      });
     }
+
+    // Get current time in Europe/Brussels for the prompt
+    const now = new Date();
+    const brusselsTimeStr = now.toLocaleString("en-GB", { timeZone: "Europe/Brussels" });
 
     const messages = [
       {
         role: "system",
         content: `
-You are K2000, a luxury intelligent driving assistant for Fleetconnect Taxi.
+You are K2000 — Driving Assistant, a futuristic luxury chauffeur assistant for Fleetconnect.
+
+CURRENT DATE/TIME (Europe/Brussels): ${brusselsTimeStr}
 
 Your persona:
-- Futuristic, intelligent, calm, and premium.
-- You speak like an elite chauffeur assistant.
-- Your tone is professional, helpful, and concise.
-- Naturally adapt to the user's language (Dutch, English, French, etc.) and STAY in that language.
+- Futuristic, intelligent, calm, and premium. You are the digital personification of a high-end chauffeur service.
+- Your tone is professional, sophisticated, and multilingual.
+- Language Continuity: ALWAYS detect the user's language (Dutch, French, or English) and maintain it. If the user starts in Dutch, everything (including the confirmation) must be in Dutch.
+- Return the detected language code ("nl", "fr", or "en") in the "language" field.
 
-Vehicle Suggestions:
-- Airport transfer -> Business Class, First Class Executive, or Mercedes V-Class.
-- Large group (5+ pax) -> Van / Shuttle.
-- VIP/Luxury -> First Class Executive.
-- Standard -> Business Class.
+Vehicle Intelligence:
+- "Business Class" (Premium sedan): Best for standard airport transfers or corporate travel. (Surcharge: €0)
+- "First Class Executive" (Luxury flagship): Ideal for VIPs, galas, or high-profile executive trips. (Surcharge: €20)
+- "Mercedes V-Class" (Luxe MPV): Perfect for families or small groups up to 7 pax. (Surcharge: €15)
+- "Van / Shuttle" (Large capacity): For groups of 8+ pax or excessive luggage. (Surcharge: €25)
 
-IMPORTANT:
-- Always return ONLY valid JSON.
-- NEVER use markdown or \`\`\`json blocks.
-- Date format: DD-MM-YYYY.
-- Time format: 24h European (e.g., 14:30).
+Intelligent Suggestions:
+- Propose vehicles naturally based on trip context.
+- Airport/Business Trip: Suggest "Business Class" or "First Class Executive".
+- Groups of 4-7: Suggest "Mercedes V-Class".
+- Groups of 8+: Suggest "Van / Shuttle".
+- VIP/Premium events: Suggest "First Class Executive".
+
+Rules:
+- European Standard: Dates MUST be DD-MM-YYYY. Time MUST be 24h format (HH:MM).
+- Pricing: Base €1.50/km.
+- Payment Methods: [Cash, Card, Invoice, Online].
+- Return ONLY valid JSON. NEVER use markdown or \`\`\` blocks.
 
 JSON FORMAT:
 {
   "intent": "booking",
+  "language": "nl|fr|en",
   "name": "",
   "email": "",
   "phone": "",
@@ -58,74 +79,98 @@ JSON FORMAT:
   "date": "",
   "time": "",
   "vehicle": "",
+  "passengers": 1,
+  "luggage": 0,
+  "payment_method": "",
   "flight_number": "",
-  "extras": [],
-  "payment_method": "Cash",
+  "extras": "",
   "missing_fields": [],
   "follow_up_question": "",
-  "reply": "",
-  "language": "en"
+  "reply": ""
 }
 
-Rules:
-- missing_fields must contain all missing required fields.
-- Required fields: name, email, phone, pickup, destination, date, time, vehicle.
-- if all required fields exist: missing_fields = []
-- payment_method options: Cash, Card, Invoice, Online. Default is Cash if not specified.
-- "extras" is an array of strings (e.g., ["Water", "Wifi"]).
-- Respond in the "reply" field using your premium K2000 persona in the user's language.
-- "language" field should be "nl", "fr", or "en".
+Operational Validation:
+- Collect all fields: name, email, phone, pickup, destination, date, time, vehicle, passengers, luggage, payment_method.
 `
       },
       ...conversationHistory,
-      { role: "user", content: message }
+      {
+        role: "user",
+        content: message
+      }
     ];
 
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
-      messages,
-      temperature: 0.1
+      messages
     });
 
     let raw = completion.choices[0].message.content;
     raw = raw.replace(/```json/g, "").replace(/```/g, "").trim();
-
     const parsed = JSON.parse(raw);
 
-    if (parsed.intent === "booking" && parsed.missing_fields && parsed.missing_fields.length === 0) {
-      // Check for duplicates
-      const existingBooking = await supabase
+    const lang = parsed.language || "en";
+
+    const validation = BookingLogic.validateBooking(parsed);
+
+    if (parsed.date && parsed.time) {
+      const bDate = BookingLogic.parseDate(parsed.date, parsed.time);
+      if (bDate && bDate < now) {
+         const pastDateMsg = {
+           en: "That departure time appears to be in the past. Could you provide a valid future time?",
+           nl: "Die vertrektijd lijkt in het verleden te liggen. Kunt u een geldige tijd in de toekomst opgeven?",
+           fr: "Cette heure de départ semble être passée. Pourriez-vous indiquer une heure future valide ?"
+         };
+         return res.status(200).json({
+           ...parsed,
+           missing_fields: ["date", "time"],
+           reply: pastDateMsg[lang] || pastDateMsg.en
+         });
+      }
+    }
+
+    if (parsed.intent === "booking" && validation.isValid) {
+
+      const bookingId = BookingLogic.generateBookingId();
+
+      // Session history duplicate prevention
+      const alreadyHandledInSession = conversationHistory.some(m =>
+        m.role === "assistant" &&
+        m.content.includes('"intent":"booking"') &&
+        m.content.includes(`"date":"${parsed.date}"`) &&
+        m.content.includes(`"time":"${parsed.time}"`)
+      );
+
+      if (alreadyHandledInSession) {
+        return res.status(200).json(parsed);
+      }
+
+      // Database duplicate check
+      const { data: existingBooking } = await supabase
         .from("bookings")
-        .select("id, created_at")
+        .select("id, pickup, destination")
         .eq("email", parsed.email)
         .eq("datetime", parsed.date)
         .eq("time", parsed.time)
         .maybeSingle();
 
-      if (existingBooking.data) {
-        const createdAt = new Date(existingBooking.data.created_at);
-        const diffMinutes = (new Date() - createdAt) / 1000 / 60;
+      if (existingBooking &&
+          existingBooking.pickup === parsed.pickup &&
+          existingBooking.destination === parsed.destination) {
 
-        if (diffMinutes < 10) {
-          const dupReplies = {
-            nl: "Er bestaat al een boeking voor deze datum en tijd. Uw assistent K2000 staat voor u klaar.",
-            fr: "Une réservation existe déjà pour cette date et heure. K2000 est à votre service.",
-            en: "A booking already exists for this date and time. K2000 is at your service."
+          const duplicateMsg = {
+            en: "A similar booking already exists in our system for this schedule. If this is a separate request, please adjust the time slightly.",
+            nl: "Er bestaat al een gelijkaardige boeking in ons systeem voor dit tijdstip. Indien dit een nieuwe aanvraag is, gelieve het tijdstip licht aan te passen.",
+            fr: "Une réservation similaire existe déjà dans notre système pour cet horaire. S'il s'agit d'une nouvelle demande, veuillez modifier légèrement l'heure."
           };
           return res.status(200).json({
             ...parsed,
-            reply: dupReplies[parsed.language] || dupReplies.en
+            reply: duplicateMsg[lang] || duplicateMsg.en
           });
-        }
       }
 
-      const bookingId = BookingLogic.generateBookingId();
-
-      // Calculate real price using shared logic
-      const distancePlaceholder = 10; // Ideally we'd have distance here, but AI doesn't know it yet.
-      // In a real scenario, the AI might call a tool for distance.
-      // For now, we at least use the shared logic for baseline pricing.
-      const amount = BookingLogic.calculatePrice(distancePlaceholder, parsed.vehicle, parsed.extras);
+      // Calculate amount using shared logic (default 20km for AI-only bookings if distance unknown)
+      const calculatedAmount = BookingLogic.calculatePrice(20, parsed.vehicle, parsed.extras);
 
       const insertPayload = {
         id: bookingId,
@@ -138,25 +183,43 @@ Rules:
         destination: parsed.destination,
         flight_number: parsed.flight_number || "",
         vehicle: parsed.vehicle || "Business Class",
-        extras: Array.isArray(parsed.extras) ? parsed.extras.join(", ") : (parsed.extras || ""),
-        amount: amount,
-        payment: parsed.payment_method || "Cash",
+        extras: parsed.extras || "",
+        amount: calculatedAmount,
+        payment: parsed.payment_method || "pending",
         status: "pending",
-        customer_id: "CUST-" + parsed.email.replace(/[^a-zA-Z0-9]/g, ""),
-        form_data: { source: "ai-chat", ai: true, k2000: true },
+        customer_id: "CUST-" + parsed.email.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
+        form_data: {
+          source: "ai-chat",
+          ai: true,
+          payment_method: parsed.payment_method,
+          passengers: parsed.passengers || 1,
+          luggage: parsed.luggage || 0,
+          language: lang
+        },
         partner_id: BookingLogic.CONFIG.PARTNER_ID
       };
 
-      const { data, error } = await supabase.from("bookings").insert([insertPayload]).select();
+      const { error } = await supabase
+        .from("bookings")
+        .insert([insertPayload]);
 
       if (error) {
+        console.error("SUPABASE INSERT ERROR:", error);
         return res.status(500).json({ error: error.message });
       }
 
-      parsed.reply = parsed.reply + `\n\nBooking ID: ${bookingId}`;
+      const confirmMsg = {
+        en: "Your high-end transportation has been secured. Your driving assistant K2000 is at your service.",
+        nl: "Uw exclusief transport is bevestigd. Uw rij-assistent K2000 staat tot uw dienst.",
+        fr: "Votre transport de luxe a été confirmé. Votre assistant de conduite K2000 est à votre service."
+      };
+
+      parsed.reply = parsed.reply + `\n\nBooking ID: ${bookingId}\n\n${confirmMsg[lang] || confirmMsg.en}`;
+      parsed.id = bookingId;
     }
 
     return res.status(200).json(parsed);
+
   } catch (error) {
     console.error("SERVER ERROR:", error);
     return res.status(500).json({ error: error.message });

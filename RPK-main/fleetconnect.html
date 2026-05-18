@@ -10,9 +10,9 @@
     <!-- Flatpickr CSS/JS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="booking-logic.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/nl.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="booking-logic.js"></script>
     <style>
         /* ===== alle originele stijlen (sidebar, hero, uitleg, diensten, contact, footer) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -104,6 +104,7 @@
         .hero-card p { font-size: 1.2rem; color: var(--text-greyblue); margin-bottom: 30px; }
         .btn-primary {
             background: var(--prim-accent); color: white; border: none;
+
             padding: 12px 28px; border-radius: 40px; font-weight: 600; font-size: 1rem;
             cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px;
             text-decoration: none;
@@ -300,33 +301,39 @@
 
         /* ===== PREMIUM AI CHAT WIDGET STYLES ===== */
         #ai-chat-launcher {
-            position: fixed; bottom: 30px; right: 30px;
-            width: 65px; height: 65px;
-            background: var(--prim-accent);
+            position: fixed; top: 50%; right: 30px; transform: translateY(-50%);
+            width: 76px; height: 76px;
+            background: rgba(44, 125, 160, 0.9);
+            backdrop-filter: blur(10px);
             color: white; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; z-index: 10000;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
-        #ai-chat-launcher:hover { transform: scale(1.1); }
-        #ai-chat-launcher i { font-size: 28px; }
+        #ai-chat-launcher i { font-size: 32px; transition: 0.3s; }
+
+        #ai-chat-launcher:hover { transform: translateY(-50%) scale(1.1) rotate(5deg); }
+        #ai-chat-launcher:hover i { transform: scale(1.2); }
+
 
         #ai-chat-container {
-            position: fixed; bottom: 110px; right: 30px;
-            width: 400px; max-width: calc(100vw - 60px); height: 600px; max-height: calc(100vh - 150px);
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            position: fixed; bottom: 100px; right: 30px;
+            width: 480px; max-width: calc(100vw - 40px); height: 750px; max-height: calc(100vh - 150px);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(25px);
+            border-radius: 32px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.3);
             z-index: 10000;
             display: flex; flex-direction: column;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transform: translateY(20px); opacity: 0; visibility: hidden;
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transform: translateY(40px) scale(0.92); opacity: 0; visibility: hidden;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
         }
-        #ai-chat-container.active { transform: translateY(0); opacity: 1; visibility: visible; }
+        #ai-chat-container.active { transform: translateY(0) scale(1); opacity: 1; visibility: visible; pointer-events: auto; }
 
         .ai-chat-header {
             background: var(--header-dark); color: white;
@@ -347,9 +354,11 @@
         #ai-chat-messages::-webkit-scrollbar { width: 6px; }
         #ai-chat-messages::-webkit-scrollbar-thumb { background: var(--prim-accent); border-radius: 10px; }
 
+
         .chat-msg { max-width: 85%; padding: 14px 18px; border-radius: 18px; font-size: 0.95rem; line-height: 1.5; position: relative; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .chat-msg.user { align-self: flex-end; background: var(--prim-accent); color: white; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(44, 125, 160, 0.2); }
+
         .chat-msg.ai { align-self: flex-start; background: #f0f4f8; color: var(--header-dark); border-bottom-left-radius: 4px; border: 1px solid #e1e8ef; }
         .chat-msg .timestamp { font-size: 0.7rem; opacity: 0.6; margin-top: 6px; display: block; }
         .chat-msg.user .timestamp { color: rgba(255,255,255,0.8); text-align: right; }
@@ -374,6 +383,7 @@
         }
         #send-ai-msg {
             width: 42px; height: 42px; background: var(--prim-accent); color: white;
+
             border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
             transition: 0.2s;
         }
@@ -396,40 +406,59 @@
         .booking-card-footer .price { font-weight: 700; color: var(--prim-accent); font-size: 1rem; }
 
         @media (max-width: 500px) {
-            #ai-chat-container { right: 15px; bottom: 90px; width: calc(100vw - 30px); height: calc(100vh - 120px); }
-            #ai-chat-launcher { right: 15px; bottom: 15px; width: 55px; height: 55px; }
+            #ai-chat-container {
+                right: 10px;
+                bottom: 85px;
+                width: calc(100vw - 20px);
+                height: calc(100vh - 100px);
+                max-height: calc(100vh - 100px);
+                border-radius: 20px;
+            }
+        #ai-chat-launcher {
+            position: fixed; top: 50%; right: 30px; transform: translateY(-50%);
+            width: 70px; height: 70px;
+            background: var(--prim-accent);
+
+            color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 10000;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
         }
     </style>
 </head>
 <body>
 <div id="background-map"></div>
 <div class="content-overlay">
-    <div style="position: absolute; top: 20px; right: 80px; z-index: 100;">
+    <div style="position: absolute; top: 20px; right: 85px; z-index: 100;">
         <a href="loginfleetconnect.html" class="btn-primary" style="background: #2c7da0; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"><i class="fas fa-user-circle"></i> Inloggen</a>
     </div>
     <div class="sidebar-trigger"></div>
     <div class="sidebar-wrapper">
         <div class="sidebar">
             <div class="sidebar-nav">
-                <a href="#"><i class="fas fa-home"></i><span> Home</span></a>
-                <a href="#"><i class="fas fa-info-circle"></i><span> Uitleg</span></a>
-                <a href="#"><i class="fas fa-calendar-check"></i><span> Boeking</span></a>
-                <a href="#"><i class="fas fa-concierge-bell"></i><span> Diensten</span></a>
-                <a href="#"><i class="fas fa-envelope"></i><span> Contact</span></a>
+                 <a href="#booking-anchor"><i class="fas fa-home"></i><span> Home</span></a>
+                 <a href="#booking-anchor"><i class="fas fa-info-circle"></i><span> Uitleg</span></a>
+                 <a href="#booking-anchor"><i class="fas fa-calendar-check"></i><span> Boeking</span></a>
+                 <a href="#booking-anchor"><i class="fas fa-concierge-bell"></i><span> Diensten</span></a>
+                 <a href="#booking-anchor"><i class="fas fa-envelope"></i><span> Contact</span></a>
             </div>
         </div>
     </div>
     <div class="overlay"></div>
     <section class="hero">
-        <div class="container">
+    <div id="booking-anchor"></div>
+        <div class="container" id="services">
             <div class="hero-card">
                 <h1><i class="fas fa-taxi"></i> Fleetconnect Taxi</h1>
                 <p>Professioneel taxivervoer in heel België. Luchthaven, zakelijk, crew changes & documentenvervoer</p>
-                <a href="#" class="btn-primary"><i class="fas fa-calendar-alt"></i> Boek nu uw rit</a>
+                <button class="btn-primary" onclick="document.getElementById('booking-anchor').scrollIntoView({behavior:'smooth'})"><i class="fas fa-calendar-alt"></i> Boek nu uw rit</button>
             </div>
         </div>
     </section>
-    <div class="container">
+    <div id="booking-anchor"></div>
+    <div class="container" id="services">
         <div class="uitleg-grid">
             <a href="stipt-betrouwbaar.html" class="uitleg-item">
                 <i class="fas fa-stopwatch"></i>
@@ -448,7 +477,8 @@
             </a>
         </div>
     </div>
-    <div class="container">
+    <div id="booking-anchor"></div>
+    <div class="container" id="services">
         <div class="one-grid-block">
             <div class="carousel">
                 <div class="steps">
@@ -483,8 +513,14 @@
                 </div>
                 <div id="page3" class="carousel-page">
                     <h2>🚘 Kies uw voertuig</h2>
-                    <div class="vehicle-grid" id="vehicleGrid"><div class="vehicle-card" data-vehicle="Standaard" data-extraprice="0"><div class="vehicle-emoji">🚗</div><div class="vehicle-name">Standaard</div><div class="vehicle-price">geen meerprijs</div></div><div class="vehicle-card" data-vehicle="Break" data-extraprice="5"><div class="vehicle-emoji">🚙</div><div class="vehicle-name">Break</div><div class="vehicle-price">+ €5</div></div><div class="vehicle-card" data-vehicle="Exclusieve" data-extraprice="15"><div class="vehicle-emoji">🚘</div><div class="vehicle-name">Exclusieve</div><div class="vehicle-price">+ €15</div></div><div class="vehicle-card" data-vehicle="Mini Van" data-extraprice="10"><div class="vehicle-emoji">🚐</div><div class="vehicle-name">Mini Van</div><div class="vehicle-price">+ €10</div></div></div>
-                    <div class="extra-fields"><h3>➕ Extra opties</h3><div class="extra-grid"><div><label>👥 Aantal passagiers</label><input type="number" id="passengers" min="1" value="1"></div><div><label>🧳 Bagagestuks</label><input type="number" id="luggage" min="0" value="0"></div></div><div class="checkbox-grid"><label><input type="checkbox" id="meetGreet"> 🤝 Meet & Greet</label><label><input type="checkbox" id="kissRide"> 💋 Kiss & Ride</label><label><input type="checkbox" id="waterBottle"> 💧 Waterfles</label><label><input type="checkbox" id="wifi"> 📶 WiFi</label></div><div><label>📝 Speciale wensen</label><textarea id="specialWishes" rows="2" placeholder="bv. kinderzitje"></textarea></div></div>
+                    <div class="vehicle-grid" id="vehicleGrid">
+                        <div class="vehicle-card" data-vehicle="Business Class" data-extraprice="0"><div class="vehicle-emoji">🚗</div><div class="vehicle-name">Business Class</div><div class="vehicle-price">Standard Premium</div></div>
+                        <div class="vehicle-card" data-vehicle="First Class Executive" data-extraprice="20"><div class="vehicle-emoji">👑</div><div class="vehicle-name">First Class Executive</div><div class="vehicle-price">+ €20</div></div>
+                        <div class="vehicle-card" data-vehicle="Mercedes V-Class" data-extraprice="15"><div class="vehicle-emoji">🚐</div><div class="vehicle-name">Mercedes V-Class</div><div class="vehicle-price">+ €15</div></div>
+                        <div class="vehicle-card" data-vehicle="Van / Shuttle" data-extraprice="25"><div class="vehicle-emoji">🚌</div><div class="vehicle-name">Van / Shuttle</div><div class="vehicle-price">+ €25</div></div>
+                    <div class="extra-fields"><h3>➕ Extra opties</h3><div class="extra-grid"><div><label>👥 Aantal passagiers</label><input type="number" id="passengers" min="1" value="1"></div><div><label>🧳 Bagagestuks</label><input type="number" id="luggage" min="0" value="0"></div></div>
+                        <div class="checkbox-grid"><label><input type="checkbox" id="meetGreet"> 🤝 Meet & Greet</label><label><input type="checkbox" id="kissRide"> 💋 Kiss & Ride</label><label><input type="checkbox" id="waterBottle"> 💧 Waterfles</label><label><input type="checkbox" id="wifi"> 📶 WiFi</label><label><input type="checkbox" id="childSeat"> 👶 Child Seat</label></div>
+                    <div><label>📝 Speciale wensen</label><textarea id="specialWishes" rows="2" placeholder="bv. kinderzitje"></textarea></div></div>
                     <div id="page3Error" class="error"></div>
                 </div>
                 <div id="page4" class="carousel-page">
@@ -513,7 +549,13 @@
                             <strong>💰 Totaalprijs:</strong> <span id="overviewTotal">€ 0,00</span>
                         </div>
                     </div>
-                    <div class="payment-method"><span>Betaalmethode:</span><label><input type="radio" name="payment" value="Cash" checked> 💵 Cash</label><label><input type="radio" name="payment" value="Kaart"> 💳 Kaart</label><label><input type="radio" name="payment" value="App"> 📱 App</label></div>
+                    <div class="payment-method">
+                        <span>Payment Method:</span>
+                        <label><input type="radio" name="payment" value="Cash" checked> 💵 Cash</label>
+                        <label><input type="radio" name="payment" value="Card"> 💳 Card</label>
+                        <label><input type="radio" name="payment" value="Invoice"> 📄 Invoice</label>
+                        <label><input type="radio" name="payment" value="Online"> 📱 Online</label>
+                    </div>
                     <div id="totalDisplay" style="background:#f8fafc;padding:20px;text-align:center;font-size:1.5rem;font-weight:700;margin:20px 0">Totaal: € 0,00</div>
                     <button id="finalConfirmBtn" style="background:#10b981;width:100%;padding:14px;border-radius:40px;border:none;font-weight:700;cursor:pointer;">✅ Bevestig boeking</button>
                     <div id="page5Error" class="error"></div>
@@ -522,7 +564,8 @@
             </div>
         </div>
     </div>
-    <div class="container">
+    <div id="booking-anchor"></div>
+    <div class="container" id="services">
         <div style="display: flex; justify-content: center; margin-bottom: 20px;"><h2 style="color:var(--header-dark);"><i class="fas fa-concierge-bell"></i> Onze diensten</h2></div>
         <div class="services-grid">
             <a href="luchthavenvervoer.html" class="service-card"><div class="service-icon"><i class="fas fa-plane-departure"></i></div><h3>Luchthavenvervoer</h3><p>Vaste prijs, vluchtmonitoring</p></a>
@@ -531,7 +574,7 @@
             <a href="documenten-vervoer.html" class="service-card"><div class="service-icon"><i class="fas fa-file-alt"></i></div><h3>Documentenvervoer</h3><p>Same-day delivery</p></a>
         </div>
     </div>
-    <div class="contact-wrapper">
+    <div class="contact-wrapper" id="contact">
         <div class="contact-row">
             <div class="contact-form">
                 <h3><i class="fas fa-paper-plane"></i> Stuur een bericht</h3>
@@ -545,14 +588,19 @@
         </div>
     </div>
     <!-- PREMIUM AI CHAT WIDGET HTML -->
+    <!-- PREMIUM AI CHAT WIDGET (K2000) -->
     <div id="ai-chat-launcher">
         <i class="fas fa-comment-dots"></i>
+        <div id="ai-welcome-bubble">
+            <span class="pulse"></span>
+            How can K2000 assist you today?
+        </div>
     </div>
 
     <div id="ai-chat-container">
         <div class="ai-chat-header">
             <div class="brand">
-                <i class="fas fa-taxi"></i>
+                <i class="fas fa-robot"></i>
                 <span>K2000 — Driving Assistant</span>
             </div>
             <div class="close-chat" id="close-ai-chat">
@@ -560,10 +608,7 @@
             </div>
         </div>
         <div id="ai-chat-messages">
-            <div class="chat-msg ai">
-                Good afternoon. I am K2000, your intelligent driving assistant. I am here to ensure your travel arrangements are handled with precision and luxury. Where can I take you today?
-                <span class="timestamp" id="ai-initial-time"></span>
-            </div>
+            <div class="chat-msg ai">Good afternoon. I am K2000, your intelligent driving assistant. I am here to ensure your travel arrangements are handled with precision and luxury. Where can I take you today?<span class="timestamp" id="ai-initial-time"></span></div>
         </div>
         <div class="typing-indicator" id="ai-typing">
             <span></span><span></span><span></span>
@@ -579,13 +624,14 @@
     </div>
 
     <footer class="footer-dark">
-        <div class="container">
+    <div id="booking-anchor"></div>
+        <div class="container" id="services">
             <div class="footer-grid">
                 <div class="footer-brand"><h4><i class="fas fa-taxi"></i> Fleetconnect Taxi</h4><p>Uw betrouwbare taxipartner in België | Stipt, modern & transparant</p></div>
                 <div class="footer-ryz3n">
                     <h4><i class="fas fa-cogs"></i> Ryz3n | Digital Supremacy</h4>
                     <a href="DZRyz3n.html"><i class="fas fa-globe"></i> Control Panel</a>
-                    <a href="DZRyz3n-taxi.html"><i class="fas fa-taxi"></i> Taxi & Dispatch</a>
+                    <a href="DZRyz3n-taxi.html"><i class="fas fa-robot"></i> Taxi & Dispatch</a>
                     <a href="DZRyz3n-immo.html"><i class="fas fa-building"></i> Immobiliën Verhuur</a>
                     <a href="DZRyz3n-logistiek.html"><i class="fas fa-truck"></i> Logistiek & Supply Chain</a>
                     <a href="DZRyz3n-legal.html"><i class="fas fa-gavel"></i> Legal & Privacy</a>
@@ -629,7 +675,7 @@
         return BookingLogic.generateBookingId();
     }
 
-    function getExtrasString() { const extras = []; if (document.getElementById('meetGreet').checked) extras.push("Meet & Greet"); if (document.getElementById('kissRide').checked) extras.push("Kiss & Ride"); if (document.getElementById('waterBottle').checked) extras.push("Waterfles"); if (document.getElementById('wifi').checked) extras.push("WiFi"); return extras.join(", ") || "Geen"; }
+    function getExtrasString() { const extras = []; if (document.getElementById("meetGreet").checked) extras.push("Meet & Greet"); if (document.getElementById("kissRide").checked) extras.push("Kiss & Ride"); if (document.getElementById("waterBottle").checked) extras.push("Waterfles"); if (document.getElementById("wifi").checked) extras.push("WiFi"); if (document.getElementById("childSeat").checked) extras.push("Child Seat"); return extras.join(", ") || "Geen"; }
 
     function generateCustomerId(email) {
         return "CUST-" + email.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -654,6 +700,7 @@
             kiss_ride: document.getElementById('kissRide')?.checked || false,
             water: document.getElementById('waterBottle')?.checked || false,
             wifi: document.getElementById('wifi')?.checked || false,
+            child_seat: document.getElementById('childSeat')?.checked || false,
             vehicle: selectedVehicle || "Standaard",
             vehicle_extra_price: selectedVehicleExtra || 0
         };
@@ -676,7 +723,7 @@
             datePart = parts[0];
             timePart = parts[1] || "";
         } else {
-            const heenRaw = document.getElementById('datetime').value;
+            let heenRaw = document.getElementById('datetime').value;
             if (heenRaw) {
                 let parts = heenRaw.split(' ');
                 datePart = parts[0];
@@ -705,6 +752,8 @@
             payment: paymentMethod,
             status: "pending",
             customer_id: generateCustomerId(emailRaw),
+            partner_id: BookingLogic.CONFIG.PARTNER_ID,
+            partner_id: BookingLogic.CONFIG.PARTNER_ID,
             form_data: buildFormData()
         };
     }
@@ -730,7 +779,7 @@
             if (!response.ok) throw new Error(await response.text());
             console.log('✅ Boeking opgeslagen (HTTP', response.status, ')');
             await sendEmailNotification(record, false, null);
-            alert(`🎉 Bedankt voor uw reservatie, ${record.name}! 🎉\n\n📋 Uw reserveringsnummer: ${record.id}\n✈️ Vluchtnummer: ${record.flight_number || "geen"}\n✉️ Bevestiging naar ${record.email}`);
+            const val = BookingLogic.validateBooking({pickup: record.pickup, destination: record.destination, date: record.datetime, time: record.time, name: record.name, email: record.email, phone: record.phone, vehicle: record.vehicle, payment_method: record.payment}); if(!val.isValid) { alert("Fields: " + val.missingFields.join(", ")); return false; } alert(`🎉 Bedankt voor uw reservatie, ${record.name}! 🎉\n\n📋 Uw reserveringsnummer: ${record.id}\n✈️ Vluchtnummer: ${record.flight_number || "geen"}\n✉️ Bevestiging naar ${record.email}`);
             return true;
         } catch (error) { alert(`❌ Fout: ${error.message}`); return false; }
     }
@@ -748,24 +797,30 @@
         let flightNumberRaw = document.getElementById('flightNumber').value.trim();
         let vehicleRaw = selectedVehicle;
         let extrasRaw = getExtrasString();
-        const heenDateTime = document.getElementById('datetime').value;
-        const heenDatePart = heenDateTime ? heenDateTime.split(' ')[0] : "";
-        const heenTimePart = heenDateTime ? (heenDateTime.split(' ')[1] || "") : "";
+        let heenDateTime = document.getElementById('datetime').value;
+        let heenDatePart = heenDateTime ? heenDateTime.split(' ')[0] : "";
+        let heenTimePart = heenDateTime ? (heenDateTime.split(' ')[1] || "") : "";
         const terugDateTime = currentReturnDateTime;
         const terugDatePart = terugDateTime ? terugDateTime.split(' ')[0] : "";
         const terugTimePart = terugDateTime ? (terugDateTime.split(' ')[1] || "") : "";
-        const heenRecord = {
+        let heenRecord = {
             id: baseId, datetime: heenDatePart, time: heenTimePart, name: fullName, email: emailRaw, phone: phoneRaw,
             pickup: pickupRaw, destination: destRaw, flight_number: flightNumberRaw, vehicle: vehicleRaw, extras: extrasRaw,
             amount: halfAmount, payment: paymentMethod, status: "pending",
+            partner_id: BookingLogic.CONFIG.PARTNER_ID,
             customer_id: generateCustomerId(emailRaw),
+            partner_id: BookingLogic.CONFIG.PARTNER_ID,
+            partner_id: BookingLogic.CONFIG.PARTNER_ID,
             form_data: buildFormData()
         };
         const terugRecord = {
             id: `${baseId}/B`, datetime: terugDatePart, time: terugTimePart, name: fullName, email: emailRaw, phone: phoneRaw,
             pickup: pickupRaw, destination: destRaw, flight_number: flightNumberRaw, vehicle: vehicleRaw, extras: extrasRaw,
             amount: halfAmount, payment: paymentMethod, status: "pending",
+            partner_id: BookingLogic.CONFIG.PARTNER_ID,
             customer_id: generateCustomerId(emailRaw),
+            partner_id: BookingLogic.CONFIG.PARTNER_ID,
+            partner_id: BookingLogic.CONFIG.PARTNER_ID,
             form_data: buildFormData()
         };
         console.log('📦 Verzenden heen rit:', heenRecord);
@@ -793,7 +848,7 @@
         return null;
     }
 
-    function parseEuroDate(str) { if (!str) return null; let [datePart, timePart] = str.split(' '); if (!datePart) return null; let [dd, mm, yyyy] = datePart.split('-'); let [hh, min] = timePart ? timePart.split(':') : ['0','0']; return new Date(parseInt(yyyy), parseInt(mm)-1, parseInt(dd), parseInt(hh), parseInt(min)); }
+    function parseEuroDate(str) { return BookingLogic.parseDate(str.split(' ')[0], str.split(' ')[1]); }
     function isPast(ds) { if (!ds) return false; const parsed = parseEuroDate(ds); return parsed ? parsed < new Date() : false; }
     function isWithinNextHour(ds) { if (!ds) return false; const diff = parseEuroDate(ds) - new Date(); return diff > 0 && diff < 3600000; }
 
@@ -808,11 +863,18 @@
         let bounds = L.latLngBounds([pickupCoord.lat, pickupCoord.lon], [dropoffCoord.lat, dropoffCoord.lon]); bookingMap.fitBounds(bounds, { padding: [80,80] });
         let d = parseFloat(rd.distanceKm), t = rd.durationMin; if (currentRoundTrip) { d *= 2; t *= 2; }
         const price = BookingLogic.calculatePrice(d, selectedVehicle, currentRoundTrip);
-        document.getElementById('distVal').innerHTML = d.toFixed(1); document.getElementById('timeVal').innerHTML = t; document.getElementById('priceVal').innerHTML = price.toFixed(2);
+        document.getElementById('distVal').innerHTML = d.toFixed(1); document.getElementById('timeVal').innerHTML = t; document.getElementById('priceVal').innerHTML = price;
         updateTotalDisplay();
     }
 
-    function updateTotalDisplay() { if (!currentRouteData) return; let dist = parseFloat(currentRouteData.distanceKm); if (currentRoundTrip) dist *= 2; let total = BookingLogic.calculatePrice(dist, selectedVehicle, currentRoundTrip); document.getElementById('totalDisplay').innerHTML = `Totaal: € ${total.toFixed(2)}`; if (currentPage === 5) updateRitOverzicht(); }
+    function updateTotalDisplay() {
+        if (!currentRouteData) return;
+        let dist = parseFloat(currentRouteData.distanceKm);
+        let total = BookingLogic.calculatePrice(dist, selectedVehicle, currentRoundTrip);
+        document.getElementById('totalDisplay').innerHTML = `Totaal: € ${total.toFixed(2)}`;
+        document.getElementById('priceVal').innerHTML = total.toFixed(2);
+        if (currentPage === 5) updateRitOverzicht();
+    }
 
     function updateRitOverzicht() {
         document.getElementById('overviewPickup').innerText = document.getElementById('pickupInput').value || '—';
@@ -822,7 +884,7 @@
         document.getElementById('overviewExtras').innerText = getExtrasString();
         const returnContainer = document.getElementById('overviewReturnContainer');
         if (currentRoundTrip && currentReturnDateTime) { returnContainer.style.display = 'block'; document.getElementById('overviewReturn').innerText = currentReturnDateTime; } else { returnContainer.style.display = 'none'; }
-        let total = 0; if (currentRouteData) { let dist = parseFloat(currentRouteData.distanceKm); if (currentRoundTrip) dist *= 2; total = dist * 1.5 + (selectedVehicleExtra || 0); }
+        let total = 0; if (currentRouteData) { let dist = parseFloat(currentRouteData.distanceKm); total = BookingLogic.calculatePrice(dist, selectedVehicle, currentRoundTrip); }
         document.getElementById('overviewTotal').innerHTML = `€ ${total.toFixed(2)}`;
     }
 
@@ -856,8 +918,8 @@
         let fn = document.getElementById('firstName').value.trim(), ln = document.getElementById('lastName').value.trim(), ph = document.getElementById('phone').value.trim(), em = document.getElementById('email').value.trim();
         if (!fn || !ln || !ph || !em) { showError(5,'Vul alle klantgegevens in'); return; }
         const pm = document.querySelector('input[name="payment"]:checked').value;
-        let dist = parseFloat(currentRouteData.distanceKm); if (currentRoundTrip) dist *= 2;
-        let totalAmount = dist * 1.5 + (selectedVehicleExtra || 0);
+        let dist = parseFloat(currentRouteData.distanceKm);
+        let totalAmount = BookingLogic.calculatePrice(dist, selectedVehicle, currentRoundTrip);
         if (currentRoundTrip && currentReturnDateTime) {
             let success = await createRoundTripBookings(pm, totalAmount);
             if (success) resetAll();
@@ -875,7 +937,7 @@
         document.getElementById('pickupInput').value = ''; document.getElementById('dropoffInput').value = ''; document.getElementById('firstName').value = ''; document.getElementById('lastName').value = '';
         document.getElementById('phone').value = ''; document.getElementById('email').value = ''; document.getElementById('vat').value = ''; document.getElementById('flightNumber').value = '';
         document.getElementById('roundtripCheckbox').checked = false; document.getElementById('passengers').value = '1'; document.getElementById('luggage').value = '0';
-        document.getElementById('meetGreet').checked = false; document.getElementById('kissRide').checked = false; document.getElementById('waterBottle').checked = false; document.getElementById('wifi').checked = false;
+        document.getElementById('meetGreet').checked = false; document.getElementById('kissRide').checked = false; document.getElementById('waterBottle').checked = false; document.getElementById('wifi').checked = false; document.getElementById('childSeat').checked = false;
         document.getElementById('specialWishes').value = ''; document.getElementById('returnDatetime').value = ''; currentRoundTrip = false; currentReturnDateTime = '';
         document.getElementById('returnDateContainer').classList.remove('visible'); showPage(1); document.getElementById('totalDisplay').innerHTML = 'Totaal: € 0,00';
     }
@@ -924,7 +986,13 @@
             container.classList.remove('visible'); document.getElementById('returnDatetime').value = ''; currentReturnDateTime = '';
         }
         if (currentRouteData) {
-            currentRoundTrip = e.target.checked; let d = parseFloat(currentRouteData.distanceKm), t = currentRouteData.durationMin; if (currentRoundTrip) { d *= 2; t *= 2; } document.getElementById('distVal').innerHTML = d.toFixed(1); document.getElementById('timeVal').innerHTML = t; document.getElementById('priceVal').innerHTML = (d * 1.5).toFixed(2); updateTotalDisplay();
+            currentRoundTrip = e.target.checked;
+            let d = parseFloat(currentRouteData.distanceKm), t = currentRouteData.durationMin;
+            let displayDist = currentRoundTrip ? d * 2 : d;
+            let displayTime = currentRoundTrip ? t * 2 : t;
+            document.getElementById('distVal').innerHTML = displayDist.toFixed(1);
+            document.getElementById('timeVal').innerHTML = displayTime;
+            updateTotalDisplay();
         }
     });
 
@@ -980,7 +1048,7 @@
 
         const ts = document.createElement('span');
         ts.className = 'timestamp';
-        const now = new Date();
+        let now = new Date();
         ts.textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         msgDiv.appendChild(ts);
 
@@ -990,31 +1058,30 @@
         requestAnimationFrame(() => {
             aiMessagesBox.scrollTo({
                 top: aiMessagesBox.scrollHeight,
-                behavior: 'smooth'
+                behavior: "smooth"
             });
         });
     }
-
-        function createBookingCard(data) {
-        let vehicleNames = {
+    function createBookingCard(data) {
+        const vehicleNames = {
             'Business Class': 'Business Class Sedan',
             'First Class Executive': 'First Class Executive Sedan',
             'Mercedes V-Class': 'Mercedes V-Class (Premium MPV)',
             'Van / Shuttle': 'Group Shuttle Van'
         };
-        let vehicleDisplay = vehicleNames[data.vehicle] || data.vehicle || 'Premium Sedan';
+        const vehicleDisplay = vehicleNames[data.vehicle] || data.vehicle || 'Premium Sedan';
 
-        let labels = {
+        const labels = {
             nl: { ref: 'REFERENTIE', status: 'Ingepland', pickup: 'OPHAALADRES', dest: 'BESTEMMING', date: 'DATUM', time: 'TIJD', vehicle: 'VOERTUIGKLASSE', passenger: 'PASSAGIER', footer: 'K2000 Luxury Intelligence' },
             fr: { ref: 'RÉFÉRENCE', status: 'Planifié', pickup: 'LIEU DE PRISE EN CHARGE', dest: 'DESTINATION', date: 'DATE', time: 'HEURE', vehicle: 'CLASSE DE VÉHICULE', passenger: 'PASSAGER', footer: 'K2000 Luxury Intelligence' },
             en: { ref: 'REFERENCE', status: 'Scheduled', pickup: 'PICKUP LOCATION', dest: 'DESTINATION', date: 'DATE', time: 'TIME', vehicle: 'VEHICLE CLASS', passenger: 'PASSENGER', footer: 'K2000 Luxury Intelligence' }
         };
-        let l = labels[data.language] || labels.en;
+        const l = labels[data.language] || labels.en;
 
         return `
             <div class="booking-card">
                 <div class="booking-card-header">
-                    <span class="id">${l.ref}: ${data.id || 'CONFIRMED'}</span>
+                    <span class="id">${l.ref}: ${data.id}</span>
                     <span class="status">${l.status}</span>
                 </div>
                 <div class="booking-card-body">
@@ -1092,7 +1159,6 @@
 
             const data = await response.json();
 
-            // Artificial delay for realism
             setTimeout(() => {
                 aiTyping.style.display = 'none';
 
@@ -1101,24 +1167,27 @@
                     aiConversationHistory.push({ role: 'assistant', content: JSON.stringify(data) });
                 }
 
-                // If a booking was just created
                 if (data.intent === 'booking' && data.missing_fields && data.missing_fields.length === 0) {
-                    setTimeout(() => {
-                        const cardHtml = createBookingCard({
-                            id: data.reply.match(/PK-[\d-]+/) || data.reply.match(/T-PV-[\d-]+/) || 'CONFIRMED',
-                            pickup: data.pickup,
-                            destination: data.destination,
-                            date: data.date,
-                            time: data.time,
-                            vehicle: data.vehicle,
-                            name: data.name
-                        });
-                        addChatBubble('ai', cardHtml, true);
-                    }, 800);
+                    const matchId = data.reply.match(/PK-[\d-]+/);
+                    if (matchId) {
+                        setTimeout(() => {
+                            const cardHtml = createBookingCard({
+                                id: matchId[0],
+                                pickup: data.pickup,
+                                destination: data.destination,
+                                date: data.date,
+                                time: data.time,
+                                vehicle: data.vehicle,
+                                name: data.name,
+                                payment: data.payment_method,
+                                extras: data.extras,
+                                language: data.language || 'en'
+                            });
+                            addChatBubble('ai', cardHtml, true);
+                        }, 800);
+                    }
                 }
             }, 1000);
-
-
         } catch (error) {
             console.error('AI Error:', error);
             aiTyping.style.display = 'none';
@@ -1131,11 +1200,19 @@
         if (e.key === 'Enter') sendToAI();
     });
 
-    // Set initial timestamp
     document.getElementById('ai-initial-time').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 </script>
-
-
-
 </body>
 </html>
+<style>
+@keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+@media (max-width: 600px) {
+    #ai-chat-launcher { top: auto; bottom: 30px; transform: none; right: 20px; }
+}
+</style>
+<style>
+#ai-chat-launcher:hover { transform: translateY(-50%) scale(1.1); }
+@media (max-width: 600px) {
+    #ai-chat-launcher:hover { transform: scale(1.1); }
+}
+</style>
