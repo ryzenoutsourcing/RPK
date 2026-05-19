@@ -1182,11 +1182,13 @@
             switchToAuto() { window.location.href = 'autodealerpaneel.html'; },
             switchToTaxi() { window.location.href = 'onderaannemerA.html'; },
             
+            // ======================== AANGEPASTE LOGOUT ========================
             logout() {
                 if (confirm('Weet u zeker dat u wilt uitloggen?')) {
-                    window.location.href = 'index.html';
+                    window.location.href = 'admin-index.html';   // <-- gewijzigd van index.html naar admin-index.html
                 }
             },
+            // ====================================================================
             
             refresh() {
                 this.loadAllData();
