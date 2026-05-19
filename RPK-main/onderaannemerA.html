@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Fleet Connect - Onderaannemer Paneel</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -10,40 +10,221 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: #f1f5f9; height: 100vh; display: flex; }
-        .sidebar { width: 260px; background: #0f172a; color: #e2e8f0; overflow-y: auto; display: flex; flex-direction: column; flex-shrink: 0; }
-        .logo { padding: 24px 20px; font-size: 1.3rem; font-weight: 700; border-bottom: 1px solid #1e293b; cursor: pointer; transition: background-color 0.2s ease; }
-        .logo:hover { background-color: #1e293b; }
-        .logo i { color: #2dd4bf; margin-right: 10px; }
-        .logo small { font-size: 0.7rem; display: block; color: #64748b; margin-top: 4px; }
-        .nav-menu { padding: 20px 16px; flex: 1; }
-        .nav-section { margin-bottom: 20px; }
-        .nav-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; padding: 8px 12px; margin-top: 8px; }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; font-weight: 500; font-size: 0.9rem; color: #cbd5e1; cursor: pointer; transition: all 0.2s; }
-        .nav-item:hover { background: #1e293b; }
-        .nav-item.active { background: #2dd4bf20; color: #2dd4bf; }
-        .nav-item i { width: 22px; }
-        .nav-item.logout-item { margin-top: 16px; border-top: 1px solid #1e293b; border-radius: 0; padding-top: 16px; color: #f87171; }
-        .nav-item.switch-item { border-top: 1px solid #1e293b; margin-top: 8px; padding-top: 16px; color: #f59e0b; }
-        .nav-item.switch-item:hover { background: #f59e0b20; color: #f59e0b; }
-        .main { flex: 1; display: flex; flex-direction: column; overflow: auto; }
-        .header { background: white; padding: 20px 32px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-        .header h1 { font-size: 1.5rem; font-weight: 600; }
-        .header-right { display: flex; gap: 12px; align-items: center; }
-        .switch-btn { background: #f59e0b; color: #0f172a; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .switch-btn:hover { background: #d97706; }
-        .switch-woningen-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .switch-woningen-btn:hover { background: #059669; }
-        .refresh-btn { background: #2dd4bf; color: #0f172a; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .refresh-btn:hover { background: #14b8a6; }
-        .back-btn { background: #e2e8f0; color: #0f172a; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .back-btn:hover { background: #cbd5e1; }
-        .user-info { font-size: 0.8rem; color: #64748b; }
-        .content { padding: 32px; }
         
+        /* ========== SIDEBAR - COLLAPSE (exact zoals commander.html) ========== */
+        .sidebar {
+            width: 280px;
+            background: #0f172a;
+            color: #e2e8f0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: width 0.3s ease;
+        }
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        .sidebar.collapsed .logo .logo-text,
+        .sidebar.collapsed .logo small,
+        .sidebar.collapsed .nav-item span,
+        .sidebar.collapsed .nav-section-title {
+            display: none;
+        }
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+        }
+        .sidebar.collapsed .nav-item i {
+            margin: 0;
+        }
+        
+        .logo {
+            padding: 24px 20px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            border-bottom: 1px solid #1e293b;
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .logo i.fa-bars {
+            color: #e2e8f0;
+            font-size: 1.3rem;
+        }
+        .logo .logo-text {
+            flex: 1;
+        }
+        .logo i.fa-taxi {
+            color: #2dd4bf;
+            margin-right: 8px;
+        }
+        .logo small {
+            font-size: 0.7rem;
+            display: block;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        
+        .nav-menu {
+            padding: 20px 16px;
+            flex: 1;
+        }
+        .nav-section {
+            margin-bottom: 20px;
+        }
+        .nav-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            padding: 8px 12px;
+            white-space: nowrap;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .nav-item:hover {
+            background: #1e293b;
+        }
+        .nav-item.active {
+            background: #2dd4bf20;
+            color: #2dd4bf;
+        }
+        .nav-item i {
+            width: 22px;
+        }
+        .nav-item.logout-item {
+            margin-top: 16px;
+            border-top: 1px solid #1e293b;
+            border-radius: 0;
+            padding-top: 16px;
+            color: #f87171;
+        }
+        .nav-item.switch-item {
+            border-top: 1px solid #1e293b;
+            margin-top: 8px;
+            padding-top: 16px;
+            color: #f59e0b;
+        }
+        .nav-item.switch-item:hover {
+            background: #f59e0b20;
+            color: #f59e0b;
+        }
+        
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: auto;
+        }
+        .header {
+            background: white;
+            padding: 20px 32px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .header-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .switch-btn {
+            background: #f59e0b;
+            color: #0f172a;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .switch-btn:hover {
+            background: #d97706;
+        }
+        .switch-woningen-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .switch-woningen-btn:hover {
+            background: #059669;
+        }
+        .refresh-btn {
+            background: #2dd4bf;
+            color: #0f172a;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .refresh-btn:hover {
+            background: #14b8a6;
+        }
+        .back-btn {
+            background: #e2e8f0;
+            color: #0f172a;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .back-btn:hover {
+            background: #cbd5e1;
+        }
+        .user-info {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        .content {
+            padding: 32px;
+        }
+        
+        /* Alle overige stijlen (filter-bar, tabellen, modals, etc.) zijn exact hetzelfde als in de originele code */
         .filter-bar { background: white; padding: 8px 16px; border-radius: 48px; margin-bottom: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; border: 1px solid #e2e8f0; }
         .filter-group { display: flex; align-items: center; gap: 6px; background: #f8fafc; padding: 4px 12px; border-radius: 32px; border: 1px solid #e2e8f0; }
         .filter-group label { font-size: 0.7rem; font-weight: 600; color: #475569; }
-        .filter-group input { border: none; background: transparent; padding: 6px 0; font-family: 'Inter', sans-serif; font-size: 0.8rem; width: 120px; outline: none; }
+        .filter-group input { border: none; background: transparent; padding: 6px 0; font-family: 'Inter', sans-serif; font-size: 0.8rem; width: 120px; outline: none; text-align: left; }
         .filter-actions { display: flex; gap: 6px; margin-left: auto; }
         .filter-actions button { padding: 6px 14px; border-radius: 32px; border: none; cursor: pointer; font-weight: 500; font-size: 0.75rem; }
         .btn-filter { background: #0f172a; color: white; }
@@ -53,6 +234,7 @@
         .orders-table { width: 100%; border-collapse: collapse; }
         .orders-table th { text-align: left; padding: 12px 8px; border-bottom: 1px solid #e2e8f0; font-size: 0.75rem; font-weight: 600; color: #64748b; }
         .orders-table td { padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; }
+        .orders-table th, .orders-table td { white-space: nowrap; }
         
         .action-btn { background: #2dd4bf; color: #0f172a; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.75rem; }
         .delete-btn { background: #ef4444; color: white; margin-left: 8px; padding: 4px 10px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.7rem; }
@@ -103,8 +285,6 @@
         .expired-dot { width: 6px; height: 6px; background: #ef4444; border-radius: 50%; margin-top: 2px; }
         
         .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-        @media (max-width: 1000px) { .dashboard-grid { grid-template-columns: repeat(2, 1fr); } }
-        
         .info-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor: pointer; }
         .mini-flip-container { perspective: 600px; height: 140px; }
         .mini-flip-card { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.4s; transform-style: preserve-3d; }
@@ -130,7 +310,6 @@
         canvas { max-height: 300px; width: 100% !important; }
         
         .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
-        @media (max-width: 1000px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
         .kpi-card { background: white; border-radius: 16px; padding: 20px; text-align: center; }
         .kpi-card .value { font-size: 1.8rem; font-weight: 700; }
         .kpi-card .label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; margin-top: 8px; }
@@ -166,34 +345,133 @@
         .status-accepted { background: #dbeafe; color: #1e40af; }
         .status-completed { background: #d1fae5; color: #065f46; }
         .status-cancelled { background: #fee2e2; color: #991b1b; }
+
+        /* ============================================ */
+        /* RESPONSIVE - zoals commander.html */
+        /* ============================================ */
+        @media (max-width: 1200px) {
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .orders-table th:nth-child(4),
+            .orders-table td:nth-child(4) {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar:not(.collapsed) { width: 280px; }
+            .sidebar.collapsed { width: 80px; }
+            .sidebar.collapsed .logo .logo-text,
+            .sidebar.collapsed .logo small,
+            .sidebar.collapsed .nav-item span,
+            .sidebar.collapsed .nav-section-title { display: none; }
+            .sidebar .nav-item { justify-content: flex-start; }
+            .sidebar.collapsed .nav-item { justify-content: center; }
+            .content { padding: 16px; }
+            .header { padding: 16px; }
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 { font-size: 1rem; }
+            .stat-card .value { font-size: 1.4rem; }
+            .kpi-card .value { font-size: 1.4rem; }
+            .mini-flip-front .value, .mini-flip-back .value { font-size: 1.3rem; }
+        }
+
+        @media (orientation: portrait) and (max-width: 900px) {
+            .content { padding: 12px !important; }
+            .dashboard-grid { grid-template-columns: 1fr !important; gap: 10px; }
+            .kpi-grid { grid-template-columns: 1fr !important; gap: 10px; }
+            .mini-flip-container { height: 110px; }
+            .mini-flip-front .value, .mini-flip-back .value { font-size: 1.3rem; }
+            .orders-table th, .orders-table td { font-size: 0.65rem !important; padding: 6px 4px !important; }
+            .action-btn, .delete-btn, .add-btn, .fiche-btn { padding: 6px 10px !important; font-size: 0.7rem !important; min-height: 36px; }
+            .filter-bar { padding: 8px; gap: 6px; }
+            .filter-group { padding: 0; }
+            .filter-group input { font-size: 0.75rem; width: 100%; text-align: left; }
+            .calendar-day { font-size: 0.6rem; min-width: 30px; }
+            .calendar-weekdays div { font-size: 0.6rem; }
+            .planning-item { padding: 8px; }
+            .planning-time, .planning-ride { font-size: 0.75rem; }
+            .fiche-body { padding: 12px; }
+            .fiche-row { font-size: 0.75rem; }
+            .fiche-label { width: 100px; }
+            .header-right button { padding: 4px 8px !important; font-size: 0.65rem !important; }
+            .header h1 { font-size: 0.9rem; }
+            .orders-table { min-width: 550px; }
+        }
+
+        @media (orientation: portrait) and (max-width: 480px) {
+            .orders-table th, .orders-table td { font-size: 0.6rem !important; padding: 4px 2px !important; }
+            .action-btn { padding: 4px 6px !important; font-size: 0.65rem !important; }
+            .header-right { gap: 4px; }
+            .filter-group input { width: 100%; }
+        }
+
+        button,
+        .nav-item,
+        .action-btn,
+        .delete-btn,
+        .add-btn,
+        .switch-btn,
+        .switch-woningen-btn,
+        .refresh-btn,
+        .back-btn,
+        .fiche-btn,
+        .calendar-day,
+        .close-modal {
+            -webkit-tap-highlight-color: transparent;
+        }
+        button,
+        .action-btn,
+        .nav-item,
+        .calendar-day {
+            touch-action: manipulation;
+        }
+        html {
+            -webkit-text-size-adjust: 100%;
+        }
+        input, select, textarea {
+            font-size: 16px;
+            -webkit-appearance: none;
+            border-radius: 8px;
+        }
+        .orders-table-wrapper,
+        .modal-content {
+            -webkit-overflow-scrolling: touch;
+        }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo" onclick="window.location.href='admin-index.html'" style="cursor: pointer;">
-            <i class="fas fa-taxi"></i> Fleet Connect
-            <br><small>Onderaannemer Paneel</small>
+    <div class="sidebar collapsed" id="sidebar">
+        <div class="logo" onclick="app.toggleSidebar()">
+            <i class="fas fa-bars"></i>
+            <div class="logo-text">
+                <i class="fas fa-taxi"></i> Fleet Connect
+                <br><small>Onderaannemer Paneel</small>
+            </div>
         </div>
         <div class="nav-menu">
             <div class="nav-section"><div class="nav-section-title">📋 BOEKINGEN</div>
-                <div class="nav-item active" data-tab="neworders" onclick="app.switchTab('neworders')"><i class="fas fa-clipboard-list"></i> New Orders</div>
-                <div class="nav-item" data-tab="orders" onclick="app.switchTab('orders')"><i class="fas fa-box"></i> Orders</div>
-                <div class="nav-item" data-tab="history" onclick="app.switchTab('history')"><i class="fas fa-history"></i> History</div>
-                <div class="nav-item" data-tab="agenda" onclick="app.switchTab('agenda')"><i class="fas fa-calendar-alt"></i> Agenda</div>
+                <div class="nav-item active" data-tab="neworders" onclick="app.switchTab('neworders')"><i class="fas fa-clipboard-list"></i><span> New Orders</span></div>
+                <div class="nav-item" data-tab="orders" onclick="app.switchTab('orders')"><i class="fas fa-box"></i><span> Orders</span></div>
+                <div class="nav-item" data-tab="history" onclick="app.switchTab('history')"><i class="fas fa-history"></i><span> History</span></div>
+                <div class="nav-item" data-tab="agenda" onclick="app.switchTab('agenda')"><i class="fas fa-calendar-alt"></i><span> Agenda</span></div>
             </div>
             <div class="nav-section"><div class="nav-section-title">👥 BEHEER</div>
-                <div class="nav-item" data-tab="drivers" onclick="app.switchTab('drivers')"><i class="fas fa-id-card"></i> Drivers</div>
-                <div class="nav-item" data-tab="partners" onclick="app.switchTab('partners')"><i class="fas fa-handshake"></i> Mijn Partners</div>
+                <div class="nav-item" data-tab="drivers" onclick="app.switchTab('drivers')"><i class="fas fa-id-card"></i><span> Drivers</span></div>
+                <div class="nav-item" data-tab="partners" onclick="app.switchTab('partners')"><i class="fas fa-handshake"></i><span> Mijn Partners</span></div>
             </div>
             <div class="nav-section"><div class="nav-section-title">💰 FINANCIËN</div>
-                <div class="nav-item" data-tab="financieel" onclick="app.switchTab('financieel')"><i class="fas fa-chart-line"></i> Financieel</div>
+                <div class="nav-item" data-tab="financieel" onclick="app.switchTab('financieel')"><i class="fas fa-chart-line"></i><span> Financieel</span></div>
             </div>
             <div class="nav-section"><div class="nav-section-title">ℹ️ INFORMATIE</div>
-                <div class="nav-item" data-tab="wiki" onclick="app.switchTab('wiki')"><i class="fas fa-robot"></i> Wiki Agent</div>
+                <div class="nav-item" data-tab="wiki" onclick="app.switchTab('wiki')"><i class="fas fa-robot"></i><span> Wiki Agent</span></div>
             </div>
-            <div class="nav-item switch-item" onclick="app.switchToWoningen()"><i class="fas fa-home"></i> Switch naar Woningen</div>
-            <div class="nav-item switch-item" onclick="app.switchToAutoDealer()"><i class="fas fa-exchange-alt"></i> Switch naar Auto Dealer</div>
-            <div class="nav-item logout-item" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Uitloggen</div>
+            <div class="nav-item switch-item" onclick="app.switchToWoningen()"><i class="fas fa-home"></i><span> Switch naar Woningen</span></div>
+            <div class="nav-item switch-item" onclick="app.switchToAutoDealer()"><i class="fas fa-exchange-alt"></i><span> Switch naar Auto Dealer</span></div>
+            <div class="nav-item logout-item" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i><span> Uitloggen</span></div>
         </div>
     </div>
     <div class="main">
@@ -241,6 +519,12 @@
             financePeriod: 'month',
             revenueChart: null,
             flipStates: { omzet: false, cash: false, orders: false },
+            
+            // ========== SIDEBAR TOGGLE (exact zoals commander.html) ==========
+            toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('collapsed');
+            },
             
             showToast(msg, isError) {
                 const toast = document.getElementById('toast');
@@ -293,27 +577,16 @@
             escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); },
             closeModal() { document.getElementById('bookingModal').style.display = 'none'; },
             
-            // ============================================
-            // BELANGRIJKSTE FIX: filterAndSortData()
-            // ============================================
             filterAndSortData() {
-                // New Orders: alleen pending (nog niet geaccepteerd)
                 this.newOrders = this.allBookings.filter(b => b.status === 'pending');
-                
-                // Orders: geaccepteerde ritten die nog NIET verlopen zijn (toekomstig OF vandaag maar nog niet geweest)
-                // Een rit blijft in Orders TOTDAT de tijd verstreken is!
                 this.ordersList = this.allBookings.filter(b => 
                     b.status === 'accepted' && !this.isExpired(b.datetime, b.time)
                 );
-                
-                // History: voltooide, geannuleerde, OF verlopen (expired) ritten
                 this.historyOrders = this.allBookings.filter(b => 
                     b.status === 'completed' || 
                     b.status === 'cancelled' ||
                     (b.status === 'accepted' && this.isExpired(b.datetime, b.time))
                 );
-                
-                // Sorteren
                 this.ordersList.sort((a,b) => this.parseDate(a.datetime, a.time) - this.parseDate(b.datetime, b.time));
                 this.historyOrders.sort((a,b) => this.parseDate(b.datetime, b.time) - this.parseDate(a.datetime, a.time));
                 this.newOrders.sort((a,b) => this.parseDate(a.datetime, a.time) - this.parseDate(b.datetime, b.time));
@@ -437,13 +710,14 @@
                 } else {
                     tbody.innerHTML = orders.map(o => `
                         <tr>
-                            <td><strong>${o.id}</strong><br><span class="status-badge status-pending">Nieuw</span></span></td>
-                            <td>${o.datetime} ${o.time}</span></span></td>
-                            <td>${this.escapeHtml(o.name)}</span></span></td>
-                            <td>${this.escapeHtml(o.pickup)} → ${this.escapeHtml(o.destination)}</span></span></td>
-                            <td>${o.vehicle}</span></span></td>
-                            <td>€${(o.amount || 0).toFixed(2)}</span></span></td>
-                            <td><button class="action-btn" onclick='app.showBookingFiche(${JSON.stringify(o).replace(/'/g, "&#39;")})'>Bekijk Fiche</button></span></span></tr>
+                            <td><strong>${o.id}</strong><br><span class="status-badge status-pending">Nieuw</span></td>
+                            <td>${o.datetime} ${o.time}</td>
+                            <td>${this.escapeHtml(o.name)}</span></td>
+                            <td>${this.escapeHtml(o.pickup)} → ${this.escapeHtml(o.destination)}</span></td>
+                            <td>${o.vehicle}</span></td>
+                            <td>€${(o.amount || 0).toFixed(2)}</span></td>
+                            <td><button class="action-btn" onclick='app.showBookingFiche(${JSON.stringify(o).replace(/'/g, "&#39;")})'>Bekijk Fiche</button></span></td>
+                        </tr>
                     `).join('');
                 }
             },
@@ -466,20 +740,21 @@
                         const driverText = driver ? driver.name : (o.assigned_driver ? o.assigned_driver.name : '<span style="color:#f59e0b;">Niet toegewezen</span>');
                         return `
                         <tr>
-                            <td><strong>${o.id}</strong><br><span class="status-badge status-accepted">Geaccepteerd</span></span></span></td>
-                            <td>${o.datetime} ${o.time}</span></span></span></td>
-                            <td>${this.escapeHtml(o.name)}</span></span></span></td>
-                            <td>${this.escapeHtml(o.pickup)} → ${this.escapeHtml(o.destination)}</span></span></span></td>
-                            <td>${o.vehicle}</span></span></span></td>
-                            <td>€${(o.amount || 0).toFixed(2)}</span></span></span></td>
-                            <td>${driverText}</span></span></span></td>
-                            <td><button class="action-btn" onclick='app.showBookingFiche(${JSON.stringify(o).replace(/'/g, "&#39;")})'>Bekijk Fiche</button></span></span></span></tr>
+                            <td><strong>${o.id}</strong><br><span class="status-badge status-accepted">Geaccepteerd</span></td>
+                            <td>${o.datetime} ${o.time}</td>
+                            <td>${this.escapeHtml(o.name)}</span></td>
+                            <td>${this.escapeHtml(o.pickup)} → ${this.escapeHtml(o.destination)}</span></td>
+                            <td>${o.vehicle}</span></td>
+                            <td>€${(o.amount || 0).toFixed(2)}</span></td>
+                            <td>${driverText}</span></td>
+                            <td><button class="action-btn" onclick='app.showBookingFiche(${JSON.stringify(o).replace(/'/g, "&#39;")})'>Bekijk Fiche</button></span></td>
+                        </tr>
                     `;}).join('');
                 }
             },
             
             renderHistory() {
-                let html = `<div class="filter-bar"><div class="filter-group"><label>Order ID</label><input type="text" id="filterOrderHistory" placeholder="Zoek op ID"></div><div class="filter-group"><label>Naam</label><input type="text" id="filterNameHistory" placeholder="Klant"></div><div class="filter-actions"><button class="btn-filter" onclick="app.applyFiltersHistory()">Zoek</button><button class="btn-reset" onclick="app.resetFiltersHistory()">Reset</button></div></div><div class="orders-table-wrapper"><table class="orders-table"><thead><tr><th>Order ID</th><th>Datum & Tijd</th><th>Klant</th><th>Route</th><th>Voertuig</th><th>Bedrag</th><th>Driver</th><th>Status</th></tr></thead><tbody id="historyTable"></tbody>}</div>`;
+                let html = `<div class="filter-bar"><div class="filter-group"><label>Order ID</label><input type="text" id="filterOrderHistory" placeholder="Zoek op ID"></div><div class="filter-group"><label>Naam</label><input type="text" id="filterNameHistory" placeholder="Klant"></div><div class="filter-actions"><button class="btn-filter" onclick="app.applyFiltersHistory()">Zoek</button><button class="btn-reset" onclick="app.resetFiltersHistory()">Reset</button></div></div><div class="orders-table-wrapper"><table class="orders-table"><thead><tr><th>Order ID</th><th>Datum & Tijd</th><th>Klant</th><th>Route</th><th>Voertuig</th><th>Bedrag</th><th>Driver</th><th>Actie</th></tr></thead><tbody id="historyTable"></tbody>}</div>`;
                 document.getElementById('contentArea').innerHTML = html;
                 this.renderHistoryTable(this.historyOrders);
                 document.getElementById('pageTitle').innerHTML = `History <span class="order-count">${this.historyOrders.length}</span>`;
@@ -489,27 +764,20 @@
                 let tbody = document.getElementById('historyTable');
                 if (!tbody) return;
                 if (orders.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" class="empty-planning">${this.renderEmptyTable()}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="8" class="empty-planning">${this.renderEmptyTable()}<tr></tr>`;
                 } else {
                     tbody.innerHTML = orders.map(o => {
-                        let statusText = '';
-                        let statusClass = '';
-                        if (o.status === 'completed') { statusText = '✓ Uitgevoerd'; statusClass = 'status-completed'; }
-                        else if (o.status === 'cancelled') { statusText = '✗ Geannuleerd'; statusClass = 'status-cancelled'; }
-                        else if (o.status === 'accepted' && this.isExpired(o.datetime, o.time)) { statusText = '⏰ Verlopen'; statusClass = 'status-cancelled'; }
-                        else { statusText = '📋 Onbekend'; statusClass = 'status-pending'; }
-                        
                         const driver = this.drivers.find(d => d.id === o.assigned_driver_id);
                         const driverText = driver ? driver.name : (o.assigned_driver ? o.assigned_driver.name : 'Niet toegewezen');
                         return `<tr>
-                            <td><strong>${o.id}</strong><br><span class="status-badge ${statusClass}">${statusText}</span></span></span></td>
-                            <td>${o.datetime} ${o.time}</span></span></span></td>
-                            <td>${this.escapeHtml(o.name)}</span></span></span></td>
-                            <td>${this.escapeHtml(o.pickup)} → ${this.escapeHtml(o.destination)}</span></span></span></td>
-                            <td>${o.vehicle}</span></span></span></td>
-                            <td>€${(o.amount || 0).toFixed(2)}</span></span></span></td>
-                            <td>${driverText}</span></span></span></td>
-                            <td><span class="status-badge ${statusClass}">${statusText}</span></span></span></td>
+                            <td><strong>${o.id}</strong></td>
+                            <td>${o.datetime} ${o.time}</td>
+                            <td>${this.escapeHtml(o.name)}</span></td>
+                            <td>${this.escapeHtml(o.pickup)} → ${this.escapeHtml(o.destination)}</span></td>
+                            <td>${o.vehicle}</span></td>
+                            <td>€${(o.amount || 0).toFixed(2)}</span></td>
+                            <td>${driverText}</span></td>
+                            <td><button class="action-btn" onclick='app.showBookingFiche(${JSON.stringify(o).replace(/'/g, "&#39;")})'>Bekijk Fiche</button></span></td>
                         </tr>`;
                     }).join('');
                 }
@@ -830,11 +1098,25 @@
                 availableDrivers.forEach(d => { driverOptions += `<option value="${d.id}">${this.escapeHtml(d.name)} (${d.vehicle})</option>`; });
                 let ficheBody = document.getElementById('ficheBody');
                 const isExpired = this.isExpired(booking.datetime, booking.time);
+                
+                let statusDisplay = '';
+                if (booking.status === 'pending') statusDisplay = '⏳ Nieuw';
+                else if (booking.status === 'accepted') statusDisplay = isExpired ? '⏰ Verlopen' : '✅ Geaccepteerd';
+                else if (booking.status === 'completed') statusDisplay = '✓ UITGEVOERD';
+                else if (booking.status === 'cancelled') statusDisplay = '✗ Geannuleerd';
+                else statusDisplay = '📋 Onbekend';
+                
+                let statusClass = '';
+                if (booking.status === 'pending') statusClass = 'status-pending';
+                else if (booking.status === 'accepted') statusClass = isExpired ? 'status-cancelled' : 'status-accepted';
+                else if (booking.status === 'completed') statusClass = 'status-completed';
+                else if (booking.status === 'cancelled') statusClass = 'status-cancelled';
+                
                 ficheBody.innerHTML = `
                     <div class="fiche-section"><h4>Boekingsinformatie</h4>
                         <div class="fiche-row"><span class="fiche-label">Boekingsnummer:</span><span class="fiche-value"><strong>${booking.id}</strong></span></div>
-                        <div class="fiche-row"><span class="fiche-label">Status:</span><span class="fiche-value"><span class="status-badge status-${booking.status}">${booking.status === 'pending' ? 'Nieuw' : (booking.status === 'accepted' ? 'Geaccepteerd' : (booking.status === 'completed' ? 'Voltooid' : 'Geannuleerd'))}</span></span></div>
-                        <div class="fiche-row"><span class="fiche-label">Datum & Tijd:</span><span class="fiche-value">${booking.datetime} om ${booking.time} uur ${isExpired && booking.status === 'accepted' ? '<span class="status-badge status-cancelled">Verlopen</span>' : ''}</span></div>
+                        <div class="fiche-row"><span class="fiche-label">Status:</span><span class="fiche-value"><span class="status-badge ${statusClass}">${statusDisplay}</span></span></div>
+                        <div class="fiche-row"><span class="fiche-label">Datum & Tijd:</span><span class="fiche-value">${booking.datetime} om ${booking.time} uur</span></div>
                         ${booking.flight_number ? `<div class="fiche-row"><span class="fiche-label">✈️ Vluchtnummer:</span><span class="fiche-value">${booking.flight_number}</span></div>` : ''}
                     </div>
                     <div class="fiche-section"><h4>Klantgegevens</h4>
@@ -848,11 +1130,17 @@
                         <div class="fiche-row"><span class="fiche-label">Voertuig:</span><span class="fiche-value">${booking.vehicle}</span></div>
                         <div class="fiche-row"><span class="fiche-label">Extra's:</span><span class="fiche-value">${booking.extras || '-'}</span></div>
                     </div>
-                    ${booking.status === 'accepted' && !isExpired ? `<div class="fiche-section"><h4>Driver Toewijzen</h4><select id="driverSelect">${driverOptions}</select></div>` : ''}
+                    ${booking.assigned_driver_id || booking.assigned_driver ? `
+                    <div class="fiche-section"><h4>👨‍✈️ Driver</h4>
+                        <div class="fiche-row"><span class="fiche-label">Toegewezen driver:</span><span class="fiche-value">${booking.assigned_driver ? booking.assigned_driver.name : (this.drivers.find(d => d.id === booking.assigned_driver_id)?.name || 'Onbekend')}</span></div>
+                    </div>
+                    ` : ''}
                     <div class="fiche-total"><div class="amount">€ ${(booking.amount || 0).toFixed(2)}</div><div>Betaling: ${booking.payment || 'Onbekend'}</div></div>
                     <div class="fiche-actions">
                         ${booking.status === 'pending' ? `<button class="fiche-btn confirm" onclick="app.confirmBooking('${booking.id}')">Accepteren</button>` : ''}
                         ${booking.status === 'accepted' && !isExpired ? `<button class="fiche-btn assign" onclick="app.assignDriverToBooking('${booking.id}')">Driver Toewijzen</button>` : ''}
+                        ${booking.status === 'completed' ? `<button class="fiche-btn confirm" style="background:#10b981; color:white;" disabled>✓ Uitgevoerd</button>` : ''}
+                        ${booking.status === 'cancelled' ? `<button class="fiche-btn close" style="background:#ef4444; color:white;" disabled>✗ Geannuleerd</button>` : ''}
                         <button class="fiche-btn close" onclick="app.closeModal()">Sluiten</button>
                     </div>
                 `;
@@ -872,9 +1160,6 @@
                 return data;
             },
             
-            // ============================================
-            // GECORRIGEERDE confirmBooking()
-            // ============================================
             async confirmBooking(bookingId) {
                 const { error } = await supabase
                     .from('bookings')
@@ -891,9 +1176,6 @@
                 this.closeModal();
             },
             
-            // ============================================
-            // GECORRIGEERDE assignDriverToBooking() - Nu met Supabase update!
-            // ============================================
             async assignDriverToBooking(bookingId) {
                 const select = document.getElementById('driverSelect');
                 const driverId = select?.value;
@@ -901,7 +1183,6 @@
                 const driver = this.drivers.find(c => c.id == driverId);
                 if (!driver) { this.showToast('Driver niet gevonden', true); return; }
                 
-                // Update Supabase met de driver toewijzing
                 const { error } = await supabase
                     .from('bookings')
                     .update({ 
@@ -971,9 +1252,6 @@
             
             async logout() { if(confirm('Weet u zeker dat u wilt uitloggen?')) { await supabase.auth.signOut(); window.location.href = 'admin-index.html'; } },
             
-            // ============================================
-            // Auto-archief functie: verplaatst verlopen ritten naar History
-            // ============================================
             async autoArchiveExpiredRides() {
                 const expiredRides = this.allBookings.filter(b => 
                     b.status === 'accepted' && this.isExpired(b.datetime, b.time)
@@ -1012,7 +1290,6 @@
 
                     this.switchTab('neworders');
                     
-                    // Start auto-archief (checkt elke minuut)
                     setInterval(() => {
                         this.autoArchiveExpiredRides();
                     }, 60000);

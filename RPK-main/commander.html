@@ -12,15 +12,89 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: #f1f5f9; height: 100vh; display: flex; }
         
-        /* ========== SIDEBAR - UNIFORM MET AUTO/TAXI ========== */
-        .sidebar { width: 280px; background: #0f172a; color: #e2e8f0; overflow-y: auto; display: flex; flex-direction: column; flex-shrink: 0; }
-        .logo { padding: 24px 20px; font-size: 1.3rem; font-weight: 700; border-bottom: 1px solid #1e293b; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
-        .logo i { color: #10b981; margin-right: 10px; }
-        .logo small { font-size: 0.7rem; display: block; color: #64748b; margin-top: 4px; }
-        .nav-menu { padding: 20px 16px; flex: 1; }
-        .nav-section { margin-bottom: 20px; }
-        .nav-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; padding: 8px 12px; }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; font-weight: 500; font-size: 0.9rem; color: #cbd5e1; cursor: pointer; transition: all 0.2s; }
+        /* ========== SIDEBAR - MET COLLAPSE ========== */
+        .sidebar {
+            width: 280px;
+            background: #0f172a;
+            color: #e2e8f0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: width 0.3s ease;
+        }
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        .sidebar.collapsed .logo .logo-text,
+        .sidebar.collapsed .logo small,
+        .sidebar.collapsed .nav-item span,
+        .sidebar.collapsed .nav-section-title {
+            display: none;
+        }
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+        }
+        .sidebar.collapsed .nav-item i {
+            margin: 0;
+        }
+        
+        .logo {
+            padding: 24px 20px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            border-bottom: 1px solid #1e293b;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .logo i:first-child {
+            color: #10b981;
+            font-size: 1.5rem;
+        }
+        .logo .logo-text {
+            flex: 1;
+        }
+        .logo i.fa-bars {
+            color: #e2e8f0;
+            font-size: 1.3rem;
+        }
+        .logo small {
+            font-size: 0.7rem;
+            display: block;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        .nav-menu {
+            padding: 20px 16px;
+            flex: 1;
+        }
+        .nav-section {
+            margin-bottom: 20px;
+        }
+        .nav-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            padding: 8px 12px;
+            white-space: nowrap;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
         .nav-item:hover { background: #1e293b; }
         .nav-item.active { background: #10b98120; color: #10b981; }
         .nav-item i { width: 22px; }
@@ -39,8 +113,6 @@
         .switch-taxi-btn:hover { background: #14b8a6; }
         .refresh-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .refresh-btn:hover { background: #059669; }
-        .back-btn { background: #e2e8f0; color: #0f172a; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .back-btn:hover { background: #cbd5e1; }
         .export-btn { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .export-btn:hover { background: #2563eb; }
         .content { padding: 32px; }
@@ -144,11 +216,16 @@
         .hidden { display: none !important; }
         .empty-state { text-align: center; padding: 40px; color: #94a3b8; }
         
+        /* ========== RESPONSIVE (aangepast voor toggle) ========== */
         @media (max-width: 768px) {
-            .sidebar { width: 80px; }
-            .sidebar .logo small, .sidebar .nav-section-title, .sidebar .nav-item span:not(i) { display: none; }
-            .sidebar .nav-item { justify-content: center; }
-            .sidebar .nav-item i { margin: 0; }
+            .sidebar:not(.collapsed) { width: 280px; }
+            .sidebar.collapsed { width: 80px; }
+            .sidebar.collapsed .logo .logo-text,
+            .sidebar.collapsed .logo small,
+            .sidebar.collapsed .nav-item span,
+            .sidebar.collapsed .nav-section-title { display: none; }
+            .sidebar .nav-item { justify-content: flex-start; }
+            .sidebar.collapsed .nav-item { justify-content: center; }
             .content { padding: 16px; }
             .header { padding: 16px; }
             .dashboard-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -156,10 +233,13 @@
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo" onclick="window.location.href='admin-index.html'" style="cursor: pointer;">
-            <i class="fas fa-home"></i> Horizon C2
-            <br><small>Commander - Property Management</small>
+    <div class="sidebar collapsed" id="sidebar">
+        <div class="logo" onclick="app.toggleSidebar()">
+            <i class="fas fa-bars"></i>
+            <div class="logo-text">
+                <i class="fas fa-home"></i> Horizon C2
+                <br><small>Commander - Property Management</small>
+            </div>
         </div>
         <div class="nav-menu">
             <div class="nav-section"><div class="nav-section-title">📊 DASHBOARD</div>
@@ -192,7 +272,6 @@
         <div class="header">
             <h1 id="pageTitle">Dashboard</h1>
             <div class="header-right">
-                <button class="back-btn" onclick="window.location.href='admin-index.html'"><i class="fas fa-home"></i> Terug naar overzicht</button>
                 <button class="switch-btn" onclick="app.switchToAuto()"><i class="fas fa-car"></i> Auto Dealer</button>
                 <button class="switch-taxi-btn" onclick="app.switchToTaxi()"><i class="fas fa-taxi"></i> Taxi Paneel</button>
                 <button class="export-btn" onclick="app.exportToCSV()"><i class="fas fa-file-csv"></i> Export CSV</button>
@@ -309,6 +388,12 @@
             toggleFlip(card) { 
                 this.flipStates[card] = !this.flipStates[card]; 
                 if (this.currentTab === 'dashboard') this.renderDashboard(); 
+            },
+            
+            // ========== SIDEBAR TOGGLE ==========
+            toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('collapsed');
             },
             
             // ========== DATA LADEN ==========
@@ -1025,11 +1110,11 @@
                     tbody.innerHTML = filtered.map(b => `
                         <tr>
                             <td><strong>${this.escapeHtml(b.boekingsnummer || '-')}</strong></td>
-                            <td>${this.escapeHtml(b.gast_naam)}</span></td>
-                            <td><span class="badge ${b.team === 'TA' ? 'badge-ta' : 'badge-tb'}">${b.team || '-'}</span></span></td>
-                            <td>${b.check_in || '-'}</span></td>
-                            <td>${b.check_out || '-'}</span></td>
-                            <td>${this.formatPrice(b.totaalprijs)}</span></td>
+                            <td>${this.escapeHtml(b.gast_naam)}</td>
+                            <td><span class="badge ${b.team === 'TA' ? 'badge-ta' : 'badge-tb'}">${b.team || '-'}</span></td>
+                            <td>${b.check_in || '-'}</td>
+                            <td>${b.check_out || '-'}</td>
+                            <td>${this.formatPrice(b.totaalprijs)}</td>
                         </tr>
                     `).join('');
                 }
@@ -1097,11 +1182,13 @@
             switchToAuto() { window.location.href = 'autodealerpaneel.html'; },
             switchToTaxi() { window.location.href = 'onderaannemerA.html'; },
             
+            // ======================== AANGEPASTE LOGOUT ========================
             logout() {
                 if (confirm('Weet u zeker dat u wilt uitloggen?')) {
-                    window.location.href = 'admin-index.html';
+                    window.location.href = 'admin-index.html';   // <-- gewijzigd van index.html naar admin-index.html
                 }
             },
+            // ====================================================================
             
             refresh() {
                 this.loadAllData();
