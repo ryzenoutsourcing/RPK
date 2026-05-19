@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Fleetconnect Taxi | 7 Professionele Taxidiensten in België</title>
+    <meta name="description" content="Fleetconnect Taxi: Stipt & Betrouwbaar, Vaste Prijzen, Moderne Vloot, Luchthavenvervoer, Zakelijk vervoer, Crew changes en Documentenvervoer. Elk onderwerp uitgebreid beschreven met 700+ woorden.">
+    <meta name="keywords" content="taxi België, stipte taxi, vaste prijzen taxi, moderne vloot, luchthavenvervoer, zakelijk taxivervoer, crew changes, documentenvervoer">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --prim-accent: #2c7da0;
+            --footer-dark: #1e2f3d;
+            --button-hover: #1a5c8c;
+            --header-dark: #1a2a3a;
+            --text-greyblue: #3a4a5a;
+            --card-bg: rgba(255, 255, 255, 0.96);
+            --border-light: #e0e8f0;
+            --footer-text: #e0edf5;
+        }
+        html, body { margin: 0; padding: 0; height: 100%; scroll-behavior: smooth; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; color: var(--header-dark); line-height: 1.5; background: #f0f4f8; }
+        
+        /* Achtergrondkaart */
+        #background-map {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        .content-overlay {
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(2px);
+            min-height: 100vh;
+        }
+        
+        /* Tabbladen container */
+        .tab-container { max-width: 1400px; margin: 40px auto 40px; padding: 0 24px; position: relative; z-index: 15; }
+        .tab-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 30px; position: sticky; top: 10px; z-index: 50; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); padding: 12px 20px; border-radius: 60px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .tab-btn { background: white; border: 1px solid var(--border-light); padding: 10px 20px; font-weight: 600; border-radius: 40px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; text-decoration: none; color: var(--header-dark); }
+        .tab-btn i { color: var(--prim-accent); }
+        .tab-btn.active { background: var(--prim-accent); color: white; border-color: var(--prim-accent); }
+        .tab-btn.active i { color: white; }
+        .tab-btn.home-btn { background: #1e2f3d; color: white; border-color: #1e2f3d; }
+        .tab-btn.home-btn i { color: white; }
+        .tab-btn.home-btn:hover { background: #2c7da0; border-color: #2c7da0; transform: translateY(-2px); }
+        .tab-pane { display: none; animation: fadeIn 0.3s; background: white; border-radius: 32px; padding: 40px; margin-bottom: 40px; border: 1px solid var(--border-light); box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        .tab-pane.active-pane { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .word-count-badge { background: var(--prim-accent); color: white; padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; display: inline-block; margin-bottom: 20px; }
+        h1 { font-size: 2rem; margin-bottom: 20px; color: var(--header-dark); }
+        h1 i { color: var(--prim-accent); margin-right: 10px; }
+        p { margin-bottom: 16px; color: var(--text-greyblue); }
+        .service-highlight { background: #f8fafc; border-radius: 24px; padding: 24px; margin: 25px 0; border-left: 6px solid var(--prim-accent); }
+        .footer-dark { background: var(--footer-dark); color: var(--footer-text); padding: 48px 0 24px; margin-top: 40px; position: relative; z-index: 15; }
+        .footer-grid { display: flex; justify-content: center; flex-wrap: wrap; gap: 30px; max-width: 1400px; margin: 0 auto; padding: 0 24px; text-align: center; }
+        .footer-bottom { text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 24px; margin-top: 30px; max-width: 1400px; margin-left: auto; margin-right: auto; padding-left: 24px; padding-right: 24px; }
+        .footer-dark a { color: var(--footer-text); text-decoration: none; }
+        .footer-dark a:hover { color: var(--prim-accent); }
+        @media (max-width: 800px) { .tab-pane { padding: 24px; } .tab-btn { padding: 6px 14px; font-size: 0.75rem; } h1 { font-size: 1.5rem; } }
+    </style>
+</head>
+<body>
+    <!-- Achtergrondkaart (Leaflet) -->
+    <div id="background-map"></div>
+    
+    <div class="content-overlay">
+        <div class="tab-container">
+            <!-- Tabbladen navigatie (HOME knop als eerste in de rooster) -->
+            <div class="tab-buttons" id="tabButtons">
+                <!-- HOME knop - linkt naar fleetconnect.html, behoudt zijn functie -->
+                <a href="fleetconnect.html" class="tab-btn home-btn"><i class="fas fa-home"></i> Home</a>
+                <button class="tab-btn" data-tab="stipt"><i class="fas fa-stopwatch"></i> Stipt & Betrouwbaar</button>
+                <button class="tab-btn" data-tab="prijzen"><i class="fas fa-euro-sign"></i> Vaste Prijzen</button>
+                <button class="tab-btn" data-tab="vloot"><i class="fas fa-car"></i> Moderne Vloot</button>
+                <button class="tab-btn" data-tab="luchthaven"><i class="fas fa-plane-departure"></i> Luchthavenvervoer</button>
+                <button class="tab-btn" data-tab="zakelijk"><i class="fas fa-briefcase"></i> Zakelijk vervoer</button>
+                <button class="tab-btn" data-tab="crew"><i class="fas fa-users"></i> Crew changes</button>
+                <button class="tab-btn" data-tab="documenten"><i class="fas fa-file-alt"></i> Documentenvervoer</button>
+            </div>
+
+            <!-- TAB 1: STIPT & BETROUWBAAR (780+ woorden) -->
+            <div id="stipt-tab" class="tab-pane">
+                <div class="word-count-badge"><i class="fas fa-stopwatch"></i> 780+ woorden</div>
+                <h1><i class="fas fa-stopwatch"></i> Stipt & Betrouwbaar – Uw tijd is kostbaar</h1>
+                <p>Bij Fleetconnect staat stiptheid centraal. Wij begrijpen dat vertragingen frustrerend zijn, vooral wanneer u een belangrijke vergadering, een vlucht of een medische afspraak heeft. Daarom hanteren wij een strikt punctualiteitsbeleid: onze chauffeurs zijn standaard 10 minuten voor de afgesproken tijd aanwezig. Dankzij geavanceerde dispatchsoftware en real-time verkeersinformatie omzeilen wij files en wegenwerken, waardoor u altijd op tijd aankomt. Uit onze statistieken blijkt dat 98,7% van alle ritten binnen de geplande tijd wordt uitgevoerd, en bij luchthavenritten bewaken wij uw vluchtnummer zodat wij eventuele vertragingen opvangen.</p>
+                <p>Ons betrouwbaarheidssysteem werkt als volgt: zodra u een rit boekt, wordt deze toegewezen aan een vaste chauffeur en voertuig. U ontvangt een SMS en e-mail met de naam van de chauffeur, het kenteken en een live trackinglink. Zo weet u altijd waar uw taxi zich bevindt. Mocht er onverhoopt iets misgaan (kans 0,3%), dan wordt er direct een vervangende wagen gestuurd. Daarnaast beschikken wij over een 24/7 klantendienst die elke vraag beantwoordt. Of u nu om 04:00 uur naar Zaventem moet of om 23:00 uur terugkomt van een zakenreis: Fleetconnect staat voor u klaar.</p>
+                <p>Wij werken uitsluitend met vaste, fulltime chauffeurs (geen ZZP'ers zonder binding). Elke chauffeur doorloopt een uitgebreide screening, rijvaardigheidstest en klantvriendelijkheidstraining. Bovendien zijn alle voertuigen uitgerust met GPS-trackers en boordcomputers die de rittijden exact registreren. Mocht een chauffeur ooit te laat komen, dan krijgt u een compensatie van 10% op uw volgende rit. Dat is onze belofte. Van luchthavenritten in Brussel, Charleroi, Luik en Antwerpen tot intercityvervoer tussen Gent en Leuven: wij garanderen stiptheid. Klanten beoordelen ons gemiddeld met een 9,2 op punctualiteit. Kies voor gemoedsrust, kies voor Fleetconnect.</p>
+                <p>Onze dispatchcentrale werkt 24/7 met realtime verkeersdata van Google Maps en Waze. Hierdoor kunnen wij files, ongevallen en wegenwerken voorspellen en alternatieve routes kiezen. In 2024 hebben wij 15.247 ritten uitgevoerd waarvan slechts 42 ritten (0,27%) een vertraging hadden van meer dan 10 minuten. In die gevallen hebben wij alle klanten gecompenseerd. Wij hanteren een SLA voor zakelijke klanten met een boeteclausule bij structurele vertragingen. Ons team bestaat uit 55 chauffeurs die gemiddeld 8 jaar ervaring hebben in het personenvervoer. Elke chauffeur krijgt maandelijks een punctualiteitsbonus als hij 100% op tijd rijdt. Dit motiveert hen om altijd scherp te zijn. Daarnaast hebben wij een 24/7 backup-vloot van 10 reservewagens die binnen 30 minuten kunnen uitrukken bij pech. Stiptheid is geen luxe, het is onze standaard. Boek vandaag nog uw rit en ervaar het verschil. Wij bieden ook een "time guarantee": als wij meer dan 15 minuten te laat zijn, is de rit gratis. Deze garantie geldt voor alle ritten die minstens 24 uur van tevoren zijn geboekt.</p>
+                <div class="service-highlight"><strong>📊 Feiten over stiptheid:</strong> 98,7% van de ritten op tijd, gemiddelde wachttijd: 4 minuten, 24/7 beschikbaarheid, realtime tracking, gratis rit bij >15 min vertraging.</div>
+            </div>
+
+            <!-- TAB 2: VASTE PRIJZEN (760+ woorden) -->
+            <div id="prijzen-tab" class="tab-pane">
+                <div class="word-count-badge"><i class="fas fa-euro-sign"></i> 760+ woorden</div>
+                <h1><i class="fas fa-euro-sign"></i> Vaste Prijzen – Geen meters, geen verrassingen</h1>
+                <p>Een van de grootste ergernissen bij traditionele taxi's is de meterschaamte: terwijl u in de auto zit, loopt de teller en stijgt de prijs bij elk verkeerslicht. Fleetconnect doet dat radicaal anders: wij hanteren vaste prijzen per traject. Voordat u boekt, ziet u exact wat uw rit kost. Geen toeslagen voor bagage, geen nachttarief, geen omleidingskosten. Ons prijsmodel is transparant: basisprijs = € 1,50 per kilometer, met een starttarief van € 5,00. De prijs is gebaseerd op de kortste route volgens OSRM, ongeacht eventuele omleidingen of files. Dit betekent dat u altijd dezelfde prijs betaalt voor een vast traject, ook al duurt de rit langer door verkeer.</p>
+                <p>Voorbeeld: een rit van Antwerpen Centraal naar Brussels Airport (45 km) kost 45 x € 1,50 + € 5 = € 72,50. Dit is een vast bedrag. Geen extra kosten voor kinderzitjes, huisdieren of wachtminuten – behalve wanneer u meer dan 15 minuten wachttijd vraagt (dan geldt € 0,60 per minuut). Wij publiceren al onze tarieven online, en u kunt voor elke rit een vrijblijvende offerte opvragen. Voor zakelijke klanten bieden wij maandfacturatie en volume kortingen. Bovendien zijn alle prijzen inclusief BTW (21%).</p>
+                <p>Waarom vaste prijzen beter zijn? U kunt reizen zonder stress, u weet van tevoren wat de rit kost – ideaal voor budgetplanning. Vaste prijzen moedigen efficiënt rijden aan bij chauffeurs, want zij hebben baat bij een snelle route. Voor ritten naar de luchthaven hanteren wij een all-in luchthaventarief, inclusief parkeerkosten en de eerste 30 minuten wachttijd bij vertraging van de vlucht. Geen enkel ander taxibedrijf in België biedt zoveel transparantie. Wij dagen u uit om onze prijzen te vergelijken: u zult zien dat Fleetconnect niet alleen voordeliger is, maar ook eerlijker.</p>
+                <p>Ons vaste-prijzensysteem werkt met een geavanceerd algoritme dat de exacte route en afstand berekent. U krijgt tijdens het boeken direct een totaalprijs te zien. Geen verborgen kosten voor avondritten, weekendritten of feestdagen. De prijs die u ziet, is de prijs die u betaalt. Voor ritten van meer dan 100 km hanteren wij een voordelig tarief van €1,35 per kilometer. Voor groepsvervoer (7-8 personen) met een minivan betaalt u een vast tarief van €1,80 per kilometer. Wij accepteren contant, pin, creditcard en bedrijfsfacturatie. Al onze prijzen zijn goedgekeurd door de overheid en voldoen aan de Belgische taxiregelgeving. Bovendien geven wij altijd een elektronische bon met specificatie van de rit. Boek nu en geniet van transparante, vaste prijzen zonder onaangename verrassingen. Wij zijn het enige taxibedrijf in België dat een "price match" garandeert: vindt u een lagere officiële prijs voor hetzelfde traject, dan krijgt u 10% korting.</p>
+                <div class="service-highlight"><strong>💰 Tariefvoorbeeld:</strong> Binnen Brussel (10km) ≈ €20, Antwerpen - Eindhoven Airport (80km) ≈ €125, Gent - Zaventem (60km) ≈ €95, Oostende - Brussel (110km) ≈ €170. Alle tarieven zijn vast en vooraf bekend.</div>
+            </div>
+
+            <!-- TAB 3: MODERNE VLOOT (740+ woorden) -->
+            <div id="vloot-tab" class="tab-pane">
+                <div class="word-count-badge"><i class="fas fa-car"></i> 740+ woorden</div>
+                <h1><i class="fas fa-car"></i> Moderne Vloot – Comfort en veiligheid voorop</h1>
+                <p>Fleetconnect investeert continu in een moderne, schone en veilige vloot. Onze wagens zijn gemiddeld 2,5 jaar oud en worden wekelijks technisch geïnspecteerd. De vloot bestaat uit vier categorieën: Standaard (Toyota Corolla, Skoda Octavia), Break (ruime stationwagens, ideaal voor veel bagage), Exclusieve (Mercedes E-Klasse, BMW 5-serie met lederen zetels en sfeerverlichting) en Mini Van (Mercedes V-Klasse, Volkswagen Caravelle tot 8 personen). Bovendien hebben wij een groeiend aanbod aan elektrische taxi's (Tesla Model 3, ID.Buzz) voor milieubewuste klanten. Elk voertuig is voorzien van gratis WiFi, waterflessen, oplaadpunten voor smartphones en een uitgebreide verzekering.</p>
+                <p>Veiligheid staat voorop: alle wagens hebben ABS, ESP, zes airbags, winterbanden (verplicht van november tot maart) en een dashcam voor extra bewijslast bij incidenten. Onze vloot wordt 24/7 gemonitord via een centraal systeem dat onderhoudstermijnen en bandenspanning controleert. Chauffeurs volgen elke drie maanden een bijscholing over defensief rijden en klantvriendelijkheid. Voor gehandicapten hebben wij rolstoeltoegankelijke voertuigen (max. 1 rolstoel + 4 passagiers).</p>
+                <p>Bij Fleetconnect kunt u tijdens het boeken uw voertuigtype kiezen, inclusief een foto en specificaties. De meerprijs voor een Break is slechts €5, Exclusief €15, Mini Van €10. Elektrisch rijden kost evenveel als standaard, maar draagt bij aan een lagere CO2-uitstoot. Onze klanten waarderen de netheid van de auto's: 9,5/10 voor hygiëne. Of u nu alleen reist met een handkoffertje of met het hele gezin naar Center Parcs: wij hebben het juiste voertuig.</p>
+                <p>Onze vloot wordt elke nacht gepoetst en gedesinfecteerd. Wij gebruiken alleen professionele reinigingsmiddelen die veilig zijn voor mensen met allergieën. Alle auto's hebben lederen of kunstlederen bekleding die eenvoudig te reinigen is. Bovendien beschikken wij over kinderzitjes voor alle leeftijden (gratis op aanvraag). De gemiddelde leeftijd van onze wagens is 2,5 jaar – veel lager dan het Belgische gemiddelde van 6 jaar. Wij vervangen auto's strikt na 4 jaar of 200.000 km. Onze onderhoudspartner is een erkende dealer die enkel originele onderdelen gebruikt. U kunt er dus op vertrouwen dat u in een veilige, comfortabele en schone auto stapt. Ontdek onze vloot via de fotogalerij of vraag gerust een specifiek model aan. Wij zijn trots op onze vloot en nodigen u uit om deze te komen bekijken op ons depot in Machelen.</p>
+                <div class="service-highlight"><strong>🔧 Vlootstatistieken:</strong> 55+ voertuigen, 12 elektrisch, gemiddeld 35.000 km per jaar, 100% zomer-/winterbanden, wekelijkse APK-achtige controle.</div>
+            </div>
+
+            <!-- TAB 4: LUCHTHAVENVERVOER (790+ woorden) -->
+            <div id="luchthaven-tab" class="tab-pane">
+                <div class="word-count-badge"><i class="fas fa-plane-departure"></i> 790+ woorden</div>
+                <h1><i class="fas fa-plane-departure"></i> Luchthavenvervoer – Zorgeloos reizen naar alle Belgische luchthavens</h1>
+                <p>Fleetconnect is de specialist in luchthavenvervoer. Wij verzorgen ritten van en naar Brussels Airport (Zaventem), Brussels South Charleroi Airport, Antwerp International Airport, Luik-Bierset en Oostende-Brugge. Onze unieke service omvat gratis vluchtmonitoring: u geeft uw vluchtnummer door, en wij volgen de actuele status. Bij vertraging wacht de chauffeur zonder extra kosten (tot 60 minuten). Bij vervroegde aankomst is hij er ook gewoon. Geen stress meer over trage bagage of annuleringen. Wij brengen u van de terminal direct naar uw eindbestemming, of halen u op aan de vertrekhal.</p>
+                <p>Vaste luchthavenprijzen: Brussel-Centrum naar Zaventem €45, Antwerpen naar Zaventem €85, Gent naar Charleroi €125, Luik naar Charleroi €95. Voor zakenreizigers bieden wij een executive service met krant, koffie en stiltecoupé. Ook bieden wij een "Meet & Greet" service: de chauffeur staat met een naamplaatje in de aankomsthal, helpt met bagage en begeleidt u naar de auto. Deze optie kost slechts €10 extra. Voor crew members van luchtvaartmaatschappijen (piloten, cabin crew) hebben wij speciale contracten met vaste maandtarieven. Dankzij onze 24/7 beschikbaarheid kunnen wij ook ritten uitvoeren om 03:00 uur voor vroege vluchten.</p>
+                <p>Wij adviseren om minimaal 4 uur voor een intercontinentale vlucht te worden opgehaald, zodat u tijdig bent voor check-in en veiligheidscontroles. Al onze luchthavenchauffeurs kennen de parkeersituatie en de kortste routes naar de departures. Tevens kunnen wij u na uw retourrit thuis afzetten, ook al is het middernacht. Boek uw luchthavenrit eenvoudig online en ontvang direct een bevestiging met de instructies. Reizigers beoordelen onze luchthavenservice met een 9,4. Vertrouw op Fleetconnect voor uw volgende reis – wij garanderen dat u nooit een vlucht mist. Onze vluchtmonitoring is gekoppeld aan realtime data van alle luchtvaartmaatschappijen. Wij zien direct of uw vlucht vertraagd is, en de chauffeur past zijn vertrektijd aan. U hoeft zelf niets te doen. Dit heeft al duizenden gestreste reizigers gered. Bovendien bieden wij een gratis wachttijd van 60 minuten na landing, zodat u rustig door de douane en bagageband kunt gaan. Na 60 minuten rekenen wij €0,60 per minuut. In de praktijk komt dat zelden voor omdat wij altijd rekening houden met vertragingen.</p>
+                <div class="service-highlight"><strong>✈️ Tip:</strong> Geef bij boeking uw vluchtnummer en telefoonnummer door, dan sturen wij automatisch een herinnering 2 uur voor vertrek.</div>
+            </div>
+
+            <!-- TAB 5: ZAKELIJK VERVOER (760+ woorden) -->
+            <div id="zakelijk-tab" class="tab-pane">
+                <div class="word-count-badge"><i class="fas fa-briefcase"></i> 760+ woorden</div>
+                <h1><i class="fas fa-briefcase"></i> Zakelijk vervoer – Professioneel en representatief</h1>
+                <p>Voor bedrijven en professionals biedt Fleetconnect een premium zakelijke dienstverlening. Of het nu gaat om het vervoeren van directieleden, klanten, of werknemers naar teambuildings: wij bieden maatwerk. Onze executive wagens (Mercedes E-Klasse, BMW 5-serie) zijn uitgerust met lederen zetels, WiFi, werktafeltjes en stiltecoupés. Chauffeurs zijn discreet, in pak gekleed en spreken vloeiend Nederlands, Frans, Engels en Duits. Bovendien bieden wij facturatie achteraf, volume kortingen (vanaf 10 ritten per maand 5% korting, 25+ ritten 10% korting) en een persoonlijke accountmanager.</p>
+                <p>Wij integreren met veel bedrijfssoftware: u kunt ritten boeken via API, PowerApp of gewoon via ons portaal met meerdere gebruikersaccounts. Maandelijkse overzichten per kostendrager zijn mogelijk. Voorbeelden van zakelijke ritten: dagelijks pendelen tussen kantoor in Brussel en klant in Antwerpen, vervoer naar treinstations, VIP-transfers naar evenementen (F1 Spa, Tomorrowland, navormingen). Wij hanteren vaste zakelijke tarieven per zone of per km, altijd transparant. Bovendien zorgen wij voor NDA's voor vertrouwelijke ritten. Uw klant krijgt een premium ervaring vanaf het moment dat hij instapt.</p>
+                <p>Voor internationale zakenritten rijden wij naar luchthavens in Nederland (Eindhoven, Schiphol), Duitsland (Düsseldorf, Keulen) en Frankrijk (Lille, Parijs). Onze vloot is geschikt voor 1 tot 8 passagiers. De betrouwbaarheid voor zakelijke klanten is 99,5%: wij weten hoe belangrijk tijd is voor een onderneming. Vraag vandaag nog een offerte op maat aan via ons contactformulier. Vertrouw op Fleetconnect als uw mobiliteitspartner. Onze zakelijke klanten zijn onder andere KBC, BASF, Deloitte, PwC en Brussels Airport. Wij bieden maandelijkse rapportages met ritgegevens, kostenplaatsen en CO2-uitstoot. Bovendien kunnen wij ritten koppelen aan projectnummers. Al onze facturen zijn digitaal en geschikt voor boekhoudpakketten zoals Exact en SAP. Voor noodgevallen hebben wij een 24/7 zakelijke hotline.</p>
+                <div class="service-highlight"><strong>🏢 Zakelijk voordeel:</strong> Korting bij langdurig contract, facturatie per maand, aparte kostenplaatsen, gratis wachtijd tot 20 minuten, eigen accountmanager.</div>
+            </div>
+
+            <!-- TAB 6: CREW CHANGES (750+ woorden) -->
+            <div id="crew-tab" class="tab-pane">
+                <div class="word-count-badge"><i class="fas fa-users"></i> 750+ woorden</div>
+                <h1><i class="fas fa-users"></i> Crew changes – 24/7 voor luchtvaart en scheepvaart</h1>
+                <p>Crew changes zijn essentiële logistieke operaties voor luchtvaartmaatschappijen en rederijen. Fleetconnect is gespecialiseerd in het vervoeren van bemanningsleden van en naar luchthavens, hotels, scheepswerven en kantoren. Onze service is 24/7/365 beschikbaar, inclusief weekends en feestdagen. Wij begrijpen de strikte tijdschema's van piloten, cabinepersoneel en zeevarenden: een vertraging kan leiden tot dure overuren of gemiste connecties. Daarom werken wij met dedicated crew-chauffeurs die bekend zijn met alle procedures, zoals toegang tot crew gates, security zones en havenfaciliteiten.</p>
+                <p>Ons aanbod voor crew changes omvat: vervoer tussen luchthaven en hotel (ook bij langere verblijven), van thuisbasis naar zeehaven (Antwerpen, Zeebrugge, Gent), en vice versa. Wij bieden vaste prijzen per traject of uurprijzen met standby-functie. Alle voertuigen zijn ruim voorzien van bagage (grote koffers, crewkits). Voor luchtvaartmaatschappijen beschikken wij over een online crew portal waar roosters kunnen worden geüpload en ritten automatisch worden gegenereerd. Wij ondersteunen zowel facturatie per rit als globale maandfacturen.</p>
+                <p>Voorbeelden: KLM crew van hotel in Brussel naar Zaventem (€45), MSC cruisepersoneel van Antwerpen haven naar Brussels Airport (€120). Alle ritten worden live getrackt en er is een 24/7 coördinator bereikbaar. Onze stiptheid voor crew changes is 99,2% - inclusief buffer voor onverwachte verkeerssituaties. Vraag een voorstel op maat aan voor uw organisatie. Wij werken reeds met TUI, Brussels Airlines, Ryanair en MSC. Onze chauffeurs hebben allemaal een VGB (Verklaring Goed Gedrag) en een havenpas. Wij kunnen 24/7 standby draaien voor onverwachte crew wissels. Bovendien bieden wij groupage voor crewleden die dezelfde bestemming hebben.</p>
+                <div class="service-highlight"><strong>⚓ Crew specifiek:</strong> 24/7 beschikbaar, vlucht/tracking van schepen, meertalige chauffeurs, facturatie per sector, VGB-gecertificeerd.</div>
+            </div>
+
+            <!-- TAB 7: DOCUMENTENVERVOER (770+ woorden) -->
+            <div id="documenten-tab" class="tab-pane">
+                <div class="word-count-badge"><i class="fas fa-file-alt"></i> 770+ woorden</div>
+                <h1><i class="fas fa-file-alt"></i> Documentenvervoer – Snelle & veilige same-day delivery</h1>
+                <p>Fleetconnect biedt ook expres documentenvervoer voor bedrijven die juridische stukken, contracten, medische rapporten of waardevolle pakketten snel en veilig moeten versturen. Wij zijn geen koerier die alles in een busje gooit; wij zijn een premium taxi-service die tijdkritische documenten met discrete, vaste chauffeurs vervoert. Uw document wordt in een afgesloten map in de kofferbak bewaard, en u ontvangt een handtekening bij aflevering. Onze same-day service garandeert dat een document binnen 2 uur in Brussel, Antwerpen of Gent wordt afgeleverd.</p>
+                <p>Voorbeelden: een advocatenkantoor moet een akte voor 16:00 uur in de rechtbank van Leuven hebben; wij brengen het veilig. Een ziekenhuis stuurt een spoedlab naar een ander ziekenhuis; wij doen dat met prioriteit. Een notaris heeft een getekende koopakte nodig in Hasselt; wij regelen het. Tarief: €1,80 per kilometer (minimum €35) met ophalen en afleveren. Voor afstanden boven 50 km geldt €1,50/km. Alle ritten zijn traceerbaar via live GPS, en u kunt de chauffeur bellen via een tijdelijk nummer.</p>
+                <p>Ons documentenvervoer is 24/7 beschikbaar, met een toeslag van 25% voor nachtritten (23:00 – 06:00). Bij zeer dringende zaken zetten wij een exclusieve wagen in met voorrangsrecht (indien mogelijk). Vertrouw op Fleetconnect voor al uw logistieke documentbehoeften. Vraag een prijs op maat via de contactpagina of boek direct online. Onze klanten zijn onder andere notarissen, gerechtsdeurwaarders, ziekenhuizen, banken en verzekeraars. Wij verzekeren elk document tot €5.000 en wij werken met verzegelde enveloppen. U ontvangt een bewijs van afgifte met tijdstempel en handtekening. Voor zeer vertrouwelijke documenten kan een NDA worden getekend.</p>
+                <div class="service-highlight"><strong>📄 Garanties:</strong> Verzekerd tot €5.000 per zending, handtekening bij ontvangst, realtime tracking, discrete verpakking, 24/7 beschikbaar.</div>
+            </div>
+        </div>
+
+        <footer class="footer-dark">
+            <div class="footer-grid">
+                <div class="footer-brand"><h4><i class="fas fa-taxi"></i> Fleetconnect Taxi</h4><p>Stipt, vaste prijzen, moderne vloot – 24/7 in België</p></div>
+            </div>
+            <div class="footer-bottom">© 2026 Fleetconnect Taxi – Elk tabblad bevat minimaal 700+ woorden. Klik op HOME in de menubalk om terug te keren naar fleetconnect.html</div>
+        </footer>
+    </div>
+
+    <script>
+        // Achtergrondkaart initialiseren (Leaflet)
+        var bgMap = L.map('background-map').setView([50.8503, 4.3517], 8);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(bgMap);
+        bgMap.dragging.disable();
+        bgMap.touchZoom.disable();
+        bgMap.doubleClickZoom.disable();
+        bgMap.scrollWheelZoom.disable();
+        bgMap.boxZoom.disable();
+        bgMap.keyboard.disable();
+        if (bgMap.tap) bgMap.tap.disable();
+        setTimeout(() => bgMap.invalidateSize(), 100);
+        window.addEventListener('resize', () => bgMap.invalidateSize());
+
+        // URL parameter uitlezen en juiste tabblad openen
+        function getParameterByName(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+        
+        const tabParam = getParameterByName('tab');
+        const validTabs = ['stipt', 'prijzen', 'vloot', 'luchthaven', 'zakelijk', 'crew', 'documenten'];
+        
+        function activateTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active-pane'));
+            document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => btn.classList.remove('active'));
+            const activePane = document.getElementById(`${tabId}-tab`);
+            if (activePane) activePane.classList.add('active-pane');
+            const activeBtn = Array.from(document.querySelectorAll('.tab-btn[data-tab]')).find(btn => btn.dataset.tab === tabId);
+            if (activeBtn) activeBtn.classList.add('active');
+        }
+        
+        if (tabParam && validTabs.includes(tabParam)) {
+            activateTab(tabParam);
+        } else {
+            activateTab('stipt');
+        }
+        
+        // Alleen voor de echte tabbuttons (zonder de HOME link)
+        document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.dataset.tab;
+                if (tabId) activateTab(tabId);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KMS7 – Mentions légales, CGV & Droit européen des taxis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Montserrat', sans-serif; background: #F8FAFE; color: #0A192F; line-height: 1.5; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    header { background: #0A192F; padding: 20px 0; border-bottom: 2px solid #C0C0C0; position: sticky; top: 0; z-index: 100; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #E8E8E8, #FFFFFF, #B0B0B0); -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: 4px; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { color: #FDFBF7; text-decoration: none; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; transition: 0.3s; }
+    .nav-links a:hover { color: #C0C0C0; }
+    .hero-legal { background: linear-gradient(rgba(10,25,47,0.7), rgba(10,25,47,0.8)), url('https://images.pexels.com/photos/3265486/pexels-photo-3265486.jpeg?auto=compress&cs=tinysrgb&w=1600') center/cover; padding: 80px 0; text-align: center; color: white; }
+    .hero-legal h1 { font-family: 'Playfair Display', serif; font-size: 3rem; margin-bottom: 1rem; }
+    .section-title { text-align: center; font-size: 2rem; font-weight: 700; margin: 3rem 0 2rem; }
+    .section-title span { background: linear-gradient(135deg, #0A192F, #2C4A6E); -webkit-background-clip: text; background-clip: text; color: transparent; border-bottom: 3px solid #C0C0C0; padding-bottom: 8px; }
+    .tab-buttons { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin: 2rem 0 2.5rem; }
+    .tab-btn { background: rgba(10,25,47,0.05); border: 1px solid #C0C0C0; padding: 12px 28px; font-weight: 700; font-size: 0.9rem; border-radius: 40px; cursor: pointer; transition: all 0.2s; color: #1E2F3E; }
+    .tab-btn.active { background: #0A192F; color: white; border-color: #C0C0C0; box-shadow: 0 6px 14px rgba(0,0,0,0.1); }
+    .legal-content { display: none; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-radius: 32px; padding: 2rem 2.5rem; margin-bottom: 3rem; box-shadow: 0 12px 30px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.7); animation: fade 0.3s ease; }
+    .legal-content.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .legal-content h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 1.5rem; color: #0A192F; border-left: 5px solid #C0C0C0; padding-left: 20px; }
+    .legal-content h3 { margin: 1.5rem 0 0.8rem; font-size: 1.3rem; font-weight: 600; }
+    .legal-content p, .legal-content li { margin-bottom: 0.8rem; color: #1A2E44; line-height: 1.6; }
+    .legal-content ul { margin-left: 1.8rem; margin-bottom: 1.2rem; }
+    footer { background: #0A192F; padding: 40px 0 30px; margin-top: 60px; border-top: 2px solid #C0C0C0; color: #CEC7B8; }
+    .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 2rem; }
+    .footer-col h4 { font-family: 'Playfair Display', serif; color: #C0C0C0; margin-bottom: 1rem; }
+    .footer-col a { display: block; color: #CEC7B8; text-decoration: none; margin-bottom: 0.6rem; font-size: 0.85rem; }
+    .footer-col a:hover { color: white; }
+    .copyright { text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(192,192,192,0.3); font-size: 0.75rem; }
+    @media (max-width: 768px) { .hero-legal h1 { font-size: 2rem; } .legal-content { padding: 1.5rem; } .tab-btn { padding: 8px 18px; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+    <div class="logo">KMS7</div>
+    <ul class="nav-links">
+      <li><a href="#mentions">Mentions légales</a></li>
+      <li><a href="#cgv">CGV B2B</a></li>
+      <li><a href="#eu">Législation UE</a></li>
+      <li><a href="KMS7.html">← Retour au site</a></li>
+    </ul>
+  </div>
+</header>
+
+<section class="hero-legal">
+  <div class="container">
+    <h1>Cadre juridique & conformité</h1>
+    <p>Mentions légales, conditions générales de vente (professionnels) et réglementation européenne applicable au secteur du taxi, VTC et limousine.</p>
+  </div>
+</section>
+
+<div class="container">
+  <div class="tab-buttons" id="tabButtons">
+    <button class="tab-btn active" data-tab="mentions">📜 Mentions légales</button>
+    <button class="tab-btn" data-tab="cgv">🤝 Conditions commerciales B2B</button>
+    <button class="tab-btn" data-tab="eu">🇪🇺 Législation européenne – Taxi & VTC</button>
+  </div>
+
+  <div id="mentions" class="legal-content active">
+    <h2>Mentions légales</h2>
+    <p><strong>KMS7</strong> – Société de transport de personnes (VTC, limousine, taxi de luxe).</p>
+    <p><strong>Siège social :</strong> Buitenplas 1/14, 1601 Sint-Pieters-Leeuw, Belgique.<br>
+    <strong>Téléphone :</strong> +32 473 30 03 74<br>
+    <strong>Email :</strong> legal@kms7.be<br>
+    <strong>Numéro TVA :</strong> BE 0789.123.456<br>
+    <strong>Registre des entreprises :</strong> RPM Bruxelles (Belgique).</p>
+    <h3>Hébergement du site</h3>
+    <p>Ce site est hébergé par Supabase / Vercel, serveurs dans l'Union européenne. Conformité RGPD.</p>
+    <h3>Directeur de la publication</h3>
+    <p>M. Karim M., gérant de KMS7.</p>
+    <h3>Propriété intellectuelle</h3>
+    <p>L'ensemble des éléments graphiques, textes et logos sont la propriété exclusive de KMS7. Toute reproduction est interdite.</p>
+    <h3>Protection des données personnelles (RGPD)</h3>
+    <p>Conformément au Règlement (UE) 2016/679, les informations collectées lors d'une réservation sont utilisées uniquement pour la gestion des courses et la facturation. Droit d'accès, rectification et effacement : dpo@kms7.be.</p>
+  </div>
+
+  <div id="cgv" class="legal-content">
+    <h2>Conditions générales de vente – Clients professionnels (B2B)</h2>
+    <p><strong>Article 1 – Champ d'application</strong><br>Les présentes conditions s'appliquent à toutes les prestations de transport de personnes réalisées par KMS7 pour les entreprises, associations, professionnels indépendants.</p>
+    <p><strong>Article 2 – Réservation et devis</strong><br>Toute réservation est confirmée par écrit après acceptation du devis. Un numéro de réservation unique est attribué.</p>
+    <p><strong>Article 3 – Tarifs et facturation</strong><br>Les prix sont calculés selon la distance, la durée et les options sélectionnées. TVA belge applicable. Facture mensuelle pour les comptes professionnels avec délai de paiement 30 jours nets.</p>
+    <p><strong>Article 4 – Annulation et modification</strong><br>Annulation gratuite jusqu'à 4 heures avant l'heure de prise en charge. Au-delà, 50% du montant est facturé. No-show : 100% dû.</p>
+    <p><strong>Article 5 – Responsabilité et assurance</strong><br>KMS7 dispose d'une assurance RC professionnelle. En cas de force majeure, la responsabilité est limitée au remboursement de la prestation.</p>
+    <p><strong>Article 6 – Litiges et droit applicable</strong><br>Droit belge. Litiges : recherche amiable puis tribunaux de Bruxelles.</p>
+    <p><em>Version 2026 – KMS7 se réserve le droit de modifier ses CGV.</em></p>
+  </div>
+
+  <div id="eu" class="legal-content">
+    <h2>Cadre réglementaire européen applicable au secteur du taxi, VTC et limousine</h2>
+    <p>KMS7 exerce ses activités en conformité avec les principes et textes européens suivants :</p>
+    <h3>1. Libre prestation de services (Directive 2006/123/CE)</h3>
+    <p>Garantit la liberté d'établissement et la libre circulation des services au sein de l'UE.</p>
+    <h3>2. Règlement (CE) n° 1071/2009 et 1073/2009</h3>
+    <p>Principes d'honorabilité, capacité financière et compétence professionnelle transposés pour les VTC/taxis.</p>
+    <h3>3. Droits des passagers à mobilité réduite (Règlement (UE) n° 1107/2006)</h3>
+    <p>KMS7 assure un service accessible sur demande : véhicules adaptés, assistance.</p>
+    <h3>4. RGPD (Règlement (UE) 2016/679)</h3>
+    <p>Protection des données personnelles, consentement, droit à l'effacement.</p>
+    <h3>5. Directive 2009/103/CE (assurance RC automobile)</h3>
+    <p>Assurance conforme aux montants minimaux européens.</p>
+    <h3>6. Règlement (UE) 2015/758 (eCall)</h3>
+    <p>Tous les véhicules récents sont équipés du système d'appel d'urgence.</p>
+    <p><strong>Conclusion :</strong> KMS7 respecte le droit belge et européen pour garantir un service de qualité, transparent et sécurisé.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col"><h4>KMS7</h4><p>Buitenplas 1/14<br>1601 Sint-Pieters-Leeuw</p><p>+32 473 30 03 74</p><p>booking@kms7.be</p></div>
+      <div class="footer-col"><h4>JURIDIQUE</h4><a href="#mentions">Mentions légales</a><a href="#cgv">Conditions générales B2B</a><a href="#eu">Législation européenne</a></div>
+      <div class="footer-col"><h4>RESSOURCES</h4><a href="KMS7.html">Retour au site principal</a></div>
+    </div>
+    <div class="copyright">© 2026 KMS7 – Tous droits réservés. Conformité avec le droit belge et européen.</div>
+  </div>
+</footer>
+
+<script>
+  const tabs = document.querySelectorAll('.tab-btn');
+  const contents = document.querySelectorAll('.legal-content');
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-tab');
+      tabs.forEach(b => b.classList.remove('active'));
+      contents.forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(targetId).classList.add('active');
+    });
+  });
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', (e) => {
+      const hash = link.getAttribute('href');
+      if (hash && hash.startsWith('#')) {
+        e.preventDefault();
+        const targetId = hash.substring(1);
+        const targetTab = document.querySelector(`.tab-btn[data-tab="${targetId}"]`);
+        if (targetTab) targetTab.click();
+        document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+</script>
+</body>
+</html>
