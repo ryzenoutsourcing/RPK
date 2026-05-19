@@ -206,6 +206,13 @@
             <div id="totalDisplay" class="total-display">Totaal: € 0,00</div>
             <button id="finalConfirmBtn" class="btn-primary" style="width:100%">✅ Bevestig boeking</button>
             <div id="page5Error" class="error"></div>
+            
+            <!-- HIDDEN INPUTS VOOR SUPABASE -->
+            <input type="hidden" id="hiddenCustomerId">
+            <input type="hidden" id="hiddenFormData">
+            <input type="hidden" id="hiddenCreatedAt">
+            <input type="hidden" id="hiddenPartnerId" value="1">
+            <input type="hidden" id="hiddenAssignedDriverId">
         </div>
         
         <div class="nav-buttons"><button class="nav-btn prev" id="prevBtn" disabled>◀ Vorige</button><button class="nav-btn next" id="nextBtn">Volgende ▶</button></div>
@@ -227,7 +234,7 @@
 <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
     
-    // WERKENDE Supabase configuratie
+    // Supabase configuratie
     const SUPABASE_URL = 'https://rreqjjrmvytnwnsidmqi.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyZXFqanJtdnl0bnduc2lkbXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjAxMzcsImV4cCI6MjA5Mzk5NjEzN30.q4M3A6Dix3F_9Im2pw8DUIeE4C-INtUlvImRDM58MTA';
     
@@ -252,6 +259,7 @@
     if (sidebarOverlay) sidebarOverlay.addEventListener('click', function(e) { if (e.target === sidebarOverlay) closeMenu(); });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && sidebarOverlay && sidebarOverlay.classList.contains('active')) closeMenu(); });
     
+    // BOEKINGSNUMMER
     function generateBookingId() {
         const now = new Date();
         const yyyy = now.getFullYear();
@@ -260,8 +268,7 @@
         let counter = parseInt(localStorage.getItem('bookingCounter') || '0');
         counter++;
         localStorage.setItem('bookingCounter', counter);
-        const formatted = String(counter).padStart(3, '0');
-        return `T-PV-${yyyy}${mm}${dd}-${formatted}`;
+        return `T-PV-${yyyy}${mm}${dd}-${String(counter).padStart(3, '0')}`;
     }
     
     function getExtrasString() {
@@ -296,16 +303,28 @@
         return diff > 0 && diff < 3600000;
     }
     
-    // AUTOCOMPLETE FUNCTIES
-    async function fetchAddresses(q, wid) {
-        if (q.length < 3) { clearSuggestions(wid); return; }
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&countrycodes=be&accept-language=nl`;
+    // --- AUTOCOMPLETE (geoptimaliseerd) ---
+    async function fetchAddresses(query, wrapId) {
+        if (query.length < 3) {
+            clearSuggestions(wrapId);
+            return;
+        }
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=be&accept-language=nl&addressdetails=1`;
         try {
-            const response = await fetch(url, { headers: { 'User-Agent': 'Fleetconnect/2.0' } });
-            if (!response.ok) throw new Error();
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            const response = await fetch(url, { 
+                signal: controller.signal,
+                headers: { 'User-Agent': 'Fleetconnect/2.0' }
+            });
+            clearTimeout(timeoutId);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
-            if (!data.length) { showTempMsg(wid, 'Geen adres in België'); return; }
-            const wrapper = document.getElementById(wid);
+            if (!data.length) {
+                showTempMsg(wrapId, 'Geen adressen gevonden in België');
+                return;
+            }
+            const wrapper = document.getElementById(wrapId);
             const suggestionsDiv = wrapper.querySelector('.suggestions');
             suggestionsDiv.innerHTML = '';
             data.forEach(place => {
@@ -313,36 +332,50 @@
                 div.className = 'suggestion-item';
                 div.setAttribute('data-lat', place.lat);
                 div.setAttribute('data-lon', place.lon);
-                div.textContent = place.display_name.length > 80 ? place.display_name.slice(0, 80) + '…' : place.display_name;
-                div.onclick = (function(lat, lon, name) {
+                div.textContent = place.display_name.length > 80 ? place.display_name.substring(0, 80) + '…' : place.display_name;
+                div.addEventListener('click', (function(lat, lon, name) {
                     return function() {
-                        document.getElementById(wid === 'pickupWrap' ? 'pickupInput' : 'dropoffInput').value = name;
-                        if (wid === 'pickupWrap') { pickupCoord = { lat: parseFloat(lat), lon: parseFloat(lon) }; }
-                        else { dropoffCoord = { lat: parseFloat(lat), lon: parseFloat(lon) }; }
+                        const inputField = wrapId === 'pickupWrap' ? document.getElementById('pickupInput') : document.getElementById('dropoffInput');
+                        inputField.value = name;
+                        if (wrapId === 'pickupWrap') {
+                            pickupCoord = { lat: parseFloat(lat), lon: parseFloat(lon) };
+                        } else {
+                            dropoffCoord = { lat: parseFloat(lat), lon: parseFloat(lon) };
+                        }
                         suggestionsDiv.style.display = 'none';
                         if (pickupCoord && dropoffCoord) calculateAndStoreRoute();
                     };
-                })(place.lat, place.lon, place.display_name);
+                })(place.lat, place.lon, place.display_name));
                 suggestionsDiv.appendChild(div);
             });
             suggestionsDiv.style.display = 'block';
         } catch (error) {
-            console.error('Autocomplete fout:', error);
-            showTempMsg(wid, 'Netwerkfout');
+            console.error('Autocomplete error:', error);
+            showTempMsg(wrapId, 'Netwerkfout - probeer later opnieuw');
         }
     }
     
-    function clearSuggestions(wid) { const el = document.getElementById(wid)?.querySelector('.suggestions'); if (el) el.style.display = 'none'; }
-    
-    function showTempMsg(wid, msg) {
-        const w = document.getElementById(wid);
-        const sd = w.querySelector('.suggestions');
-        if (!sd) return;
-        sd.innerHTML = `<div class="suggestion-item" style="color:#b91c1c;">❌ ${msg}</div>`;
-        sd.style.display = 'block';
-        setTimeout(() => { if (sd.style.display === 'block') sd.style.display = 'none'; }, 8000);
+    function clearSuggestions(wrapId) {
+        const wrapper = document.getElementById(wrapId);
+        if (wrapper) {
+            const suggestionsDiv = wrapper.querySelector('.suggestions');
+            if (suggestionsDiv) suggestionsDiv.style.display = 'none';
+        }
     }
     
+    function showTempMsg(wrapId, msg) {
+        const wrapper = document.getElementById(wrapId);
+        if (!wrapper) return;
+        const suggestionsDiv = wrapper.querySelector('.suggestions');
+        if (!suggestionsDiv) return;
+        suggestionsDiv.innerHTML = `<div class="suggestion-item" style="color:#b91c1c;">⚠️ ${msg}</div>`;
+        suggestionsDiv.style.display = 'block';
+        setTimeout(() => {
+            if (suggestionsDiv.style.display === 'block') suggestionsDiv.style.display = 'none';
+        }, 5000);
+    }
+    
+    // --- ROUTE & KAART ---
     async function calcRoute(lat1, lon1, lat2, lon2) {
         const url = `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`;
         try {
@@ -352,11 +385,14 @@
                 const rt = d.routes[0];
                 return { distanceKm: (rt.distance / 1000).toFixed(1), durationMin: Math.round(rt.duration / 60), geometry: rt.geometry };
             }
-        } catch (e) { }
+        } catch (e) { console.error(e); }
         return null;
     }
     
-    function showError(page, msg) { const errDiv = document.getElementById(`page${page}Error`); if (errDiv) { errDiv.innerText = msg; errDiv.style.display = 'block'; setTimeout(() => errDiv.style.display = 'none', 4000); } }
+    function showError(page, msg) {
+        const errDiv = document.getElementById(`page${page}Error`);
+        if (errDiv) { errDiv.innerText = msg; errDiv.style.display = 'block'; setTimeout(() => errDiv.style.display = 'none', 4000); }
+    }
     
     async function updateMapAndInfo(rd) {
         if (!rd) return;
@@ -422,11 +458,11 @@
         if (!pickupCoord || !dropoffCoord) { showError(1, 'Selecteer adressen uit suggesties.'); return false; }
         const dt = document.getElementById('datetime').value;
         if (!dt) { showError(1, 'Kies heen datum/tijd.'); return false; }
-        if (isPast(dt)) { showError(1, '❌ Geen ritten in verleden.'); return false; }
+        if (isPast(dt)) { showError(1, 'Geen ritten in verleden.'); return false; }
         if (currentRoundTrip) {
             const returnDt = document.getElementById('returnDatetime').value;
             if (!returnDt) { showError(1, 'Kies terug datum/tijd voor retour.'); return false; }
-            if (isPast(returnDt)) { showError(1, '❌ Terug rit mag niet in verleden zijn.'); return false; }
+            if (isPast(returnDt)) { showError(1, 'Terug rit mag niet in verleden zijn.'); return false; }
             currentReturnDateTime = returnDt;
         }
         const urgent = isWithinNextHour(dt);
@@ -495,81 +531,74 @@
         }
     }
     
-    // SUPABASE FUNCTIE - WERKT!
+    function fillHiddenSupabaseFields() {
+        const email = document.getElementById('email').value.trim();
+        const customerId = `CUST-${email.replace(/[^a-z0-9]/gi, '').substring(0, 30)}`;
+        document.getElementById('hiddenCustomerId').value = customerId;
+        document.getElementById('hiddenFormData').value = JSON.stringify({ source: "web-booking" });
+        document.getElementById('hiddenCreatedAt').value = new Date().toISOString();
+    }
+    
     async function sendToSupabase(bookingData) {
         console.log('📦 Verzenden naar Supabase:', bookingData);
         try {
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/bookings`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': SUPABASE_ANON_KEY,
-                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                    'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify(bookingData)
-            });
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`HTTP ${response.status}: ${errorText}`);
-            }
-            
+            const { error } = await supabase.from('bookings').insert([bookingData]);
+            if (error) throw error;
             console.log('✅ Boeking opgeslagen in Supabase!');
             return true;
         } catch (error) {
-            console.error('❌ Supabase fout:', error);
+            console.error('❌ Supabase fout:', error.message);
+            alert(`Fout: ${error.message}`);
             return false;
         }
     }
     
-    // FINALIZE BOOKING - Met customer_id en form_data voor jouw tabel
     async function finalizeBooking() {
         const paymentMethod = document.querySelector('input[name="payment"]:checked')?.value || "Cash";
-        
         let totalAmount = 0;
         if (currentRouteData) {
             let dist = parseFloat(currentRouteData.distanceKm);
             if (currentRoundTrip) dist *= 2;
             totalAmount = (dist * 1.5) + (selectedVehicleExtra || 0);
         }
-        
-        const nameValue = `${document.getElementById('firstName').value.trim()} ${document.getElementById('lastName').value.trim()}`;
-        const emailValue = document.getElementById('email').value.trim();
-        const phoneValue = document.getElementById('phone').value.trim();
-        
-        if (!nameValue || !emailValue || !phoneValue) {
-            alert('Vul alle verplichte velden in');
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        if (!firstName || !lastName || !email || !phone) {
+            alert('Vul alle verplichte velden in (voornaam, achternaam, GSM, e-mail)');
             return;
         }
-        
-        if (!selectedVehicle) {
-            alert('Selecteer een voertuig');
-            return;
-        }
+        fillHiddenSupabaseFields();
+        const customerId = document.getElementById('hiddenCustomerId').value;
+        const formDataRaw = document.getElementById('hiddenFormData').value;
+        const formData = JSON.parse(formDataRaw);
+        const createdAt = document.getElementById('hiddenCreatedAt').value;
+        const partnerId = parseInt(document.getElementById('hiddenPartnerId').value);
+        const assignedDriverId = document.getElementById('hiddenAssignedDriverId').value || null;
         
         const bookingData = {
             id: generateBookingId(),
             datetime: currentDateTime.split(' ')[0] || "",
             time: currentDateTime.split(' ')[1] || "",
-            name: nameValue,
-            email: emailValue,
-            phone: phoneValue,
+            name: `${firstName} ${lastName}`,
+            email: email,
+            phone: phone,
             pickup: document.getElementById('pickupInput').value,
             destination: document.getElementById('dropoffInput').value,
             flight_number: document.getElementById('flightNumber').value.trim() || "",
             vehicle: selectedVehicle,
             extras: getExtrasString(),
-            amount: totalAmount,
+            amount: totalAmount.toString(),
             payment: paymentMethod,
             status: "pending",
-            customer_id: "CUST-" + emailValue.toLowerCase().replace(/[^a-z0-9]/g, ""),
-            form_data: { source: "web-booking" },
-            partner_id: 1
+            customer_id: customerId,
+            form_data: formData,
+            created_at: createdAt,
+            partner_id: partnerId,
+            assigned_driver_id: assignedDriverId
         };
-        
         const success = await sendToSupabase(bookingData);
-        
         if (success) {
             alert(`✅ Boeking bevestigd!\n\n📋 Boekingsnummer: ${bookingData.id}\n💰 Totaalbedrag: € ${totalAmount.toFixed(2)}\n\nEen bevestiging is opgeslagen in de database.`);
             resetAll();
@@ -643,26 +672,32 @@
     function prevPage() { if (currentPage > 1) showPage(currentPage - 1); }
     
     function initAutocomplete() {
+        let pickupTimeout, dropoffTimeout;
         const pickupInput = document.getElementById('pickupInput');
         const dropoffInput = document.getElementById('dropoffInput');
-        let pickupTimeout, dropoffTimeout;
         if (pickupInput) {
-            pickupInput.addEventListener('input', function(e) {
+            pickupInput.addEventListener('input', (e) => {
                 clearTimeout(pickupTimeout);
-                const query = e.target.value;
-                if (query.length >= 3) { pickupTimeout = setTimeout(() => fetchAddresses(query, 'pickupWrap'), 300); }
-                else { clearSuggestions('pickupWrap'); }
+                const q = e.target.value;
+                if (q.length >= 3) {
+                    pickupTimeout = setTimeout(() => fetchAddresses(q, 'pickupWrap'), 300);
+                } else {
+                    clearSuggestions('pickupWrap');
+                }
             });
         }
         if (dropoffInput) {
-            dropoffInput.addEventListener('input', function(e) {
+            dropoffInput.addEventListener('input', (e) => {
                 clearTimeout(dropoffTimeout);
-                const query = e.target.value;
-                if (query.length >= 3) { dropoffTimeout = setTimeout(() => fetchAddresses(query, 'dropoffWrap'), 300); }
-                else { clearSuggestions('dropoffWrap'); }
+                const q = e.target.value;
+                if (q.length >= 3) {
+                    dropoffTimeout = setTimeout(() => fetchAddresses(q, 'dropoffWrap'), 300);
+                } else {
+                    clearSuggestions('dropoffWrap');
+                }
             });
         }
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', (e) => {
             if (!e.target.closest('.suggest-wrapper')) {
                 clearSuggestions('pickupWrap');
                 clearSuggestions('dropoffWrap');
